@@ -1,0 +1,10 @@
+<!-- app/views/admin/products/_tag.html.erb -->
+<span class="inline-flex items-center bg-gray-200 rounded px-2 py-1">
+  <%= tag.name %>
+  <button
+    type="button"
+    class="ml-1 text-red-600 hover:text-red-800"
+    data-action="click->tag-selector#remove"
+    data-tag-id="<%= tag.id %>"
+  >✕</button>
+</span>

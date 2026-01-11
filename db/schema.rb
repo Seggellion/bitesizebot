@@ -1,0 +1,258 @@
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of Active Record to
+# incrementally modify your database, and then regenerate this schema definition.
+#
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
+#
+# It's strongly recommended that you check this file into your version control system.
+
+ActiveRecord::Schema[8.0].define(version: 2026_01_11_193824) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
+  create_table "achievements", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "description"
+    t.string "icon"
+    t.string "achievement_type"
+    t.integer "reward_points", default: 0
+    t.string "owner_uuid"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "name"], name: "index_achievements_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_achievements_on_user_id"
+  end
+
+  create_table "blocks", force: :cascade do |t|
+    t.bigint "section_id", null: false
+    t.integer "block_type", null: false
+    t.text "content"
+    t.string "block_link"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["section_id"], name: "index_blocks_on_section_id"
+  end
+
+  create_table "categories", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.text "content"
+    t.bigint "user_id"
+    t.string "commentable_type"
+    t.bigint "commentable_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
+    t.index ["user_id"], name: "index_comments_on_user_id"
+  end
+
+  create_table "contact_messages", force: :cascade do |t|
+    t.string "first_name"
+    t.string "last_name"
+    t.string "email"
+    t.string "phone"
+    t.text "properties"
+    t.string "subject"
+    t.text "body"
+    t.datetime "read_at"
+    t.string "ip_address"
+    t.string "country_code"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "downloads", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description"
+    t.string "link_url"
+    t.string "link_text"
+    t.integer "order", default: 0
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_downloads_on_category_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.string "location"
+    t.string "slug"
+    t.string "timezone"
+    t.datetime "start_time"
+    t.datetime "end_time"
+    t.bigint "user_id"
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_events_on_category_id"
+    t.index ["user_id"], name: "index_events_on_user_id"
+  end
+
+  create_table "media", force: :cascade do |t|
+    t.string "file"
+    t.text "meta_description"
+    t.text "meta_keywords"
+    t.boolean "approved"
+    t.boolean "screenshot_of_week"
+    t.string "category"
+    t.boolean "staff", default: false
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_media_on_user_id"
+  end
+
+  create_table "menu_items", force: :cascade do |t|
+    t.string "title"
+    t.string "url"
+    t.integer "position"
+    t.integer "parent_id"
+    t.integer "item_type", default: 0, null: false
+    t.integer "item_id"
+    t.bigint "menu_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["menu_id"], name: "index_menu_items_on_menu_id"
+  end
+
+  create_table "menus", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "pages", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "content"
+    t.string "slug"
+    t.boolean "published"
+    t.string "template"
+    t.bigint "user_id"
+    t.bigint "category_id"
+    t.text "meta_description"
+    t.text "meta_keywords"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_pages_on_category_id"
+    t.index ["user_id"], name: "index_pages_on_user_id"
+  end
+
+  create_table "posts", force: :cascade do |t|
+    t.string "title"
+    t.text "content"
+    t.boolean "published"
+    t.integer "views"
+    t.boolean "trashed"
+    t.bigint "user_id"
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_posts_on_category_id"
+    t.index ["user_id"], name: "index_posts_on_user_id"
+  end
+
+  create_table "sections", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "template", null: false
+    t.integer "animation_speed"
+    t.integer "position"
+    t.string "subtitle"
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "services", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "content"
+    t.string "slug"
+    t.boolean "published"
+    t.bigint "category_id"
+    t.text "meta_description"
+    t.text "meta_keywords"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_services_on_category_id"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.string "key"
+    t.text "value"
+    t.string "group"
+    t.string "setting_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "taggings", force: :cascade do |t|
+    t.bigint "tag_id", null: false
+    t.string "taggable_type", null: false
+    t.bigint "taggable_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tag_id", "taggable_type", "taggable_id"], name: "index_taggings_on_tag_id_and_taggable_type_and_taggable_id", unique: true
+    t.index ["tag_id"], name: "index_taggings_on_tag_id"
+    t.index ["taggable_type", "taggable_id"], name: "index_taggings_on_taggable_type_and_taggable_id"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "testimonials", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "content"
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_testimonials_on_category_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "uid", null: false
+    t.string "provider"
+    t.string "username"
+    t.integer "user_type"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "avatar"
+    t.string "ip_address"
+    t.string "country"
+    t.datetime "last_login"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["uid"], name: "index_users_on_uid", unique: true
+  end
+
+  add_foreign_key "achievements", "users"
+  add_foreign_key "blocks", "sections"
+  add_foreign_key "comments", "users"
+  add_foreign_key "downloads", "categories"
+  add_foreign_key "events", "categories"
+  add_foreign_key "events", "users"
+  add_foreign_key "media", "users"
+  add_foreign_key "menu_items", "menus"
+  add_foreign_key "pages", "categories"
+  add_foreign_key "pages", "users"
+  add_foreign_key "posts", "categories"
+  add_foreign_key "posts", "users"
+  add_foreign_key "services", "categories"
+  add_foreign_key "taggings", "tags"
+  add_foreign_key "testimonials", "categories"
+end

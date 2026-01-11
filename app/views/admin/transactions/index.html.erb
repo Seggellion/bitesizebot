@@ -1,0 +1,27 @@
+<h1 class="text-3xl font-bold mb-4">Transactions</h1>
+
+<table class="min-w-full bg-white mt-4 border">
+  <thead>
+    <tr>
+        <th>Title</th>
+        <th>Location</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @transactions.each do |transaction| %>
+      <tr>
+        <td class="py-2 px-4 border"><%= transaction.user&.username %></td>
+        <td class="py-2 px-4 border"><%= transaction.total_price %></td>
+        <td class="py-2 px-4 border"></td>
+        <td class="py-2 px-4 border"><%= transaction.created_at.strftime('%B %d, %Y %I:%M %p') %></td>
+        <td class="py-2 px-4 border">
+          <%= link_to 'Edit', edit_admin_transaction_path(transaction), class: 'text-blue-500 hover:underline' %> |
+          <%= link_to 'Delete', admin_transaction_path(transaction), method: :delete, data: { confirm: 'Are you sure?' }, class: 'text-red-500 hover:underline' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -1,0 +1,52 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <!-- Main Content Area -->
+  <div class="lg:col-span-2 bg-white p-6 rounded shadow">
+    <%= form_with model: [:admin, download], local: true, data: { turbo: true } do |form| %>
+      <div class="mb-4">
+        <%= form.label :title, "Title", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+      </div>
+
+      <div class="mb-4">
+        <%= form.label :description, "Description", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_area :description, rows: 5, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+      </div>
+
+      <div class="mb-4">
+        <%= form.label :link_url, "Download URL", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :link_url, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+      </div>
+
+      <div class="mb-4">
+        <%= form.label :link_text, "Link Text", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :link_text, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+      </div>
+
+      <div class="mb-4">
+        <%= form.label :shard_id, "Shard", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.collection_select :shard_id, shards, :id, :name, { prompt: "Select a shard" }, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+      </div>
+
+      <div class="mb-4 flex justify-end">
+        <%= form.submit download.new_record? ? "Publish" : "Update", class: "bg-blue-500 text-white px-4 py-2 rounded cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="space-y-4">
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Publish</h2>
+      <div class="mb-4">
+        <span class="block text-sm text-gray-700">Status: <strong><%= download.persisted? ? "Published" : "Draft" %></strong></span>
+        <span class="block text-sm text-gray-700">Visibility: <strong>Public</strong></span>
+        <span class="block text-sm text-gray-700">Publish: <strong>Immediately</strong></span>
+      </div>
+      <div class="flex justify-end">
+        <%= form_with model: [:admin, download], local: true do |form| %>
+          <%= form.submit download.new_record? ? "Publish" : "Update", class: "bg-blue-500 text-white px-4 py-2 rounded" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

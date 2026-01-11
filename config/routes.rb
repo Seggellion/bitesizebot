@@ -1,0 +1,103 @@
+Rails.application.routes.draw do
+  # ------------------------------------------------------------
+  # Health check
+  # ------------------------------------------------------------
+  get "up" => "rails/health#show", as: :rails_health_check
+
+  # ------------------------------------------------------------
+  # Authentication
+  # ------------------------------------------------------------
+  get    "/login",  to: "sessions#new",     as: :login
+  delete "/logout", to: "sessions#destroy", as: :logout
+
+  get "/auth/:provider/callback", to: "sessions#create"
+  get "/auth/failure", to: redirect("/")
+  get "/discord_login", to: redirect("/auth/discord"), as: :discord_login
+  get "/twitch_login", to: redirect("/auth/twitch"), as: :twitch_login
+  get "/microsoft_login", to: redirect("/auth/microsoft_graph"), as: :microsoft_login
+
+  # ------------------------------------------------------------
+  # Public CMS
+  # ------------------------------------------------------------
+  root "home#index"
+
+  resources :pages,    only: [:index, :show]
+  resources :posts,    only: [:index, :show]
+  resources :services, only: [:index, :show]
+  resources :events,   only: [:index, :show], param: :slug
+  resources :categories, only: [:show]
+  resources :tags,       only: [:show]
+  resources :comments,   only: [:create]
+
+  resources :contact_messages, only: [:new, :create]
+
+  # ------------------------------------------------------------
+  # Theme switching (optional, CMS-level)
+  # ------------------------------------------------------------
+  post "set_theme", to: "themes#set_theme", as: :set_theme
+
+  # ------------------------------------------------------------
+  # Admin
+  # ------------------------------------------------------------
+  namespace :admin do
+    root "dashboard#index"
+
+    resources :pages do
+      member do
+        patch :update_category
+        delete "remove_image/:signed_id", action: :remove_image, as: :remove_image
+      end
+    end
+
+    resources :posts
+    resources :sections do
+      member do
+        patch :move_up
+        patch :move_down
+      end
+
+      resources :blocks, except: [:index, :show] do
+        member do
+          patch :move_up
+          patch :move_down
+        end
+      end
+    end
+
+    resources :categories
+    resources :tags
+    resources :menus do
+      resources :menu_items do
+        member do
+          patch :move_up
+          patch :move_down
+          patch :update_parent
+        end
+      end
+    end
+
+    resources :media do
+      collection do
+        get :screenshots
+      end
+
+      member do
+        patch :approve
+      end
+    end
+
+    resources :downloads
+    resources :events
+    resources :services
+    resources :testimonials
+    resources :comments
+    resources :users
+    resources :settings
+    resources :contact_messages, only: [:index, :show]
+  end
+
+  # ------------------------------------------------------------
+  # Catch-all CMS pages (LAST)
+  # ------------------------------------------------------------
+  get "/:slug", to: "pages#show", as: :catch_all_page
+end

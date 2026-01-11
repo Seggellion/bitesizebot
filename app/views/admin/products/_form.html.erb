@@ -1,0 +1,68 @@
+<div class="lg:col-span-2 bg-white p-6 rounded shadow">
+    <%= form_with model: [:admin, product], local: true, data: { turbo: true }, html: { id: "productForm" } do |form| %>
+    <div class="mb-4">
+      <%= form.label :title, "Title", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :title, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+      <%= form.label :content, "Content", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.rich_text_area :content, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+      <%= form.label :price, "Price (USD)", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.number_field :price, step: 0.01, min: 0, value: @product.price || 0.0, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+      <%= form.label :compare_at_price, "Compare At Price (USD)", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.number_field :compare_at_price, step: 0.01, min: 0, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+      <%= form.label :shopify_product_id, "Shopify Product ID", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :shopify_product_id, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+      <%= form.label :shopify_variant_id, "Shopify Variant ID", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :shopify_variant_id, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+  <%= form.label :item_id, "Item ID (namespaced)", class: "block text-sm font-medium text-gray-700" %>
+  <%= form.text_field :item_id, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm", placeholder: "britannia_mod:small_house_deed" %>
+</div>
+
+<div class="mb-4">
+  <%= form.label :icon_path, "Icon Path (optional)", class: "block text-sm font-medium text-gray-700" %>
+  <%= form.text_field :icon_path, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm", placeholder: "britannia_mod:textures/item/deed.png" %>
+</div>
+
+
+<div class="mb-4">
+  <%= form.label :requirements, "Requirements (JSON)", class: "block text-sm font-medium text-gray-700" %>
+
+<%= form.text_area :requirements,
+      value: @product.requirements.present? ? JSON.pretty_generate(@product.requirements) : '',
+      rows: 3,
+      class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm",
+      placeholder: '{"wood":100,"stone":20,"metal":10}' %>
+
+  </div>
+
+
+    <div class="mb-4">
+      <%= form.label :meta_description, "Meta Description", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_area :meta_description, rows: 2, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+    <div class="mb-4">
+      <%= form.label :meta_keywords, "Meta Keywords", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_area :meta_keywords, rows: 2, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" %>
+    </div>
+
+
+  <% end %>
+</div>

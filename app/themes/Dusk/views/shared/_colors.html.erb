@@ -1,0 +1,48 @@
+<% 
+  header_font_color = Setting.get("header-font-color")
+  primary_color     = Setting.get("primary-color")
+  secondary_color   = Setting.get("secondary-color") || "#808080"
+%>
+
+<% if header_font_color.present? && primary_color.present? %>
+<style>
+  :root {
+    --header-font-color: <%= header_font_color %>;
+    --primary-color: <%= primary_color %>;
+    --secondary-color: <%= secondary_color %>;
+  }
+
+  header {
+    background-color: var(--primary-color);
+    color: var(--header-font-color);
+  }
+
+  footer {
+    background-color: var(--primary-color);
+    color: var(--header-font-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--header-font-color);
+  }
+
+  .primary-background {
+    background-color: var(--primary-color);
+  }
+
+  .btn,
+  button {
+    background-color: var(--secondary-color);
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+  }
+
+  .btn.secondary,
+  button.secondary {
+    background-color: var(--primary-color);
+  }
+</style>
+<% end %>
