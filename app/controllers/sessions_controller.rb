@@ -11,36 +11,36 @@ class SessionsController < ApplicationController
   end
 
   def create
-    auth = request.env['omniauth.auth']
-    provider = auth['provider']
+  auth = request.env['omniauth.auth']
+  provider = auth['provider']
 
-    # Step 1: Authenticate User
-    user = User.find_or_create_by(uid: auth['uid'], provider: provider) do |u|
-      u.email = auth['info']['email']
-      u.first_name = auth['info']['name']
-      u.user_type = User.admin_exists? ? 1 : 0
-    end
-  
-    # Step 2: Fetch Minecraft UUID if provider is Microsoft
-    case provider
-    when 'discord'
-      u.avatar = auth['info']['image']
-    when :microsoft_graph
-      # Potentially store something like:
-      u.avatar = auth['info']['image'] if auth['info']['image'].present?
-    end
-
-    user.update(ip_address: request.remote_ip, last_login: Time.current)
-    session[:user_id] = user.id
-
-     # Redirect based on user role
-    if user.admin?
-      redirect_to admin_root_path, notice: 'Welcome, Admin!'
-    else
-      redirect_to root_path, notice: 'Welcome back!'
-    end
-
+  # Step 1: Find or Create the User
+  user = User.find_or_create_by(uid: auth['uid'], provider: provider) do |u|
+    u.email = auth['info']['email']
+    u.username = auth['info']['name']
+    u.first_name = auth['info']['name']
+    u.user_type = User.admin_exists? ? 1 : 0 # First user is admin
   end
+
+  # Step 2: Store Twitch-specific data if applicable
+  if provider == 'twitch'
+      user.update(
+        twitch_access_token:  auth.dig('credentials', 'token'),
+        twitch_refresh_token: auth.dig('credentials', 'refresh_token'),
+        avatar: auth.dig('info', 'image') 
+      )
+    elsif provider == 'discord'
+      user.update(avatar: auth.dig('info', 'image'))
+    end
+
+  # Step 3: Global updates
+  user.update(ip_address: request.remote_ip, last_login: Time.current)
+  session[:user_id] = user.id
+
+  # Redirect
+  path = user.admin? ? admin_root_path : root_path
+  redirect_to path, notice: "Signed in via #{provider.titleize}!"
+end
 
   private
 

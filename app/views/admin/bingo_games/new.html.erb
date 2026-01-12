@@ -1,0 +1,48 @@
+<h1 class="text-3xl font-bold mb-4">Create New Bingo Game</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <div class="lg:col-span-2 bg-white p-6 rounded shadow">
+    <%= form_with model: [:admin, @bingo_game], local: true, data: { turbo: true } do |form| %>
+      
+      <div class="mb-4">
+        <%= form.label :title, "Game Title (e.g., Friday Night Variety)", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.text_field :title, placeholder: "Enter game title...", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+      </div>
+      
+      <div class="mb-4">
+        <%= label_tag :bingo_items_text, "Bingo Phrases (One per line)", class: "block text-sm font-medium text-gray-700" %>
+        <p class="text-xs text-gray-500 mb-2">Provide at least <%= (@bingo_game.size || 5)**2 %> phrases for a full grid.</p>
+        <%= text_area_tag :bingo_items_text, params[:bingo_items_text], rows: 15, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Muted on Mic&#10;Technical Difficulties&#10;Cat on Keyboard..." %>
+      </div>
+
+      <div class="mb-4 flex justify-end">
+        <%= form.submit "Create Game", class: "bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="space-y-4">
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Configuration</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700">Grid Size</rb>
+        <%= select_tag "bingo_game[size]", options_for_select([["3x3", 3], ["5x5", 5], ["7x7", 7]], 5), class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+      </div>
+
+      <div class="pt-4 border-t border-gray-100">
+        <span class="block text-sm text-gray-700">Initial Status: <strong>Pending</strong></span>
+        <span class="block text-sm text-gray-700">Host: <strong><%= @current_user.username %></strong></span>
+      </div>
+    </div>
+
+    <div class="bg-gray-50 p-6 rounded shadow border border-gray-200">
+      <h2 class="text-lg font-semibold mb-2 text-gray-800">Quick Tips</h2>
+      <ul class="text-sm text-gray-600 list-disc ml-4 space-y-2">
+        <li>Twitch viewers can join via <strong>!bingo</strong> once the game is active.</li>
+        <li>Ensure you have enough phrases to fill the grid size selected.</li>
+        <li>You can manually "Mark" items from the dashboard during the stream.</li>
+      </ul>
+    </div>
+  </div>
+</div>

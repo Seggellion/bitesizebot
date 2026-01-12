@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_11_193824) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,6 +26,47 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_11_193824) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "name"], name: "index_achievements_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_achievements_on_user_id"
+  end
+
+  create_table "bingo_cards", force: :cascade do |t|
+    t.bigint "bingo_game_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bingo_game_id"], name: "index_bingo_cards_on_bingo_game_id"
+    t.index ["user_id"], name: "index_bingo_cards_on_user_id"
+  end
+
+  create_table "bingo_cells", force: :cascade do |t|
+    t.bigint "bingo_card_id", null: false
+    t.bigint "bingo_item_id", null: false
+    t.integer "row_index"
+    t.integer "column_index"
+    t.boolean "is_marked", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bingo_card_id"], name: "index_bingo_cells_on_bingo_card_id"
+    t.index ["bingo_item_id"], name: "index_bingo_cells_on_bingo_item_id"
+  end
+
+  create_table "bingo_games", force: :cascade do |t|
+    t.bigint "host_id", null: false
+    t.string "title"
+    t.string "status", default: "pending"
+    t.integer "size", default: 5
+    t.datetime "started_at"
+    t.datetime "ended_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["host_id"], name: "index_bingo_games_on_host_id"
+  end
+
+  create_table "bingo_items", force: :cascade do |t|
+    t.bigint "bingo_game_id", null: false
+    t.string "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bingo_game_id"], name: "index_bingo_items_on_bingo_game_id"
   end
 
   create_table "blocks", force: :cascade do |t|
@@ -233,6 +274,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_11_193824) do
     t.string "avatar"
     t.string "ip_address"
     t.string "country"
+    t.string "twitch_access_token"
+    t.string "twitch_refresh_token"
     t.datetime "last_login"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -241,6 +284,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_11_193824) do
   end
 
   add_foreign_key "achievements", "users"
+  add_foreign_key "bingo_cards", "bingo_games"
+  add_foreign_key "bingo_cards", "users"
+  add_foreign_key "bingo_cells", "bingo_cards"
+  add_foreign_key "bingo_cells", "bingo_items"
+  add_foreign_key "bingo_games", "users", column: "host_id"
+  add_foreign_key "bingo_items", "bingo_games"
   add_foreign_key "blocks", "sections"
   add_foreign_key "comments", "users"
   add_foreign_key "downloads", "categories"

@@ -4,7 +4,6 @@ module Admin
 
     def index
       @pages = Page.all     
-      @skills = Skill.all 
       # Admin dashboard logic
     end
   end

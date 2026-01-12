@@ -23,6 +23,9 @@
       <%= link_to "Testimonials", admin_testimonials_path,
         class: "block px-4 py-2 rounded hover:bg-slate-700" %>
 
+      <%= link_to "Bingo Games", admin_bingo_games_path,
+        class: "block px-4 py-2 rounded hover:bg-slate-700" %>
+
       <hr class="border-slate-700 my-3">
 
       <%= link_to "Menus", admin_menus_path,
@@ -31,12 +34,12 @@
       <%= link_to "Sections & Blocks", admin_sections_path,
         class: "block px-4 py-2 rounded hover:bg-slate-700" %>
 
-      <%= link_to "Media Library", admin_media_index_path,
+      <%= link_to "Media Library", admin_media_path,
         class: "block px-4 py-2 rounded hover:bg-slate-700" %>
 
-      <% if current_page?(admin_media_index_path) %>
+      <% if current_page?(admin_media_path) %>
         <div class="ml-4">
-          <%= link_to "Screenshots", screenshots_admin_media_index_path,
+          <%= link_to "Screenshots", screenshots_admin_media_path,
             class: "block px-4 py-1 rounded text-slate-300 hover:bg-slate-700" %>
         </div>
       <% end %>

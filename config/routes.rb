@@ -12,8 +12,7 @@ Rails.application.routes.draw do
 
   get "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: redirect("/")
-  get "/discord_login", to: redirect("/auth/discord"), as: :discord_login
-  get "/twitch_login", to: redirect("/auth/twitch"), as: :twitch_login
+  post "/discord_login", to: redirect("/auth/discord"), as: :discord_login
   get "/microsoft_login", to: redirect("/auth/microsoft_graph"), as: :microsoft_login
 
   # ------------------------------------------------------------
@@ -48,6 +47,13 @@ Rails.application.routes.draw do
         delete "remove_image/:signed_id", action: :remove_image, as: :remove_image
       end
     end
+
+    resources :bingo_games do
+    member do
+      post :start
+      post :end
+    end
+  end
 
     resources :posts
     resources :sections do

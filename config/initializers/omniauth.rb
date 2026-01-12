@@ -1,21 +1,21 @@
 # config/initializers/omniauth.rb
 
-return unless defined?(OmniAuth)
+OmniAuth.config.allowed_request_methods = [:post]
 
 Rails.application.config.middleware.use OmniAuth::Builder do
-  creds = Rails.application.credentials.omniauth
-
-  if creds&.discord
-    provider :discord,
-      creds.discord.client_id,
-      creds.discord.client_secret,
-      scope: "identify email"
+  # Direct access to the top-level 'twitch' key
+  if (twitch_creds = Rails.application.credentials.twitch)
+    provider :twitch,
+      twitch_creds[:client_id],
+      twitch_creds[:client_secret],
+      scope: "user:read:email user:read:chat user:write:chat user:bot channel:bot"
   end
 
-  if creds&.twitch
-    provider :twitch,
-      creds.twitch.client_id,
-      creds.twitch.client_secret,
-      scope: "user:read:email"
+  # Adjust discord if it is also top-level in your credentials
+  if (discord_creds = Rails.application.credentials.discord)
+    provider :discord,
+      discord_creds[:client_id],
+      discord_creds[:client_secret],
+      scope: "identify email"
   end
 end

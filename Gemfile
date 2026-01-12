@@ -63,6 +63,9 @@ gem "shopify_api"
 gem 'sitemap_generator'
 gem 'omniauth-microsoft_graph'
 
+gem 'faye-websocket'
+gem 'eventmachine'
+gem 'httparty' 
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

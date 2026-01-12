@@ -10,14 +10,9 @@
       <li class="mb-2"><strong>1</strong> Comment</li>
     </ul>
 
-    <%= button_to "Avatar Theme", set_theme_path(theme: 'Avatar'), method: :post, class: "btn btn-primary" %>
+    <%= button_to "Hobbit Theme", set_theme_path(theme: 'Hobbit'), method: :post, class: "btn btn-primary" %>
     <%= button_to "Dusk Theme", set_theme_path(theme: 'Dusk'), method: :post, class: "btn btn-secondary" %>
     
-<%= button_to "Run Commodity Consumption",
-              admin_trigger_commodity_consumption_path,
-              method: :post,
-              class: "bg-blue-500 text-white px-4 py-2 rounded",
-              data: { confirm: "Are you sure you want to trigger the CommodityConsumptionJob?" } %>
 
   </div>
 
@@ -38,23 +33,7 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
 
-  <div class="bg-white p-6 rounded shadow col-span-2">
-    <h2 class="text-xl font-semibold mb-4">Skill of the Day</h2>
-
-<p>Today's skill: <%= @today&.name || "None yet" %></p>
-
-<%= form_with url: admin_skill_highlights_path, method: :post, local: true do %>
-  <div class="field">
-    <%= label_tag :skill_id, "Choose a skill" %>
-    <%= select_tag :skill_id, options_from_collection_for_select(@skills, :id, :name), include_blank: "Select skill" %>
-  </div>
-  <div class="actions">
-    <%= submit_tag "Set as Today's Skill", class: "bg-blue-500 text-white px-4 py-2 rounded" %>
-  </div>
-<% end %>
-</div>
   <!-- Activity Section -->
   <div class="bg-white p-6 rounded shadow col-span-2">
     <h2 class="text-xl font-semibold mb-4">Activity</h2>
