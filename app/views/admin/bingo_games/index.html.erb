@@ -1,3 +1,39 @@
+
+<div class="bg-white p-6 rounded shadow">
+
+<h1>Pending Approvals</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Action</th>
+      <th>Details</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @actions.each do |action| %>
+      <tr>
+        <td><%= action.user.username %> (Karma: <%= action.user.karma %>)</td>
+        <td><%= action.action_type.humanize %></td>
+        <td>
+          <% if action.action_type == 'mark_cell' %>
+            Cell: <%= action.target.coordinate %> 
+            Item: <%= action.target.bingo_item.content %>
+          <% end %>
+        </td>
+        <td>
+          <%= button_to 'Approve', admin_pending_action_path(action, decision: 'approve'), method: :patch %>
+          <%= button_to 'Deny', admin_pending_action_path(action, decision: 'deny'), method: :patch %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>
+
+
 <div class="bg-white p-6 rounded shadow">
   <div class="flex justify-between items-center mb-4">
     <h1 class="text-2xl font-bold">Bingo Games</h1>
@@ -7,14 +43,17 @@
   <table class="min-w-full bg-white mt-4 border">
     <thead>
       <tr>
+        <th class="py-2 px-4 border">Status</th>
         <th class="py-2 px-4 border">Title</th>
-        <th class="py-2 px-4 border">Author</th>
+        <th class="py-2 px-4 border">Host</th>
         <th class="py-2 px-4 border">Date</th>
       </tr>
     </thead>
     <tbody>
       <% @bingo_games.each do |bingo_game| %>
         <tr>
+                  <td class="py-2 px-4 border"><%= bingo_game.status %></td>
+
           <td class="py-2 px-4 border"><%= bingo_game.title %></td>
           <td class="py-2 px-4 border"><%= bingo_game.host.first_name %></td>
           <td class="py-2 px-4 border"><%= bingo_game.created_at.strftime('%Y-%m-%d') %></td>

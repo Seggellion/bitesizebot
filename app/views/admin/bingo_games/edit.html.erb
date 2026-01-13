@@ -34,6 +34,19 @@
         <span class="block text-sm text-gray-700">Initial Status: <strong>Pending</strong></span>
         <span class="block text-sm text-gray-700">Host: <strong><%= @current_user.username %></strong></span>
       </div>
+
+<% if @bingo_game.status == "pending" %>
+    <%= button_to "Start Bingo Game", 
+                  start_admin_bingo_game_path(@bingo_game), 
+                  method: :post, 
+                  class: "bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition" %>
+  <% elsif @bingo_game.status == "active" %>
+    <%= button_to "End Game", 
+                  end_admin_bingo_game_path(@bingo_game), 
+                  method: :post, 
+                  class: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow transition" %>
+  <% end %>
+
     </div>
 
     <div class="bg-gray-50 p-6 rounded shadow border border-gray-200">

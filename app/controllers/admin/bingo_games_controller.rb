@@ -2,6 +2,7 @@ module Admin
     class BingoGamesController < Admin::ApplicationController
     def index
       @bingo_games = BingoGame.order(created_at: :desc)
+      @actions = PendingAction.pending.includes(:user, :target)
     end
 
     def new
@@ -12,6 +13,17 @@ module Admin
         @bingo_game = BingoGame.find_by_id(params[:id])
       end
   
+
+      # app/controllers/admin/bingo_games_controller.rb
+def start
+  @bingo_game = BingoGame.find(params[:id])
+  
+  if @bingo_game.update(status: "active", started_at: Time.current)
+    redirect_to admin_bingo_game_path(@bingo_game), notice: "Bingo Game is now active!"
+  else
+    redirect_to admin_bingo_game_path(@bingo_game), alert: "Failed to start game."
+  end
+end
 
     def create
       @bingo_game = BingoGame.new(bingo_game_params)

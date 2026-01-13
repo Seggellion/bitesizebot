@@ -1,33 +1,56 @@
 # app/services/bingo_service.rb
 class BingoService
-  def self.process_command(username, broadcaster_uid, text)
-    # 1. Find the host (the streamer)
+  def self.process_command(uid, username, broadcaster_uid, text)
     host = User.find_by(uid: broadcaster_uid)
-    return unless host
+    return "Host not found." unless host
 
-    # 2. Find the active game for this host
-    game = BingoGame.where(host: host, status: 'active').first
+    game = BingoGame.find_by(host: host, status: 'active')
     
-    if game.nil?
-      # Optional: Send chat message saying "No active game"
-      return
+    return "No active game right now!" unless game
+
+    viewer = User.find_or_create_by(uid: uid) do |u|
+        u.provider = 'twitch'
+        u.username = username
+        end
+
+    case text.downcase
+    when "!bingo join"
+        
+      return "You're already in!" if game.bingo_cards.exists?(user: viewer)
+      game.bingo_cards.create!(user: viewer)
+      return nil # Listener handles the join message
+
+    when /^!bingo mark\s+([a-z])(\d+)/i
+      col_letter = $1.upcase      
+      row_num = $2.to_i
+      return request_mark(viewer, game, col_letter, row_num)
+    end
+  end
+
+  def self.request_mark(viewer, game, col_letter, row_num)
+    
+card = game.bingo_cards.find_by(user: viewer)
+  coord = "#{col_letter.upcase}#{row_num}"
+  
+  # Find the cell directly by the human-readable coordinate
+  cell = card.bingo_cells.find_by(coordinate: coord)
+    
+    
+    
+    return "Invalid cell coordinate!" unless cell
+    return "That cell is already marked!" if cell.is_marked
+    # Check if a request is already pending for this specific cell
+    if PendingAction.exists?(target: cell, status: 'pending')
+      return "A request for #{col_letter}#{row_num} is already awaiting approval!"
     end
 
-    # 3. Find or create the viewer user
-    # Note: Twitch events usually provide 'chatter_user_id'. 
-    # If your handle_notification passes the ID, use that for UID.
-    viewer = User.find_or_create_by(username: username) do |u|
-      u.provider = 'twitch'
-      u.uid = "#{u.uid}" # Ideally pass chatter_user_id from the event
-    end
+    PendingAction.create!(
+      user: viewer,
+      target: cell,
+      action_type: 'mark_cell',
+      metadata: { coordinate: "#{col_letter}#{row_num}" }
+    )
 
-    # 4. Check if they already have a card
-    if game.bingo_cards.exists?(user: viewer)
-      # Optional: Send chat message "You already have a card!"
-      return
-    end
-
-    # 5. Issue the card (this triggers generate_cells in the model)
-    game.bingo_cards.create!(user: viewer)
+    "Request sent! An admin will review your mark for #{col_letter}#{row_num}."
   end
 end

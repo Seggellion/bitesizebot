@@ -21,7 +21,6 @@ class User < ApplicationRecord
     end
 
     validates :uid, presence: true, uniqueness: true
-    validates :email, presence: true, uniqueness: true
 
   # Define roles
   enum :user_type, { admin: 0, regular: 1 }

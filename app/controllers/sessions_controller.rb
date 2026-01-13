@@ -16,7 +16,6 @@ class SessionsController < ApplicationController
 
   # Step 1: Find or Create the User
   user = User.find_or_create_by(uid: auth['uid'], provider: provider) do |u|
-    u.email = auth['info']['email']
     u.username = auth['info']['name']
     u.first_name = auth['info']['name']
     u.user_type = User.admin_exists? ? 1 : 0 # First user is admin

@@ -40,7 +40,8 @@ Rails.application.routes.draw do
   # ------------------------------------------------------------
   namespace :admin do
     root "dashboard#index"
-
+    resources :pending_actions, only: [:index, :update]
+    
     resources :pages do
       member do
         patch :update_category
@@ -49,11 +50,13 @@ Rails.application.routes.draw do
     end
 
     resources :bingo_games do
-    member do
-      post :start
-      post :end
+      member do
+        post :start
+        post :end
+      end
     end
-  end
+
+    resources :bingo_items
 
     resources :posts
     resources :sections do

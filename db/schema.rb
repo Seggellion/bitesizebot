@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_12_204449) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,13 +40,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
   create_table "bingo_cells", force: :cascade do |t|
     t.bigint "bingo_card_id", null: false
     t.bigint "bingo_item_id", null: false
-    t.integer "row_index"
-    t.integer "column_index"
+    t.string "coordinate"
     t.boolean "is_marked", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["bingo_card_id"], name: "index_bingo_cells_on_bingo_card_id"
     t.index ["bingo_item_id"], name: "index_bingo_cells_on_bingo_item_id"
+  end
+
+  create_table "bingo_game_items", force: :cascade do |t|
+    t.bigint "bingo_game_id", null: false
+    t.bigint "bingo_item_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bingo_game_id"], name: "index_bingo_game_items_on_bingo_game_id"
+    t.index ["bingo_item_id"], name: "index_bingo_game_items_on_bingo_item_id"
   end
 
   create_table "bingo_games", force: :cascade do |t|
@@ -62,11 +70,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
   end
 
   create_table "bingo_items", force: :cascade do |t|
-    t.bigint "bingo_game_id", null: false
+    t.integer "row_number"
+    t.string "column_letter"
     t.string "content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["bingo_game_id"], name: "index_bingo_items_on_bingo_game_id"
   end
 
   create_table "blocks", force: :cascade do |t|
@@ -190,6 +198,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
     t.index ["user_id"], name: "index_pages_on_user_id"
   end
 
+  create_table "pending_actions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "target_type", null: false
+    t.bigint "target_id", null: false
+    t.string "action_type"
+    t.string "status", default: "pending"
+    t.text "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["target_type", "target_id"], name: "index_pending_actions_on_target"
+    t.index ["user_id"], name: "index_pending_actions_on_user_id"
+  end
+
   create_table "posts", force: :cascade do |t|
     t.string "title"
     t.text "content"
@@ -264,11 +285,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email", null: false
     t.string "uid", null: false
     t.string "provider"
     t.string "username"
     t.integer "user_type"
+    t.integer "karma", default: 0
+    t.integer "fame", default: 0
     t.string "first_name"
     t.string "last_name"
     t.string "avatar"
@@ -279,7 +301,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
     t.datetime "last_login"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
@@ -288,8 +309,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
   add_foreign_key "bingo_cards", "users"
   add_foreign_key "bingo_cells", "bingo_cards"
   add_foreign_key "bingo_cells", "bingo_items"
+  add_foreign_key "bingo_game_items", "bingo_games"
+  add_foreign_key "bingo_game_items", "bingo_items"
   add_foreign_key "bingo_games", "users", column: "host_id"
-  add_foreign_key "bingo_items", "bingo_games"
   add_foreign_key "blocks", "sections"
   add_foreign_key "comments", "users"
   add_foreign_key "downloads", "categories"
@@ -299,6 +321,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_12_051604) do
   add_foreign_key "menu_items", "menus"
   add_foreign_key "pages", "categories"
   add_foreign_key "pages", "users"
+  add_foreign_key "pending_actions", "users"
   add_foreign_key "posts", "categories"
   add_foreign_key "posts", "users"
   add_foreign_key "services", "categories"

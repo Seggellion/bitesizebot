@@ -133,16 +133,28 @@ end
     username = event["chatter_user_login"]
     text     = event["message"]["text"]
     bid      = event["broadcaster_user_id"]
+    uid = event["chatter_user_id"]
 
-user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
+    user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
   sid = user.uid
     case text.downcase.strip
     when "!ping"
         puts "  -> Responding to ping..."
       TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
     when "!bingo join"
-        BingoService.process_command(username, bid, text)
-        TwitchService.send_chat_message(bid, user.uid, "Welcome to the game @#{username}! Your card has been generated.")
+        response_message = BingoService.process_command(uid,username, bid, text)
+        if response_message
+            TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
+        end
+
+      #  TwitchService.send_chat_message(bid, user.uid, "Welcome to the game @#{username}! Your card has been generated.")
+    when /^!bingo mark\s+[a-z]\d+/i 
+        response_message = BingoService.process_command(uid,username, bid, text)
+        
+        if response_message
+        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
+        end
     end
+
   end
 end

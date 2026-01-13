@@ -10,37 +10,33 @@ class BingoCard < ApplicationRecord
 
   private
 
-  def generate_cells
-    # 1. Get the items available for this game
-    # 2. Randomize them
-    # 3. Take exactly enough to fill the grid (e.g., 25 for a 5x5)
-    available_items = bingo_game.bingo_items.pluck(:id).shuffle
-    grid_size = bingo_game.size
+# app/models/bingo_card.rb
+def generate_cells
+  grid_size = bingo_game.size
+  column_map = ["B", "I", "N", "G", "O"]
+  cell_attributes = []
 
-    if available_items.size < (grid_size * grid_size)
-      # Fallback logic if host didn't provide enough phrases
-      # You might want to raise an error or handle this in the UI validation
+  column_map.first(grid_size).each do |letter|
+    # Get items for this column
+    column_pool = BingoItem.where(column_letter: letter).pluck(:id, :row_number).shuffle
+
+    (1..grid_size).each do |target_row|
+      # Find the item specifically for this row number if your items are fixed,
+      # or just pop if items are randomized per column.
+      item_id, row_num = column_pool.pop
+
+      cell_attributes << {
+        bingo_card_id: id,
+        bingo_item_id: item_id,
+        coordinate: "#{letter}#{row_num}", # Easy for humans/logs
+        is_marked: false,
+        created_at: Time.current,
+        updated_at: Time.current
+      }
     end
-
-    cell_attributes = []
-    index = 0
-
-    (0...grid_size).each do |row|
-      (0...grid_size).each do |col|
-        cell_attributes << {
-          bingo_card_id: id,
-          bingo_item_id: available_items[index],
-          row_index: row,
-          column_index: col,
-          is_marked: false,
-          created_at: Time.current,
-          updated_at: Time.current
-        }
-        index += 1
-      end
-    end
-
-    # Using insert_all for performance, especially with many Twitch viewers
-    BingoCell.insert_all(cell_attributes) if cell_attributes.any?
   end
+
+  BingoCell.insert_all(cell_attributes) if cell_attributes.any?
+end
+
 end

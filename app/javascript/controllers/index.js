@@ -28,6 +28,9 @@ application.register("hello", HelloController)
 import MenuItemsController from "./menu_items_controller"
 application.register("menu-items", MenuItemsController)
 
+import BingoSelectorController from "./bingo_selector_controller"
+application.register("bingo-selector", BingoSelectorController)
+
 import SettingsFormController from "./settings_form_controller"
 application.register("settings-form", SettingsFormController)
 
