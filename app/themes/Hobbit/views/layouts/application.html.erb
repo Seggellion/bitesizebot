@@ -1,0 +1,49 @@
+<%# app/views/layouts/application.html.erb %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for?(:title) ? yield(:title) : "Railpress" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= render "layouts/google_tag" %>
+    <%= render "layouts/metadata" %>
+
+    <%= favicon_link_tag favicon_url, rel: "shortcut icon" %>
+
+    <%# 1. Base Framework Styles %>
+    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application.tailwind", "data-turbo-track": "reload" %>
+    
+    <%= stylesheet_link_tag current_theme, "data-turbo-track": "reload" %>
+
+    <%= javascript_importmap_tags %>
+
+    <%= stylesheet_link_tag "https://unpkg.com/trix@2.1.1/dist/trix.css" %>
+
+    <% if Setting.get("google_maps_api").present? %>
+      <script src="https://maps.googleapis.com/maps/api/js?key=<%= Setting.get('google_maps_api') %>" async defer></script>
+    <% end %>
+
+    <%# These partials will now be found inside app/themes/#{current_theme}/views/shared/ %>
+    <%= render "shared/fonts" %>
+    <%= render "shared/colors" %>
+  </head>
+
+  <body class="theme-<%= current_theme.downcase %>">
+    <div class="flex min-h-screen">
+      <%#= render "shared/sidebar" %>
+
+      <div class="flex flex-col flex-grow">
+        <%= render "shared/header" %>
+
+        <main class="flex-grow">
+          <%= yield %>
+        </main>
+
+        <%= render "shared/footer" %>
+      </div>
+    </div>
+  </body>
+</html>

@@ -7,6 +7,7 @@ class User < ApplicationRecord
     has_many :posts, dependent: :destroy
     has_many :shard_users, dependent: :destroy
   has_many :blessed_items, dependent: :destroy
+    has_many :bingo_cards, dependent: :destroy
 
   store :global_inventory, coder: JSON
   store :purchased_items, coder: JSON

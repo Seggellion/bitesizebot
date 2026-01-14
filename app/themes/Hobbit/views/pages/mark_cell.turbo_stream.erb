@@ -1,0 +1,14 @@
+<%# app/views/bingo_cards/mark_cell.turbo_stream.erb %>
+
+<%# 1. Show the success message %>
+<%= turbo_stream.prepend "flash-messages" do %>
+  <div class="alert alert-info"><%= @message %></div>
+<% end %>
+
+<%# 2. Find the cell and refresh it to show the ⏳ overlay %>
+<%# We find the cell using the coordinate sent in the params %>
+<% cell = @bingo_card.bingo_cells.joins(:bingo_item).find_by(bingo_items: { column_letter: params[:coordinate][0], row_number: params[:coordinate][1..-1] }) %>
+
+<%= turbo_stream.replace dom_id(cell) do %>
+  <%= render "pages/cell", cell: cell %>
+<% end %>

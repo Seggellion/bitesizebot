@@ -17,8 +17,9 @@ def show
   .sort_by { |shard, _| shard.name.downcase }
   .to_h
    end
-  if @page.slug == 'screenshots'
-    load_screenshot_data
+  if @page.slug == 'bingo-card'
+      authenticate_user!
+    load_bingo_data
   end
 
   if lookup_context.exists?(theme_template_path, [], false)
@@ -93,13 +94,19 @@ end
     end
 
 
-  def load_screenshot_data
-    @medium = Medium.new
-    @approved_screenshots = Medium.screenshots.where(approved: true).order(created_at: :desc)
-    @staff_screenshots = Medium.screenshots
-      .where("meta_keywords ILIKE ?", "%staff%")
-      .where(approved: true)
-    @usernames = User.joins(:media).where(media: { category: 'screenshot', approved: true }).distinct.pluck(:username)
+  def load_bingo_data
+
+    @bingo_card = current_user.bingo_cards.last
+    @game = @bingo_card.bingo_game
+    
+    # Organize cells into a hash keyed by column letter for easy lookup
+    # e.g., { "B" => [cell, cell...], "I" => [...] }
+    @grouped_cells = @bingo_card.bingo_cells
+                                .includes(:bingo_item)
+                                .group_by { |cell| cell.bingo_item.column_letter }
+    
+    @columns = ["B", "I", "N", "G", "O"].first(@game.size)
+
   end
     
     def set_page

@@ -1,5 +1,4 @@
 class HomeController < ApplicationController
-  include SkillOfTheDayConcern
 
     def index
         @posts = Post.all

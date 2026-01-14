@@ -1,36 +1,28 @@
 
 <div class="bg-white p-6 rounded shadow">
 
+<%# app/views/admin/pending_actions/index.html.erb %>
 <h1>Pending Approvals</h1>
 
-<table>
+<%# This line establishes the WebSocket connection %>
+<%= turbo_stream_from "pending_actions" %>
+
+<table class="admin-table">
   <thead>
     <tr>
       <th>User</th>
       <th>Action</th>
       <th>Details</th>
-      <th>Actions</th>
+      <th>Decision</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="pending_actions_table_body">
     <% @actions.each do |action| %>
-      <tr>
-        <td><%= action.user.username %> (Karma: <%= action.user.karma %>)</td>
-        <td><%= action.action_type.humanize %></td>
-        <td>
-          <% if action.action_type == 'mark_cell' %>
-            Cell: <%= action.target.coordinate %> 
-            Item: <%= action.target.bingo_item.content %>
-          <% end %>
-        </td>
-        <td>
-          <%= button_to 'Approve', admin_pending_action_path(action, decision: 'approve'), method: :patch %>
-          <%= button_to 'Deny', admin_pending_action_path(action, decision: 'deny'), method: :patch %>
-        </td>
-      </tr>
+      <%= render partial: "admin/pending_actions/pending_action", locals: { action: action } %>
     <% end %>
   </tbody>
 </table>
+
 </div>
 
 
@@ -44,6 +36,7 @@
     <thead>
       <tr>
         <th class="py-2 px-4 border">Status</th>
+        <th class="py-2 px-4 border">Players</th>
         <th class="py-2 px-4 border">Title</th>
         <th class="py-2 px-4 border">Host</th>
         <th class="py-2 px-4 border">Date</th>
@@ -53,8 +46,9 @@
       <% @bingo_games.each do |bingo_game| %>
         <tr>
                   <td class="py-2 px-4 border"><%= bingo_game.status %></td>
-
+    <td class="py-2 px-4 border"><%= bingo_game.bingo_cards.count %></td>
           <td class="py-2 px-4 border"><%= bingo_game.title %></td>
+      
           <td class="py-2 px-4 border"><%= bingo_game.host.first_name %></td>
           <td class="py-2 px-4 border"><%= bingo_game.created_at.strftime('%Y-%m-%d') %></td>
           <td class="py-2 px-4 border">

@@ -8,6 +8,32 @@ class BingoCard < ApplicationRecord
   # the 5x5 (or 3x3) grid is populated with items.
   after_create :generate_cells
 
+  def self.request_mark(viewer, game, col_letter, row_num)
+    card = game.bingo_cards.find_by(user_id: viewer.id)
+  coord = "#{col_letter.upcase}#{row_num}"
+  
+  # Find the cell directly by the human-readable coordinate
+  cell = card.bingo_cells.find_by(coordinate: coord)
+    
+    
+    
+    return "Invalid cell coordinate!" unless cell
+    return "That cell is already marked!" if cell.is_marked
+    # Check if a request is already pending for this specific cell
+    if PendingAction.exists?(target: cell, status: 'pending')
+      return "A request for #{col_letter}#{row_num} is already awaiting approval!"
+    end
+
+    PendingAction.create!(
+      user: viewer,
+      target: cell,
+      action_type: 'mark_cell',
+      metadata: { coordinate: "#{col_letter}#{row_num}" }
+    )
+
+    "Request sent! An admin will review your mark for #{col_letter}#{row_num}."
+  end
+
   private
 
 # app/models/bingo_card.rb

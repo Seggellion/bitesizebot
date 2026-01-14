@@ -148,6 +148,15 @@ end
         end
 
       #  TwitchService.send_chat_message(bid, user.uid, "Welcome to the game @#{username}! Your card has been generated.")
+    when /^!bingo explain\s+[a-z]\d+/i 
+        response_message = BingoService.process_command(uid,username, bid, text)
+        
+        if response_message
+        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
+        end
+    
+
+      #  TwitchService.send_chat_message(bid, user.uid, "Welcome to the game @#{username}! Your card has been generated.")
     when /^!bingo mark\s+[a-z]\d+/i 
         response_message = BingoService.process_command(uid,username, bid, text)
         

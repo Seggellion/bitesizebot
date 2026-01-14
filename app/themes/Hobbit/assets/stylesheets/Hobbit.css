@@ -1,0 +1,96 @@
+body{
+    background-color:#00001a;
+    color: #aebd93;
+}
+
+/* app/assets/stylesheets/bingo.css */
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* Adjust to @game.size if dynamic */
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.grid-header {
+  background: #6441a5; /* Twitch Purple */
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.bingo-cell {
+  aspect-ratio: 1 / 1;
+  border: 2px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5px;
+  cursor: pointer;
+  background: white;
+  transition: transform 0.1s;
+  position: relative;
+}
+
+.bingo-cell.is-marked {
+  background-color: #ffd700;
+  border-color: #ffa500;
+}
+
+.bingo-cell.is-marked::after {
+  content: "✖";
+  position: absolute;
+  font-size: 3rem;
+  color: rgba(255, 0, 0, 0.3);
+}
+
+.cell-coord {
+  font-size: 0.6rem;
+  color: #999;
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+}
+
+
+
+
+
+/* Add to your CSS */
+button.bingo-cell {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ccc;
+  background: white;
+  padding: 10px;
+  cursor: pointer;
+  appearance: none;
+  font-family: inherit;
+}
+
+button.bingo-cell:hover:not(:disabled) {
+  background-color: #f0f0ff;
+  border-color: #6441a5;
+}
+
+button.bingo-cell:disabled {
+  cursor: not-allowed;
+}
+
+.pending-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}

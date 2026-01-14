@@ -1,0 +1,17 @@
+<%# app/views/bingo_cards/_cell.html.erb %>
+<%= button_to mark_cell_bingo_card_path(cell.bingo_card), 
+      params: { coordinate: cell.coordinate },
+      disabled: cell.is_marked || cell.bingo_card.bingo_game.status != 'active',
+      class: "bingo-cell #{'is-marked' if cell.is_marked}",
+      id: dom_id(cell) do %>
+  
+  <div class="cell-content">
+    <%= cell.bingo_item.content %>
+  </div>
+  <div class="cell-coord"><%= cell.coordinate %></div>
+  
+  <%# Show pending status if an action is awaiting admin approval %>
+  <% if !cell.is_marked && PendingAction.exists?(target: cell, status: 'pending') %>
+    <div class="pending-overlay">⏳</div>
+  <% end %>
+<% end %>

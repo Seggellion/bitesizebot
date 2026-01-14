@@ -30,6 +30,12 @@ Rails.application.routes.draw do
 
   resources :contact_messages, only: [:new, :create]
 
+  resources :bingo_cards, only: [:show] do
+    member do
+      post :mark_cell
+    end
+  end
+
   # ------------------------------------------------------------
   # Theme switching (optional, CMS-level)
   # ------------------------------------------------------------

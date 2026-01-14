@@ -8,7 +8,8 @@ module.exports = {
     './app/javascript/**/*.js',    // Include other JavaScript files
     './app/components/**/*.html.erb', // Include any other custom paths
     './app/assets/stylesheets/**/*.css', // Ensure CSS files are included
-    './app/assets/stylesheets/**/*.tailwind.css'  // Include Tailwind CSS files
+    './app/assets/stylesheets/**/*.tailwind.css',  // Include Tailwind CSS files
+    './app/themes/**/*.{erb,haml,html,slim,rb}'
   ],
   theme: {
     extend: {

@@ -14,17 +14,36 @@ class BingoService
         end
 
     case text.downcase
-    when "!bingo join"
-        
+    when "!bingo join"        
       return "You're already in!" if game.bingo_cards.exists?(user: viewer)
       game.bingo_cards.create!(user: viewer)
       return nil # Listener handles the join message
+
+    when /^!bingo explain\s+([a-z])(\d+)/i
+      col_letter = $1.upcase
+      row_num = $2.to_i
+      return explain_cell(viewer, game, col_letter, row_num)
 
     when /^!bingo mark\s+([a-z])(\d+)/i
       col_letter = $1.upcase      
       row_num = $2.to_i
       return request_mark(viewer, game, col_letter, row_num)
     end
+  end
+
+def self.explain_cell(viewer, game, col_letter, row_num)
+    
+    card = game.bingo_cards.find_by(user: viewer)
+    return "You need to !bingo join first to see your card!" unless card
+
+    coord = "#{col_letter}#{row_num}"
+    cell = card.bingo_cells.includes(:bingo_item).find_by(coordinate: coord)
+
+    return "Cell #{coord} not found on your card." unless cell
+
+    # Accessing the content through the relationship
+    item_content = cell.bingo_item.content
+    "Cell #{coord}: #{item_content}"
   end
 
   def self.request_mark(viewer, game, col_letter, row_num)

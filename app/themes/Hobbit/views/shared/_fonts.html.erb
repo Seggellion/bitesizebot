@@ -1,0 +1,32 @@
+<%
+  header_font = Setting.get("header-font")
+  body_font   = Setting.get("body-font")
+%>
+
+<% if header_font.present? %>
+<link
+  href="https://fonts.googleapis.com/css2?family=<%= ERB::Util.url_encode(header_font) %>&display=swap"
+  rel="stylesheet">
+<% end %>
+
+<% if body_font.present? %>
+<link
+  href="https://fonts.googleapis.com/css2?family=<%= ERB::Util.url_encode(body_font) %>&display=swap"
+  rel="stylesheet">
+<% end %>
+
+<style>
+  <% if header_font.present? %>
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "<%= header_font %>", sans-serif;
+    font-weight: 400;
+  }
+  <% end %>
+
+  <% if body_font.present? %>
+  body {
+    font-family: "<%= body_font %>", sans-serif;
+    font-weight: 400;
+  }
+  <% end %>
+</style>
