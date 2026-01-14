@@ -1,11 +1,16 @@
 <%# app/views/admin/pending_actions/_pending_action.html.erb %>
 <tr id="<%= dom_id(action) %>">
   <td><%= action.user.username %> (Karma: <%= action.user.karma %>)</td>
-  <td><%= action.action_type.humanize %></td>
+  <td class="<%= 'text-gold' if action.action_type == 'claim_win' %>">
+    <%= action.action_type.humanize %>
+  </td>
   <td>
     <% if action.action_type == 'mark_cell' %>
       Cell: <%= action.target.coordinate %> 
       Item: <%= action.target.bingo_item.content %>
+    <% elsif action.action_type == 'claim_win' %>
+      <strong>Card verification required!</strong>
+      <%= link_to "View Card", bingo_card_path(action.target), target: "_blank" %>
     <% end %>
   </td>
   <td>

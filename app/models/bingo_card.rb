@@ -35,6 +35,45 @@ has_many :bingo_items, through: :bingo_cells
     "Request sent! An admin will review your mark for #{col_letter}#{row_num}."
   end
 
+
+  def verify_win
+    # Fetch all marked cells and their positions in the grid
+    # We reconstruct the grid based on the order they were created (id)
+    marked_positions = bingo_cells.order(:id).each_with_index.map do |cell, index|
+      { 
+        marked: cell.is_marked, 
+        row: index % 5, 
+        col: index / 5 
+      }
+    end
+
+    # 1. Check Rows
+    (0..4).each do |r|
+      return true if marked_positions.select { |cp| cp[:row] == r && cp[:marked] }.size == 5
+    end
+
+    # 2. Check Columns
+    (0..4).each do |c|
+      return true if marked_positions.select { |cp| cp[:col] == c && cp[:marked] }.size == 5
+    end
+
+    # 3. Check Diagonal (Top-Left to Bottom-Right)
+    # Positions: (0,0), (1,1), (2,2), (3,3), (4,4)
+    if marked_positions.select { |cp| cp[:row] == cp[:col] && cp[:marked] }.size == 5
+      return true
+    end
+
+    # 4. Check Anti-Diagonal (Top-Right to Bottom-Left)
+    # Positions: (0,4), (1,3), (2,2), (3,1), (4,0)
+    if marked_positions.select { |cp| cp[:row] + cp[:col] == 4 && cp[:marked] }.size == 5
+      return true
+    end
+
+    false
+  end
+
+
+
   private
 
 # app/models/bingo_card.rb

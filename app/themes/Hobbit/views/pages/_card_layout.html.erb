@@ -1,0 +1,54 @@
+<%# app/themes/Hobbit/views/pages/_card_layout.html.erb %>
+<div id="bingo_card_container" class="bingo-container">
+  <% if game.status == 'ended' && game.winner %>
+    <div class="victory-banner">
+      <h2>🏆 WINNER: <%= game.winner.username %> 🏆</h2>
+      <p>Game ended at <%= game.ended_at.strftime("%I:%M %p") %></p>
+    </div>
+  <% end %>
+
+  <div id="flash-messages"></div>
+
+  <header class="game-header">
+    <div class="header-main">
+      <h1><%= game.title %></h1>
+      <p>Status: <span class="badge"><%= game.status %></span></p>
+    </div>
+
+    <% if game.status == 'active' %>
+      <div class="win-action-container">
+        <% is_pending = PendingAction.exists?(user: card.user, action_type: 'claim_win', status: 'pending') %>
+        
+        <%= button_to "CALL BINGO!", claim_win_bingo_card_path(card), 
+              method: :post,
+              class: "btn-call-bingo",
+              disabled: is_pending %>
+        
+        <% if is_pending %>
+          <p class="pending-text">Admin is verifying your win...</p>
+        <% end %>
+      </div>
+    <% end %>
+  </header>
+
+  <%# We need to re-group cells here because this partial might be called from a model %>
+  <% grouped_cells = card.bingo_cells.includes(:bingo_item).order(:id).group_by { |c| c.bingo_item.column_letter } %>
+  <% columns = ["B", "I", "N", "G", "O"].first(game.size) %>
+
+  <div class="bingo-grid size-<%= game.size %>">
+    <% columns.each do |letter| %>
+      <div class="grid-header"><%= letter %></div>
+    <% end %>
+
+    <% (0...game.size).each do |row_index| %>
+      <% columns.each do |letter| %>
+        <% cell = grouped_cells[letter]&.at(row_index) %>
+        <% if cell %>
+<%= render "Hobbit/views/pages/cell", cell: cell %>
+        <% else %>
+          <div class="bingo-cell empty"></div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

@@ -5,6 +5,22 @@ class BingoCardsController < ApplicationController
   def show
   end
 
+  # app/controllers/bingo_cards_controller.rb
+def claim_win
+  @bingo_card = current_user.bingo_cards.find(params[:id])
+  @game = @bingo_card.bingo_game
+  @message = BingoService.request_win(current_user, @game)
+
+  respond_to do |format|
+    format.turbo_stream do
+      render turbo_stream: turbo_stream.prepend("flash-messages", 
+        html: "<div class='alert alert-info'>#{@message}</div>".html_safe)
+    end
+    format.html { redirect_to @bingo_card, notice: @message }
+  end
+end
+
+
   def mark_cell
     @bingo_card = current_user.bingo_cards.find(params[:id])
     @game = @bingo_card.bingo_game

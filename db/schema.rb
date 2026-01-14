@@ -99,6 +99,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
 
   create_table "bingo_games", force: :cascade do |t|
     t.bigint "host_id", null: false
+    t.bigint "winner_id"
     t.string "title"
     t.string "status", default: "pending"
     t.integer "size", default: 5
@@ -107,6 +108,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["host_id"], name: "index_bingo_games_on_host_id"
+    t.index ["winner_id"], name: "index_bingo_games_on_winner_id"
   end
 
   create_table "bingo_items", force: :cascade do |t|
@@ -352,6 +354,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
   add_foreign_key "bingo_game_items", "bingo_games"
   add_foreign_key "bingo_game_items", "bingo_items"
   add_foreign_key "bingo_games", "users", column: "host_id"
+  add_foreign_key "bingo_games", "users", column: "winner_id"
   add_foreign_key "blocks", "sections"
   add_foreign_key "comments", "users"
   add_foreign_key "downloads", "categories"

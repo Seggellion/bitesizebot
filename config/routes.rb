@@ -33,6 +33,7 @@ Rails.application.routes.draw do
   resources :bingo_cards, only: [:show] do
     member do
       post :mark_cell
+      post :claim_win
     end
   end
 

@@ -1,30 +1,3 @@
-<%# app/views/bingo_cards/show.html.erb %>
-<div class="bingo-container">
-  <%# Listen for updates specific to THIS card %>
-  <%= turbo_stream_from @bingo_card %>
+<%= turbo_stream_from @bingo_card %>
 
-  <div id="flash-messages"></div>
-
-  <header class="game-header">
-    <h1><%= @game.title %></h1>
-    <p>Status: <span class="badge"><%= @game.status %></span></p>
-  </header>
-
-  <div class="bingo-grid size-<%= @game.size %>">
-    <% @columns.each do |letter| %>
-      <div class="grid-header"><%= letter %></div>
-    <% end %>
-
-    <% (0...@game.size).each do |row_index| %>
-      <% @columns.each do |letter| %>
-        <% cell = @grouped_cells[letter]&.sort_by(&:id)&.at(row_index) %>
-        
-        <% if cell %>
-          <%= render "cell", cell: cell %>
-        <% else %>
-          <div class="bingo-cell empty"></div>
-        <% end %>
-      <% end %>
-    <% end %>
-  </div>
-</div>
+<%= render "pages/card_layout", card: @bingo_card, game: @game %>

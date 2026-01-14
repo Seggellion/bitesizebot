@@ -30,6 +30,9 @@ class BingoService
     when "!bingo card"
       return list_card_cells(viewer, game)
 
+    when "!bingo win"
+      return request_win(viewer, game)
+
     when /^!bingo explain\s+([a-z])(\d+)/i
       col_letter = $1.upcase
       row_num = $2.to_i
@@ -56,6 +59,31 @@ def self.explain_cell(viewer, game, col_letter, row_num)
     item_content = cell.bingo_item.content
     "Cell #{coord}: #{item_content}"
   end
+
+def self.request_win(viewer, game)
+  card = game.bingo_cards.find_by(user: viewer)
+  return "You aren't in this game!" unless card
+  
+  # 1. Immediate validation check
+  unless card.verify_win
+    viewer.decrement!(:karma, 50)
+    return "False Bingo! You don't have 5 in a row. You've lost some karma."
+  end
+
+  # 2. Check if a win claim is already pending for this user
+  if PendingAction.exists?(user: viewer, action_type: 'claim_win', status: 'pending')
+    return "Your win claim is already being reviewed by an admin!"
+  end
+
+  # 3. Create the PendingAction (target is the card itself)
+  PendingAction.create!(
+    user: viewer,
+    target: card,
+    action_type: 'claim_win'
+  )
+
+  "Win claim submitted! An admin will verify your card shortly. Good luck!"
+end
 
 def self.list_card_cells(viewer, game)
   card = game.bingo_cards.find_by(user: viewer)

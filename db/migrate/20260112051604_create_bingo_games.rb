@@ -2,6 +2,8 @@ class CreateBingoGames < ActiveRecord::Migration[8.0]
   def change
     create_table :bingo_games do |t|
       t.references :host, null: false, foreign_key: { to_table: :users }
+      t.references :winner, null: true, foreign_key: { to_table: :users }
+
       t.string :title
       t.string :status, default: 'pending'
       t.integer :size, default: 5

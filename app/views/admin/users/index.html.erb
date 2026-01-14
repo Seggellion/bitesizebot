@@ -46,8 +46,12 @@
             </td>
             <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
               <div class="text-sm leading-5 text-gray-900">
-                <%= user.user_type == 0 ? "Administrator" : "User" %>
-              </div>
+                  <%= case user.user_type
+                      when 0 then "Administrator"
+                      when 5 then "Bot"
+                      else "User"
+                      end %>
+                  </div>
             </td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
               <div class="text-sm leading-5 text-gray-900"><%= user.created_at %></div>

@@ -16,6 +16,16 @@ def approve!
       case action_type
       when 'mark_cell'        
         target.update!(is_marked: true)
+     when 'claim_win'
+        # target is the BingoCard
+        game = target.bingo_game
+        game.update!(
+            status: 'ended', 
+            winner: user, 
+            ended_at: Time.current
+        )
+        user.increment!(:karma, 100)
+        announce_win_to_twitch(game)
       end
       update!(status: 'approved')
     end
@@ -23,8 +33,9 @@ def approve!
 
   def deny!
     transaction do
-      user.decrement!(:karma, 10)
-      update!(status: 'denied')
+    penalty = (action_type == 'claim_win' ? 100 : 10)
+        user.decrement!(:karma, penalty)
+        update!(status: 'denied')
     end
   end
 
@@ -50,10 +61,37 @@ def approve!
     refresh_target_cell
   end
 
-  def refresh_target_cell
-    # If byebug still doesn't hit here, the transaction is not committing!
-    if target.is_a?(BingoCell)
-      target.broadcast_refresh 
-    end
+  def announce_win_to_twitch(game)
+  # 1. Get the bot user (Seggellion)
+  # pineapple
+  bot_user = User.find_by(first_name: 'Seggellion')
+  return unless bot_user
+  
+  # 2. Prepare the victory message
+  message = "🏆 BINGO! @#{user.username} has just won the game! 🏆 Congrats!"
+  
+  # 3. Send via TwitchService
+  # broadcaster_id is the host's Twitch UID
+  # sender_id is the bot's Twitch UID
+  TwitchService.send_chat_message(
+    game.host.uid, 
+    bot_user.uid, 
+    message
+  )
+rescue => e
+  Rails.logger.error "[Twitch Announcement Error] #{e.message}"
+end
+
+def refresh_target_cell
+  if target.is_a?(BingoCell)
+    target.broadcast_refresh 
+  elsif target.is_a?(BingoCard)
+    # Explicitly point to the Hobbit theme folder path
+    broadcast_replace_to target, 
+                         target: "bingo_card_container",
+                         partial: "Hobbit/views/pages/card_layout", 
+                         locals: { card: target, game: target.bingo_game }
   end
+end
+
 end
