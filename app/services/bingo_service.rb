@@ -4,6 +4,14 @@ class BingoService
     host = User.find_by(uid: broadcaster_uid)
     return "Host not found." unless host
 
+    # Handle commands that don't necessarily require an active game first
+    case text.downcase
+    when "!bingo start"
+      return start_game(host)
+    when "!bingo end"
+      return end_game(host)
+    end
+
     game = BingoGame.find_by(host: host, status: 'active')
     
     return "No active game right now!" unless game
@@ -45,6 +53,38 @@ def self.explain_cell(viewer, game, col_letter, row_num)
     item_content = cell.bingo_item.content
     "Cell #{coord}: #{item_content}"
   end
+
+
+def self.start_game(host)
+    # 1. Close any existing active games for this host
+    BingoGame.where(host: host, status: 'active').update_all(status: 'ended', ended_at: Time.current)
+
+    # 2. Create new game
+    # Note: You may want a more robust way to select/randomize bingo_items here
+    new_game = BingoGame.create!(
+      host: host,
+      title: "#{host.username}'s Game - #{Time.current.strftime('%m/%d')}",
+      status: 'active',
+      size: 5,
+      started_at: Time.current
+    )
+
+    # Optional: Automatically associate items if you have a pool of BingoItems
+    # items = BingoItem.limit(25).pluck(:id)
+    # items.each { |item_id| BingoGameItem.create!(bingo_game: new_game, bingo_item_id: item_id) }
+
+    "A new Bingo game has started! Type !bingo join to play."
+  end
+
+  def self.end_game(host)
+    game = BingoGame.where(host: host, status: 'active').last
+    return "There is no active game to end." unless game
+
+    game.update!(status: 'ended', ended_at: Time.current)
+    "The Bingo game has been ended. Thanks for playing!"
+  end
+
+  
 
   def self.request_mark(viewer, game, col_letter, row_num)
     

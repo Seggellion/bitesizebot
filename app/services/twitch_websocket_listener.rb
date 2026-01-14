@@ -129,41 +129,41 @@ def self.make_id_request(url, token)
   })
 end
 
-  def self.handle_notification(event)
+def self.handle_notification(event)
     username = event["chatter_user_login"]
-    text     = event["message"]["text"]
-    bid      = event["broadcaster_user_id"]
-    uid = event["chatter_user_id"]
-
-    user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
-  sid = user.uid
-    case text.downcase.strip
-    when "!ping"
-        puts "  -> Responding to ping..."
-      TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
-    when "!bingo join"
-        response_message = BingoService.process_command(uid,username, bid, text)
-        if response_message
-            TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
-        end
-
-      #  TwitchService.send_chat_message(bid, user.uid, "Welcome to the game @#{username}! Your card has been generated.")
-    when /^!bingo explain\s+[a-z]\d+/i 
-        response_message = BingoService.process_command(uid,username, bid, text)
-        
-        if response_message
-        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
-        end
+    text     = event["message"]["text"].downcase.strip
+    bid      = event["broadcaster_user_id"] # The host's ID
+    uid      = event["chatter_user_id"]     # The person typing
     
+    # The bot user's ID for sending messages
+    user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
+    sid  = user.uid
 
-      #  TwitchService.send_chat_message(bid, user.uid, "Welcome to the game @#{username}! Your card has been generated.")
-    when /^!bingo mark\s+[a-z]\d+/i 
-        response_message = BingoService.process_command(uid,username, bid, text)
-        
-        if response_message
-        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
+    case text
+    when "!ping"
+      TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
+
+    # Handle all Bingo commands
+    when /^!bingo/
+      # Permission Check: Only the broadcaster (host) can start or end
+      if text == "!bingo start" || text == "!bingo end"
+        if uid != bid
+          TwitchService.send_chat_message(bid, sid, "@#{username}: Only the host can use that command!")
+          return
         end
+      end
+
+      # Process the command through the service
+      response_message = BingoService.process_command(uid, username, bid, text)
+      
+      # Send response to Twitch chat if the service returned a message
+      if response_message
+        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
+      end
     end
+  
+
+
 
   end
 end
