@@ -1,16 +1,23 @@
-<%# app/views/bingo_cards/_cell.html.erb %>
+<%# app/views/pages/_cell.html.erb %>
+<% is_free = cell.coordinate == "FREE" %>
+
 <%= button_to mark_cell_bingo_card_path(cell.bingo_card), 
       params: { coordinate: cell.coordinate },
-      disabled: cell.is_marked || cell.bingo_card.bingo_game.status != 'active',
-      class: "bingo-cell #{'is-marked' if cell.is_marked}",
+      disabled: cell.is_marked || cell.bingo_card.bingo_game.status != 'active' || is_free,
+      class: "bingo-cell #{'is-marked' if cell.is_marked} #{'free-space' if is_free}",
       id: dom_id(cell) do %>
   
   <div class="cell-content">
+    <% if is_free %>
+      <strong>FREE SQUARE:</strong><br>
+    <% end %>
     <%= cell.bingo_item.content %>
   </div>
-  <div class="cell-coord"><%= cell.coordinate %></div>
   
-  <%# Show pending status if an action is awaiting admin approval %>
+  <% unless is_free %>
+    <div class="cell-coord"><%= cell.coordinate %></div>
+  <% end %>
+
   <% if !cell.is_marked && PendingAction.exists?(target: cell, status: 'pending') %>
     <div class="pending-overlay">⏳</div>
   <% end %>

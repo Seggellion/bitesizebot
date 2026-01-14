@@ -17,7 +17,7 @@
 
     <% (0...@game.size).each do |row_index| %>
       <% @columns.each do |letter| %>
-        <% cell = @grouped_cells[letter]&.sort_by { |c| c.bingo_item.row_number }&.at(row_index) %>
+        <% cell = @grouped_cells[letter]&.sort_by(&:id)&.at(row_index) %>
         
         <% if cell %>
           <%= render "cell", cell: cell %>

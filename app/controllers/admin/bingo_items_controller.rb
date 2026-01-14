@@ -32,6 +32,13 @@ module Admin
       end
 
 
+       
+      def destroy
+        @bingo_item = BingoItem.find(params[:id])
+        @bingo_item.destroy
+        redirect_to admin_bingo_item_path, notice: 'Page was successfully deleted.'
+      end
+
     private
 
 

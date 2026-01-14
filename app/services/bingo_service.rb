@@ -57,15 +57,63 @@ def self.explain_cell(viewer, game, col_letter, row_num)
     "Cell #{coord}: #{item_content}"
   end
 
-  def self.list_card_cells(viewer, game)
-    card = game.bingo_cards.find_by(user: viewer)
-    return "You need to !bingo join first to see your card!" unless card
+def self.list_card_cells(viewer, game)
+  card = game.bingo_cards.find_by(user: viewer)
+  return "You need to !bingo join first to see your card!" unless card
 
-    # Pluck coordinates and sort them for a clean display (e.g., A1, A2, B1...)
-    coords = card.bingo_cells.joins(:bingo_item).pluck(:coordinate).sort
-    
-    "Your Card [#{viewer.username}]: #{coords.join(', ')}"
-  end
+  # 1. Use includes to eager-load the items and avoid the attribute error
+  cells = card.bingo_cells.includes(:bingo_item)
+
+  # 2. Define the strict B-I-N-G-O order
+  column_order = ["B", "I", "N", "G", "O"]
+
+  # 3. Group the cells by their item's column letter
+  # We use &. to be safe, though every cell should have an item
+  grouped = cells.group_by { |cell| cell.bingo_item&.column_letter }
+
+  # 4. Map through the B-I-N-G-O columns
+  formatted_card = column_order.map do |letter|
+    column_cells = grouped[letter] || []
+
+    # 5. Sort the cells within this column
+    sorted_coords = column_cells.sort_by do |cell|
+      if cell.coordinate == "FREE"
+        # Since Bingo is 5x5, N has 5 cells. 
+        # Using a value that places it in the middle of the row numbers.
+        # Most Bingo row numbers for N are 31-45.
+        0
+      else
+        cell.bingo_item.row_number || 0
+      end
+    end
+
+    # Custom sort for the 'N' column to ensure FREE is exactly at index 2
+   if letter == "N"
+  # 1. Use a regular expression or squish to find the cell regardless of hidden spaces
+  free_cell = column_cells.detect { |c| c.coordinate == "FREE"}
+  
+  # 2. Reject the free_cell by object identity (since we found the object)
+  numbers = column_cells.reject { |c| c == free_cell }
+                        .sort_by { |c| c.bingo_item.row_number || 0 }
+  
+  # 3. Assemble the list (2 numbers, FREE, 2 numbers)
+  final_list = [
+    numbers[0]&.coordinate, 
+    numbers[1]&.coordinate, 
+    free_cell&.coordinate, 
+    numbers[2]&.coordinate, 
+    numbers[3]&.coordinate
+  ].compact
+    else
+        
+      final_list = sorted_coords.map(&:coordinate)
+    end
+
+    final_list.join(', ')
+  end.join(' - - - ')
+
+  "Your Card (TOP TO BOTTOM) [#{viewer.username}]: #{formatted_card}"
+end
 
 def self.start_game(host)
     # 1. Close any existing active games for this host
@@ -105,7 +153,7 @@ card = game.bingo_cards.find_by(user: viewer)
   
   # Find the cell directly by the human-readable coordinate
   cell = card.bingo_cells.find_by(coordinate: coord)
-    
+    return "That's the free space!" if cell&.bingo_item&.content == "FREE"
     
     
     return "Invalid cell coordinate!" unless cell
@@ -114,6 +162,7 @@ card = game.bingo_cards.find_by(user: viewer)
     if PendingAction.exists?(target: cell, status: 'pending')
       return "A request for #{col_letter}#{row_num} is already awaiting approval!"
     end
+
 
     PendingAction.create!(
       user: viewer,
