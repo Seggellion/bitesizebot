@@ -25,7 +25,10 @@ class BingoService
     when "!bingo join"        
       return "You're already in!" if game.bingo_cards.exists?(user: viewer)
       game.bingo_cards.create!(user: viewer)
-      return nil # Listener handles the join message
+      return "Welcome to Bitesize Bingo!"
+
+    when "!bingo card"
+      return list_card_cells(viewer, game)
 
     when /^!bingo explain\s+([a-z])(\d+)/i
       col_letter = $1.upcase
@@ -54,6 +57,15 @@ def self.explain_cell(viewer, game, col_letter, row_num)
     "Cell #{coord}: #{item_content}"
   end
 
+  def self.list_card_cells(viewer, game)
+    card = game.bingo_cards.find_by(user: viewer)
+    return "You need to !bingo join first to see your card!" unless card
+
+    # Pluck coordinates and sort them for a clean display (e.g., A1, A2, B1...)
+    coords = card.bingo_cells.joins(:bingo_item).pluck(:coordinate).sort
+    
+    "Your Card [#{viewer.username}]: #{coords.join(', ')}"
+  end
 
 def self.start_game(host)
     # 1. Close any existing active games for this host
@@ -84,7 +96,7 @@ def self.start_game(host)
     "The Bingo game has been ended. Thanks for playing!"
   end
 
-  
+
 
   def self.request_mark(viewer, game, col_letter, row_num)
     

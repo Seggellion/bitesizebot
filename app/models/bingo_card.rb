@@ -3,6 +3,7 @@ class BingoCard < ApplicationRecord
   belongs_to :bingo_game
   belongs_to :user
   has_many :bingo_cells, dependent: :destroy
+has_many :bingo_items, through: :bingo_cells
 
   # This callback ensures that as soon as !join is triggered and a card is saved,
   # the 5x5 (or 3x3) grid is populated with items.
