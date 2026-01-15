@@ -1,0 +1,63 @@
+<div class="bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold">Bingo Cards</h1>
+    <span class="text-sm text-gray-500">Total Cards: <%= @bingo_cards.count %></span>
+  </div>
+
+  <table class="min-w-full bg-white mt-4 border border-collapse">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-3 px-4 border text-left">Card ID</th>
+        <th class="py-3 px-4 border text-left">User</th>
+        <th class="py-3 px-4 border text-left">Game</th>
+        <th class="py-3 px-4 border text-center">Status</th>
+        <th class="py-3 px-4 border text-center">Pending Actions</th>
+        <th class="py-3 px-4 border text-left">Date Created</th>
+        <th class="py-3 px-4 border text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @bingo_cards.each do |card| %>
+        <tr class="hover:bg-gray-50">
+          <td class="py-2 px-4 border">#<%= card.id %></td>
+          <td class="py-2 px-4 border font-medium">
+            <%= card.user.username %> 
+            <span class="text-xs text-gray-400 block">(ID: <%= card.user_id %>)</span>
+          </td>
+          <td class="py-2 px-4 border">
+            <%= card.bingo_game.title %> 
+          </td>
+          <td class="py-2 px-4 border text-center">
+            <% if card.won? %>
+              <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Winner</span>
+            <% else %>
+              <span class="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">In Play</span>
+            <% end %>
+          </td>
+          <td class="py-2 px-4 border text-center">
+            <% pending_count = card.pending_actions.where(status: 'pending').count %>
+            <% if pending_count > 0 %>
+              <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">
+                <%= pending_count %> Alert
+              </span>
+            <% else %>
+              <span class="text-gray-400 text-xs">-</span>
+            <% end %>
+          </td>
+          <td class="py-2 px-4 border text-sm text-gray-600">
+            <%= card.created_at.strftime('%b %d, %Y') %>
+          </td>
+          <td class="py-2 px-4 border text-center">
+            <div class="flex justify-center space-x-3">
+              <%= link_to 'View Grid', admin_bingo_card_path(card), class: 'text-blue-600 hover:text-blue-800 hover:underline' %>
+              <%= link_to 'Delete', admin_bingo_card_path(card), 
+                          method: :delete, 
+                          data: { confirm: 'Are you sure? This will delete all associated cells.' }, 
+                          class: 'text-red-500 hover:text-red-700' %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

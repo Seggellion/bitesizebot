@@ -3,6 +3,21 @@ module Admin
     def index
       @bingo_games = BingoGame.order(created_at: :desc)
       @actions = PendingAction.pending.includes(:user, :target)
+
+@current_game = BingoGame.active.first # 
+@last_winner = @bingo_games.first.winner&.username
+  @total_games = BingoGame.count
+  @total_participants = User.joins(:bingo_cards).distinct.count
+  @most_frequent_player = User.joins(:bingo_cards)
+                              .group(:id)
+                              .order('count(bingo_cards.id) DESC')
+                              .first
+
+  # Bingo Card Logic
+  @active_cards = @current_game&.bingo_cards&.includes(bingo_cells: :bingo_item) || []
+  @potential_winners = @active_cards.select { |card| card.verify_win && !card.won? }
+  @claimed_winner = @current_game&.winner # Assumes a winner association exists
+
     end
 
     def new

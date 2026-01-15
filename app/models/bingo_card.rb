@@ -9,6 +9,12 @@ has_many :bingo_items, through: :bingo_cells
   # the 5x5 (or 3x3) grid is populated with items.
   after_create :generate_cells
 
+def pending_actions
+    # This combines the claim on the card itself and any marks on its cells
+    PendingAction.where(target: self)
+                 .or(PendingAction.where(target: bingo_cells))
+  end
+
   def self.request_mark(viewer, game, col_letter, row_num)
     card = game.bingo_cards.find_by(user_id: viewer.id)
   coord = "#{col_letter.upcase}#{row_num}"
@@ -35,6 +41,10 @@ has_many :bingo_items, through: :bingo_cells
     "Request sent! An admin will review your mark for #{col_letter}#{row_num}."
   end
 
+  def won?
+    # A card is won if its user is the winner of the associated game
+    bingo_game.winner_id == self.user_id
+  end
 
   def verify_win
     # Fetch all marked cells and their positions in the grid

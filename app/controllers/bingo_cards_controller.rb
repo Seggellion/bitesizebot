@@ -5,6 +5,8 @@ class BingoCardsController < ApplicationController
   def show
   end
 
+
+  
   # app/controllers/bingo_cards_controller.rb
 def claim_win
   @bingo_card = current_user.bingo_cards.find(params[:id])

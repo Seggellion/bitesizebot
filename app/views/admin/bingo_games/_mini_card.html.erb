@@ -1,0 +1,24 @@
+<div class="grid grid-cols-5 gap-0.5" id='<%= "mini_card_#{card.id}" %>' >
+  <%# 
+    We sort by (index % 5) to get the Row number, 
+    and (index / 5) to get the Column number.
+    To display horizontally, we need all Row 0s, then all Row 1s, etc.
+  %>
+  <% 
+    sorted_cells = card.bingo_cells.order(:id).to_a.each_with_index.map do |cell, i|
+      { cell: cell, row: i % 5, col: i / 5 }
+    end.sort_by { |item| [item[:row], item[:col]] }
+  %>
+
+  <% sorted_cells.each do |item| %>
+    <% cell = item[:cell] %>
+    <%# Check if this cell has a pending mark request %>
+    <% is_pending = PendingAction.where(target: cell, status: 'pending').exists? %>
+    
+    <div class="h-2 w-2 rounded-sm 
+      <%= cell.is_marked ? 'bg-blue-600' : 'bg-gray-200' %> 
+      <%= 'animate-pulse bg-orange-400' if is_pending %>"
+      title="<%= cell.coordinate %>">
+    </div>
+  <% end %>
+</div>
