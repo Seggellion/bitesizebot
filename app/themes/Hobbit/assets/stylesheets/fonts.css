@@ -1,0 +1,14 @@
+/* fonts.css (not .erb) */
+@font-face {
+  font-family: "Ringbearer";
+  src: url("Ringbearer.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Ringbearer";
+  src: url("Ringbearer.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}

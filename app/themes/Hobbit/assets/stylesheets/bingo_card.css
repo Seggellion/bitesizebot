@@ -1,0 +1,48 @@
+.bingo-grid{
+background-color:rgb(69 125 88);
+}
+
+.bingo-grid .cell-content, .bingo-grid button.bingo-cell:not(.is-marked){
+background-color:transparent;
+background:transparent;
+}
+
+.bingo-grid .cell-content{
+    font-family: 'Ringbearer';
+       font-size: 1.5rem;
+    line-height: 1.4rem;
+    z-index: 5;
+        color:white;
+
+}
+
+.bingo-grid .free-space .cell-content{
+    line-height: 25px;
+    width: 102px;
+    overflow: hidden;
+    word-wrap: break-word;
+    font-size: 1rem;
+}
+
+.bingo-grid .bingo-cell{
+border-radius:24px;
+border-color: rgb(123 45 1);
+border-width:3px;
+    margin-bottom: 8px;
+        overflow: hidden;
+    height: 93%;
+}
+
+
+
+.cell-coord {
+    font-size: 9.4rem;
+    font-family: 'Ringbearer';
+    color: rgb(103 92 58);
+    position: absolute;
+    bottom: -67px;
+    left: 2px;
+    z-index: 1;
+    width:100%;
+    letter-spacing: -15px;
+}

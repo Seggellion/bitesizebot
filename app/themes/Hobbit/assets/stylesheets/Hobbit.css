@@ -1,3 +1,8 @@
+
+@import 'bingo_card';
+
+@import 'fonts';
+
 body{
     background-color:#00001a;
     color: #aebd93;
@@ -6,20 +11,34 @@ body{
 /* app/assets/stylesheets/bingo.css */
 .bingo-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* Adjust to @game.size if dynamic */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
-  max-width: 600px;
+  max-width: 712px;
   margin: 0 auto;
+padding: 3px 13px 0 13px;
 }
 
 .grid-header {
-  background: #6441a5; /* Twitch Purple */
+text-transform: lowercase;
   color: white;
   text-align: center;
   font-weight: bold;
-  font-size: 1.5rem;
-  padding: 10px;
+  font-family: 'Ringbearer';
+font-size: 10.8rem;
+line-height: 10rem;
   border-radius: 4px;
+      height: 110px;
+          margin-bottom: 5px;
+}
+
+.header-main{
+        text-align: center;
+    margin-top: 10px;
+}
+
+.grid-header img{
+        max-width: 90%;
+    margin-left: 10px;
 }
 
 .bingo-cell {
@@ -32,7 +51,6 @@ body{
   text-align: center;
   padding: 5px;
   cursor: pointer;
-  background: white;
   transition: transform 0.1s;
   position: relative;
 }
@@ -42,19 +60,16 @@ body{
   border-color: #ffa500;
 }
 
+.bingo-cell.is-marked .cell-content{
+  color: black;
+
+}
+
 .bingo-cell.is-marked::after {
   content: "✖";
   position: absolute;
   font-size: 3rem;
   color: rgba(255, 0, 0, 0.3);
-}
-
-.cell-coord {
-  font-size: 0.6rem;
-  color: #999;
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
 }
 
 
@@ -78,8 +93,20 @@ button.bingo-cell:hover:not(:disabled) {
   border-color: #6441a5;
 }
 
+button.bingo-cell:hover:not(:disabled) .cell-content {
+color:black;
+}
+
+
+
 button.bingo-cell:disabled {
   cursor: not-allowed;
+}
+
+.bingo-grid .button_to {
+  width: 100%;
+  height: 100%;
+  display: contents; /* This makes the form "invisible" to the grid layout */
 }
 
 .pending-overlay {
@@ -88,11 +115,12 @@ button.bingo-cell:disabled {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+      z-index: 10;
 }
 
 /* Victory State */
@@ -135,16 +163,22 @@ button.bingo-cell:disabled {
 }
 
 .btn-call-bingo {
-  background-color: #6441a5;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
-  padding: 15px 40px;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  transition: all 0.2s;
+    background-color: #675c3a;
+    color: white;
+    font-size: 1.8rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 15px;
+    font-family: 'Ringbearer';
+    cursor: pointer;
+    height:50px;
+    display:flex;
+    justify-content: center;
+    align-items: end;
+    width: 200px;
+    margin: 0px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
 }
 
 .btn-call-bingo:hover:not(:disabled) {

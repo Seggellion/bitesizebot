@@ -8,14 +8,12 @@
       id: dom_id(cell) do %>
   
   <div class="cell-content">
-    <% if is_free %>
-      <strong>FREE SQUARE:</strong><br>
-    <% end %>
+
     <%= cell.bingo_item.content %>
   </div>
   
   <% unless is_free %>
-    <div class="cell-coord"><%= cell.coordinate %></div>
+    <div class="cell-coord"><%= cell.bingo_item.row_number %></div>
   <% end %>
 
   <% if !cell.is_marked && PendingAction.exists?(target: cell, status: 'pending') %>

@@ -10,16 +10,13 @@
   <div id="flash-messages"></div>
 
   <header class="game-header">
-    <div class="header-main">
-      <h1><%= game.title %></h1>
-      <p>Status: <span class="badge"><%= game.status %></span></p>
-    </div>
+
 
     <% if game.status == 'active' %>
       <div class="win-action-container">
         <% is_pending = PendingAction.exists?(user: card.user, action_type: 'claim_win', status: 'pending') %>
         
-        <%= button_to "CALL BINGO!", claim_win_bingo_card_path(card), 
+        <%= button_to "call bingo!", claim_win_bingo_card_path(card), 
               method: :post,
               class: "btn-call-bingo",
               disabled: is_pending %>
@@ -33,15 +30,23 @@
 
   <%# We need to re-group cells here because this partial might be called from a model %>
   <% grouped_cells = card.bingo_cells.includes(:bingo_item).order(:id).group_by { |c| c.bingo_item.column_letter } %>
-  <% columns = ["B", "I", "N", "G", "O"].first(game.size) %>
+<% columns = ["B", "I", "N", "G", "O"].first(game.size) %>
 
   <div class="bingo-grid size-<%= game.size %>">
     <% columns.each do |letter| %>
-      <div class="grid-header"><%= letter %></div>
+      <div class="grid-header">
+      <% if letter == "O" %>
+<%= image_tag "hobbit_hole.png", alt: "Hobbit Hole" %>
+      <% else %>
+<%= letter %>
+      <% end %>
+      </div>
     <% end %>
+    
 
     <% (0...game.size).each do |row_index| %>
       <% columns.each do |letter| %>
+            
         <% cell = grouped_cells[letter]&.at(row_index) %>
         <% if cell %>
 <%= render "Hobbit/views/pages/cell", cell: cell %>
@@ -51,4 +56,9 @@
       <% end %>
     <% end %>
   </div>
+
+      <div class="header-main">
+      <h1><%= game.title %></h1>
+      <p>Status: <span class="badge"><%= game.status %></span></p>
+    </div>
 </div>
