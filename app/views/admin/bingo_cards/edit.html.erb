@@ -1,36 +1,63 @@
-<div class="bg-white p-6 rounded shadow" data-controller="bingo-selector">
-  <%= form_with model: [:admin, @bingo_game, @bingo_item] do |f| %>
-    <div class="mb-4">
-      <%= f.label :content, "Phrase", class: "block text-sm font-medium" %>
-      <%= f.text_field :content, class: "mt-1 block w-full rounded-md border-gray-300" %>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4">
-
-  <div class="mb-4">
-    <%= f.label :column_letter, "Bingo Column", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :column_letter, ["B", "I", "N", "G", "O"], 
-        { include_blank: "Select Column" }, 
-        { class: "mt-1 block w-full rounded-md border-gray-300", 
-          data: { bingo_selector_target: "column", action: "change->bingo-selector#updateRows" } } %>
+<div class="bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Edit Bingo Card #<%= @bingo_card.id %></h1>
+    <%= link_to 'Back to Cards', admin_bingo_cards_path, class: 'text-gray-500 hover:underline text-sm' %>
   </div>
 
-  <div class="mb-4">
-<%= f.label :row_number, "Row Number", class: "block text-sm font-medium text-gray-700" %>
-<%= f.select :row_number, (1..75).to_a, 
-    { include_blank: "Select a row" }, 
-    { 
-      class: "mt-1 block w-full rounded-md border-gray-300 disabled:bg-gray-100", 
-      data: { 
-        bingo_selector_target: "row",
-        selected_value: f.object.row_number # This passes '18' to the JS
-      } 
-    } %>
-     
-  </div>
+  <%= form_with model: [:admin, @bingo_card] do |f| %>
+    <% if @bingo_card.errors.any? %>
+      <div class="mb-4 p-4 bg-red-50 text-red-700 rounded">
+        <h2 class="font-bold"><%= pluralize(@bingo_card.errors.count, "error") %> prohibited this card from being saved:</h2>
+        <ul class="list-disc ml-5">
+          <% @bingo_card.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <%# User Selection %>
+      <div class="mb-4">
+        <%= f.label :user_id, "Owner (User)", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.collection_select :user_id, User.all, :id, :email, 
+            { prompt: "Select User" }, 
+            { class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
+      </div>
+
+      <%# Game Selection %>
+      <div class="mb-4">
+        <%= f.label :bingo_game_id, "Associated Game", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.collection_select :bingo_game_id, BingoGame.all, :id, :name, 
+            { prompt: "Select Game" }, 
+            { class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
+      </div>
     </div>
 
-    <%= f.submit "Save Item", class: "mt-4 bg-blue-500 text-white px-4 py-2 rounded" %>
+    <div class="mt-6 border-t pt-6">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Card Management</h3>
+      <p class="text-sm text-gray-500 mb-4">
+        Note: Modifying the Game or User does not automatically regenerate the 5x5 grid cells. 
+        To reset the grid, you should delete this card and have the user rejoin.
+      </p>
+      
+      <div class="flex items-center space-x-4">
+        <%= f.submit "Update Card Settings", class: "bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 cursor-pointer" %>
+        <%= link_to "Cancel", admin_bingo_cards_path, class: "text-gray-600 hover:text-gray-800" %>
+      </div>
+    </div>
   <% end %>
+</div>
+
+<%# Optional: Cell Overview Table within Edit View %>
+<div class="mt-8 bg-gray-50 p-6 rounded border border-dashed border-gray-300">
+  <h3 class="text-md font-bold mb-4">Current Grid Preview (<%= @bingo_card.bingo_cells.count %> Cells)</h3>
+  <div class="grid grid-cols-5 gap-2 max-w-md">
+    <% @bingo_card.bingo_cells.order(:id).each do |cell| %>
+      <div class="aspect-square flex items-center justify-center border text-[10px] text-center p-1 <%= cell.is_marked ? 'bg-green-200 border-green-500' : 'bg-white border-gray-200' %>">
+        <%= cell.coordinate %><br>
+        <%= cell.bingo_item.content.truncate(15) %>
+      </div>
+    <% end %>
+  </div>
 </div>

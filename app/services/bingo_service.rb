@@ -8,10 +8,12 @@ class BingoService
     case text.downcase
     when "!bingo start"
       return start_game(host)
+    when "!bingo halt"
+      return halt_game(host)
     when "!bingo end"
       return end_game(host)
     end
-
+    
     game = BingoGame.find_by(host: host, status: 'active')
     
     return "No active game right now!" unless game
@@ -23,6 +25,7 @@ class BingoService
 
     case text.downcase
     when "!bingo join"        
+      return "The game has already started! Too late to join." if game.active?
       return "You're already in!" if game.bingo_cards.exists?(user: viewer)
       game.bingo_cards.create!(user: viewer)
       return "Welcome to Bitesize Bingo!"
@@ -145,14 +148,14 @@ end
 
 def self.start_game(host)
     # 1. Close any existing active games for this host
-    BingoGame.where(host: host, status: 'active').update_all(status: 'ended', ended_at: Time.current)
+    BingoGame.where(host: host, status: ['invite', 'active']).update_all(status: 'ended', ended_at: Time.current)
 
     # 2. Create new game
     # Note: You may want a more robust way to select/randomize bingo_items here
     new_game = BingoGame.create!(
       host: host,
       title: "#{host.username}'s Game - #{Time.current.strftime('%m/%d')}",
-      status: 'active',
+      status: 'invite',
       size: 5,
       started_at: Time.current
     )
@@ -164,8 +167,16 @@ def self.start_game(host)
     "A new Bingo game has started! Type !bingo join to play."
   end
 
+def self.halt_game(host)
+    game = BingoGame.find_by(host: host, status: 'invite')
+    return "There is no game in 'invite' mode to halt." unless game
+
+    game.update!(status: 'active')
+    "Invites closed! The game is now ACTIVE. Good luck everyone!"
+  end
+
   def self.end_game(host)
-    game = BingoGame.where(host: host, status: 'active').last
+    game = BingoGame.where(host: host, status: ['invite', 'active']).last
     return "There is no active game to end." unless game
 
     game.update!(status: 'ended', ended_at: Time.current)

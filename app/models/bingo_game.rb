@@ -10,12 +10,22 @@ class BingoGame < ApplicationRecord
   belongs_to :winner, class_name: "User", optional: true
 
   after_update_commit :broadcast_game_end, if: :saved_change_to_status?
+  after_update_commit :broadcast_potential_win_cleanup, if: :saved_change_to_winner_id?
 
-after_update_commit :broadcast_potential_win_cleanup, if: :saved_change_to_winner_id?
+  scope :joinable, -> { where(status: 'invite') }
+  scope :active, -> { where(status: 'active') }
 
-def self.active
-  self.where(status:"active")
-end
+  def self.active
+    self.where(status:"active")
+  end
+
+  def invite?
+    status == 'invite'
+  end
+
+  def active?
+    status == 'active'
+  end
 
   private
 

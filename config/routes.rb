@@ -47,8 +47,13 @@ get "/obs/overlay", to: "obs_overlays#show", as: :obs_overlay
   # ------------------------------------------------------------
   namespace :admin do
     root "dashboard#index"
-    resources :pending_actions, only: [:index, :update]
-    
+
+    resources :pending_actions, only: [:index, :update] do
+        collection do
+          patch :bulk_approve
+        end
+      end
+
     resources :pages do
       member do
         patch :update_category

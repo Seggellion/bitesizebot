@@ -5,6 +5,24 @@ def index
     @actions = PendingAction.pending.includes(:user, :target)
   end
 
+# app/controllers/admin/pending_actions_controller.rb
+def bulk_approve
+  # Only grab 'mark_cell' actions to avoid accidentally approving a win
+  @actions = PendingAction.where(status: 'pending', action_type: 'mark_cell')
+  
+  ActiveRecord::Base.transaction do
+    @actions.each do |action|
+      # Update the cell
+      action.target.update!(is_marked: true)
+      # Update the action status
+      action.update!(status: 'approved')
+    end
+  end
+
+  redirect_to admin_bingo_games_path, notice: "Approved #{@actions.count} mark requests."
+end
+
+
 def update
 
 
