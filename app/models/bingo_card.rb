@@ -4,6 +4,8 @@ class BingoCard < ApplicationRecord
   belongs_to :user
   has_many :bingo_cells, dependent: :destroy
 has_many :bingo_items, through: :bingo_cells
+after_create_commit :broadcast_new_participant
+after_create_commit :broadcast_total_stats
 
   # This callback ensures that as soon as !join is triggered and a card is saved,
   # the 5x5 (or 3x3) grid is populated with items.
@@ -85,6 +87,26 @@ def pending_actions
 
 
   private
+
+def broadcast_new_participant
+  # 1. Add the new user to the list
+  broadcast_append_to "participants_game_#{bingo_game_id}",
+                      target: "participants_list",
+                      partial: "admin/bingo_games/participant",
+                      locals: { card: self }
+
+  # 2. Update the counter badge
+  broadcast_update_to "participants_game_#{bingo_game_id}",
+                      target: "participant_count",
+                      html: bingo_game.bingo_cards.count.to_s
+end
+
+def broadcast_total_stats
+  total_count = User.joins(:bingo_cards).distinct.count
+  broadcast_update_to "global_admin_stats", 
+                      target: "total_all_time_participants", 
+                      html: total_count.to_s
+end
 
 # app/models/bingo_card.rb
 def generate_cells

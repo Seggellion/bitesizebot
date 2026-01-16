@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_16_005752) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -191,6 +191,28 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
     t.index ["user_id"], name: "index_events_on_user_id"
   end
 
+  create_table "investments", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "amount", null: false
+    t.decimal "interest_rate", precision: 5, scale: 4, default: "0.01"
+    t.integer "status", default: 0
+    t.string "investment_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_investments_on_user_id"
+  end
+
+  create_table "ledger_entries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "amount", null: false
+    t.string "entry_type", null: false
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entry_type"], name: "index_ledger_entries_on_entry_type"
+    t.index ["user_id"], name: "index_ledger_entries_on_user_id"
+  end
+
   create_table "media", force: :cascade do |t|
     t.string "file"
     t.text "meta_description"
@@ -343,6 +365,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
     t.datetime "last_login"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "wallet", default: 0, null: false
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
@@ -360,6 +383,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_190329) do
   add_foreign_key "downloads", "categories"
   add_foreign_key "events", "categories"
   add_foreign_key "events", "users"
+  add_foreign_key "investments", "users"
+  add_foreign_key "ledger_entries", "users"
   add_foreign_key "media", "users"
   add_foreign_key "menu_items", "menus"
   add_foreign_key "pages", "categories"

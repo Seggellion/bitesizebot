@@ -47,6 +47,8 @@ get "/obs/overlay", to: "obs_overlays#show", as: :obs_overlay
   # ------------------------------------------------------------
   namespace :admin do
     root "dashboard#index"
+    get "bank", to: "bank#index", as: :bank
+    post 'inject_currency', to: 'bank#inject_currency'
 
     resources :pending_actions, only: [:index, :update] do
         collection do

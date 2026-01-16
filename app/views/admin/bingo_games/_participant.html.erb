@@ -1,0 +1,6 @@
+<li id="participant_<%= card.id %>" class="py-2 flex justify-between items-center animate-fade-in">
+  <span class="font-medium text-gray-700"><%= card.user.username %></span>
+  <span class="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-500 font-mono">
+    <%= card.bingo_cells.where(is_marked: true).count %> marks
+  </span>
+</li>

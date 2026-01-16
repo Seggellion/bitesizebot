@@ -27,6 +27,10 @@ class BingoGame < ApplicationRecord
     status == 'active'
   end
 
+  def self.current_or_latest
+    active.first || order(created_at: :desc).first
+  end
+
   private
 
 def broadcast_potential_win_cleanup

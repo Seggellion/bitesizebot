@@ -12,7 +12,11 @@ class User < ApplicationRecord
   store :global_inventory, coder: JSON
   store :purchased_items, coder: JSON
 has_many :won_games, class_name: 'BingoGame', foreign_key: 'winner_id'
+has_many :ledger_entries, dependent: :destroy
 
+  def can_afford?(cost)
+    wallet >= cost
+  end
 
     # Example method to add a purchased item
     def add_purchased_item(item_name)

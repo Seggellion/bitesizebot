@@ -131,10 +131,19 @@ end
 
 def self.handle_notification(event)
     username = event["chatter_user_login"]
+    display_name = event["chatter_user_name"]
     text     = event["message"]["text"].downcase.strip
     bid      = event["broadcaster_user_id"] # The host's ID
     uid      = event["chatter_user_id"]     # The person typing
-    
+    is_mod = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
+
+viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
+    u.first_name = display_name
+    u.fame = 0 
+  end
+
+  viewer.increment!(:fame, 1)
+
     # The bot user's ID for sending messages
     user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
     sid  = user.uid
@@ -142,6 +151,10 @@ def self.handle_notification(event)
     case text
     when "!ping"
       TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
+
+    when /^!bank/
+      response = BankService.process_command(uid, username, text, is_mod)
+      TwitchService.send_chat_message(bid, sid, "@#{username}: #{response}")
 
     # Handle all Bingo commands
     when /^!bingo/

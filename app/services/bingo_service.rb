@@ -14,7 +14,7 @@ class BingoService
       return end_game(host)
     end
     
-    game = BingoGame.find_by(host: host, status: 'active')
+    game = BingoGame.find_by(host: host, status: 'invite')
     
     return "No active game right now!" unless game
 
