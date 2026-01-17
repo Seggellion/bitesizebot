@@ -19,6 +19,23 @@ module Admin
           render :edit
         end
       end
+
+      def toggle_giveaway_ban
+        @user = User.find(params[:id])
+        tag = Tag.find_or_create_by!(name: 'giveaway_banned')
+        
+        tagging = @user.taggings.find_by(tag: tag)
+
+        if tagging
+          tagging.destroy
+          message = "Giveaway ban removed for #{@user.username}."
+        else
+          @user.taggings.create!(tag: tag)
+          message = "Giveaway ban applied for #{@user.username}."
+        end
+
+        redirect_back fallback_location: admin_user_path(@user), notice: message
+      end
   
       private
   

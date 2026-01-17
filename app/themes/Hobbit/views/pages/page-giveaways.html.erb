@@ -1,0 +1,104 @@
+<%# app/views/giveaways/index.html.erb %>
+<div class="min-h-screen bg-gray-950 text-gray-100 font-sans">
+  
+  <%# Player HUD %>
+  <% if current_user %>
+    <div class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 shadow-2xl">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <img src="<%= current_user.avatar %>" class="w-12 h-12 rounded-full border-2 border-indigo-500 shadow-lg">
+          <div>
+            <h2 class="font-bold text-white text-lg"><%= current_user.username %></h2>
+            <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Active Fellowship Member</p>
+          </div>
+        </div>
+        
+        <div class="flex space-x-8">
+          <div class="text-center">
+            <span class="block text-[10px] text-gray-500 uppercase font-bold">Lembas Wallet</span>
+            <span class="text-xl font-black text-yellow-500"><%= current_user.wallet %> 🍞</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="max-w-6xl mx-auto px-6 py-12">
+    <h1 class="text-4xl font-black text-white mb-2 italic">Active Giveaways</h1>
+    <p class="text-gray-400 mb-10">Join the fellowship and stake your claim for the monthly bounty.</p>
+
+    <% if @giveaways.any? %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <% @giveaways.each do |giveaway| %>
+          <div class="bg-gray-900 rounded-3xl border border-gray-800 p-8 shadow-xl hover:border-indigo-500/50 transition group">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <span class="text-indigo-400 text-xs font-bold uppercase tracking-widest"><%= giveaway.giveaway_type %> Event</span>
+                <h3 class="text-2xl font-bold text-white mt-1 group-hover:text-indigo-300 transition"><%= giveaway.title %></h3>
+              </div>
+              <div class="bg-gray-800 px-3 py-1 rounded-full text-[10px] font-bold text-gray-400 border border-gray-700">
+                LIVE NOW
+              </div>
+            </div>
+
+            <%# Participation Progress %>
+            <% if current_user %>
+              <% entry = giveaway.giveaway_entries.find_by(user: current_user) %>
+              <div class="mb-8 bg-gray-950 p-4 rounded-2xl border border-gray-800">
+                <div class="flex justify-between text-xs mb-2">
+                  <span class="text-gray-500 uppercase">Your Tickets</span>
+                  <span class="text-white font-bold"><%= entry&.tickets_count || 0 %> Tickets</span>
+                </div>
+                <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                  <div class="bg-indigo-600 h-full shadow-[0_0_10px_rgba(79,70,229,0.5)]" style="width: <%= [((entry&.tickets_count || 0) * 10), 100].min %>%"></div>
+                </div>
+              </div>
+
+              <%# Join/Buy Actions %>
+              <div class="flex flex-col space-y-3">
+                <% if entry.nil? %>
+                   <%= button_to join_giveaway_path(giveaway, amount: 1), 
+                        class: "w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg transition transform active:scale-95" do %>
+                    Join Now (First Ticket is FREE!)
+                  <% end %>
+                <% else %>
+                  <div class="flex space-x-2">
+                    <%= form_with url: join_giveaway_path(giveaway), method: :post, class: "flex w-full space-x-2" do |f| %>
+                      <%= f.number_field :amount, value: 1, min: 1, class: "w-20 bg-gray-950 border border-gray-700 rounded-xl px-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none" %>
+                      <%= f.submit "Buy More Tickets", class: "flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl transition cursor-pointer" %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="bg-gray-800 p-6 rounded-2xl text-center">
+                <p class="text-gray-400 text-sm mb-4">You must be logged in with Twitch to join.</p>
+                <button class="bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold">Login with Twitch</button>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-20 bg-gray-900 rounded-3xl border border-dashed border-gray-700">
+        <p class="text-gray-500 italic">The fires are dim... no active giveaways at the moment.</p>
+      </div>
+    <% end %>
+
+    <%# Past Winners Section %>
+    <div class="mt-20">
+      <h2 class="text-xl font-bold text-gray-500 uppercase tracking-widest mb-8">Hall of Fame (Recent Winners)</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <% @past_giveaways.each do |g| %>
+          <div class="bg-gray-900/50 border border-gray-800 p-4 rounded-2xl flex items-center space-x-4">
+            <img src="<%= g.winner&.avatar %>" class="w-10 h-10 rounded-full grayscale hover:grayscale-0 transition">
+            <div>
+              <p class="text-sm font-bold text-white"><%= g.winner&.username %></p>
+              <p class="text-[10px] text-gray-500 uppercase"><%= g.title %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

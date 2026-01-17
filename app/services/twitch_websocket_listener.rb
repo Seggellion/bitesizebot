@@ -139,6 +139,7 @@ def self.handle_notification(event)
 
 viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     u.first_name = display_name
+    u.username = display_name
     u.fame = 0 
   end
 
@@ -151,6 +152,13 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     case text
     when "!ping"
       TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
+
+    # --- NEW GIVEAWAY COMMANDS ---
+    when "!fellowship", /^!lembas/
+      response_message = GiveawayService.process_command(uid, username, bid, text)
+      if response_message
+        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
+      end
 
     when /^!bank/
       response = BankService.process_command(uid, username, text, is_mod)

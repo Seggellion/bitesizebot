@@ -3,7 +3,6 @@ class PagesController < ApplicationController
     before_action :prepend_theme_view_path
   before_action :include_theme_helpers
 
-
 def show
   template_file = @page.template_file.presence || 'default'
   theme_template_path = "pages/page-#{template_file}"
@@ -20,6 +19,11 @@ def show
   if @page.slug == 'bingo-card'
       authenticate_user!
     load_bingo_data
+  end
+
+  if @page.slug == 'giveaways'
+      authenticate_user!
+    load_giveaways_data
   end
 
   if lookup_context.exists?(theme_template_path, [], false)
@@ -92,6 +96,15 @@ end
     def medium_params
       params.permit(:file, :meta_description, :meta_keywords, :shard_id)
     end
+
+
+
+
+  def load_giveaways_data
+    @giveaways = Giveaway.open.order(created_at: :desc)
+    @past_giveaways = Giveaway.completed.limit(5).order(drawn_at: :desc)
+  end
+
 
 
   def load_bingo_data

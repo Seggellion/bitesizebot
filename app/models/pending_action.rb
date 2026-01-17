@@ -26,6 +26,9 @@ def approve!
             ended_at: Time.current
         )
         user.increment!(:karma, 100)
+        user.increment!(:fame, 100)
+
+        add_to_monthly_giveaway
         announce_win_to_twitch(game)
         broadcast_overlay_win
       end
@@ -53,6 +56,22 @@ def approve!
 
     # 2. Update the Player's Card
     refresh_target_cell
+  end
+
+  def add_to_monthly_giveaway
+    giveaway = Giveaway.bingo.open.order(created_at: :desc).first
+    
+    if giveaway
+      entry = giveaway.giveaway_entries.find_or_create_by!(user: user)
+      # For Bingo giveaways, usually 1 win = 1 ticket/entry
+      entry.increment!(:tickets_count, 1)
+      
+      # Optional: Log a ledger entry so there's a paper trail for the free entry
+      user.ledger_entries.create!(
+        amount: 0, 
+        entry_type: 'bingo_giveaway_entry',
+        metadata: { giveaway_id: giveaway.id, bingo_game_id: target.bingo_game_id }
+      )
   end
 
   def handle_action_update

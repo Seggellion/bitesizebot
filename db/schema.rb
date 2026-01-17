@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_16_005752) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_17_164142) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -189,6 +189,31 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_005752) do
     t.datetime "updated_at", null: false
     t.index ["category_id"], name: "index_events_on_category_id"
     t.index ["user_id"], name: "index_events_on_user_id"
+  end
+
+  create_table "giveaway_entries", force: :cascade do |t|
+    t.bigint "giveaway_id", null: false
+    t.bigint "user_id", null: false
+    t.integer "tickets_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["giveaway_id", "user_id"], name: "index_giveaway_entries_on_giveaway_id_and_user_id", unique: true
+    t.index ["giveaway_id"], name: "index_giveaway_entries_on_giveaway_id"
+    t.index ["user_id"], name: "index_giveaway_entries_on_user_id"
+  end
+
+  create_table "giveaways", force: :cascade do |t|
+    t.string "title"
+    t.integer "giveaway_type", default: 0
+    t.integer "status", default: 0
+    t.integer "max_entries_per_user"
+    t.integer "min_karma", default: 0
+    t.integer "min_fame", default: 0
+    t.bigint "winner_id"
+    t.datetime "drawn_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["winner_id"], name: "index_giveaways_on_winner_id"
   end
 
   create_table "investments", force: :cascade do |t|
@@ -383,6 +408,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_005752) do
   add_foreign_key "downloads", "categories"
   add_foreign_key "events", "categories"
   add_foreign_key "events", "users"
+  add_foreign_key "giveaway_entries", "giveaways"
+  add_foreign_key "giveaway_entries", "users"
+  add_foreign_key "giveaways", "users", column: "winner_id"
   add_foreign_key "investments", "users"
   add_foreign_key "ledger_entries", "users"
   add_foreign_key "media", "users"

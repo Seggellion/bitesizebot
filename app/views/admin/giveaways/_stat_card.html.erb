@@ -1,0 +1,10 @@
+<div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+  <p class="text-gray-400 text-sm font-medium uppercase tracking-wider"><%= label %></p>
+  <div class="flex items-baseline space-x-2">
+    <h2 class="text-3xl font-bold text-white"><%= value %></h2>
+    <span class="text-xs text-indigo-400 font-semibold"><%= sub %></span>
+  </div>
+  <div class="mt-4 h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+    <div class="h-full bg-indigo-500" style="width: <%= [value.to_i, 100].min %>%"></div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<div id="giveaway_status" class="bg-indigo-900 border-2 border-indigo-400 p-8 rounded-2xl shadow-2xl my-6 text-center animate-bounce">
+  <h2 class="text-4xl font-black text-white mb-2 italic uppercase tracking-widest">
+    🏆 We Have A Winner! 🏆
+  </h2>
+  
+  <div class="flex items-center justify-center space-x-6">
+    <% if winner.avatar.present? %>
+      <img src="<%= winner.avatar %>" class="w-24 h-24 rounded-full border-4 border-white shadow-lg">
+    <% end %>
+    
+    <div class="text-left">
+      <div class="text-5xl font-bold text-yellow-400"><%= winner.username %></div>
+      <div class="text-indigo-200 font-mono">UID: <%= winner.uid %></div>
+    </div>
+  </div>
+
+  <div class="mt-6 flex justify-center space-x-4">
+    <div class="bg-indigo-800 px-4 py-2 rounded-lg">
+      <span class="block text-xs text-indigo-300 uppercase">Karma Rank</span>
+      <span class="text-xl font-bold text-white"><%= winner.karma %></span>
+    </div>
+    <div class="bg-indigo-800 px-4 py-2 rounded-lg">
+      <span class="block text-xs text-indigo-300 uppercase">Tickets Held</span>
+      <span class="text-xl font-bold text-white">
+        <%= @giveaway.giveaway_entries.find_by(user: winner)&.tickets_count %>
+      </span>
+    </div>
+  </div>
+</div>

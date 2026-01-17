@@ -29,12 +29,22 @@ Rails.application.routes.draw do
 
   resources :contact_messages, only: [:new, :create]
 
+  resources :giveaways, only: [:show] do
+    resources :entries, only: [:create]
+
+    member do
+      post :join
+    end
+
+  end
+
   resources :bingo_cards, only: [:show] do
     member do
       post :mark_cell
       post :claim_win
     end
   end
+
 
   # ------------------------------------------------------------
   # Theme switching (optional, CMS-level)
@@ -48,6 +58,15 @@ Rails.application.routes.draw do
     root "dashboard#index"
     get "bank", to: "bank#index", as: :bank
     post 'inject_currency', to: 'bank#inject_currency'
+
+  resources :giveaways do
+      member do
+        patch :close # Locks entries
+        patch :draw  # Secretly filters and picks winner
+      end
+      
+      resources :giveaway_entries, only: [:index, :destroy]
+    end
 
     resources :pending_actions, only: [:index, :update] do
         collection do
@@ -116,10 +135,17 @@ Rails.application.routes.draw do
     resources :services
     resources :testimonials
     resources :comments
-    resources :users
+
+    resources :users, only: [:index, :show, :edit, :update] do
+      member do
+        post :toggle_giveaway_ban
+      end
+    end
+
     resources :settings
     resources :contact_messages, only: [:index, :show]
   end
+
 
   # ------------------------------------------------------------
   # Catch-all CMS pages (LAST)

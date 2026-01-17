@@ -5,14 +5,15 @@ class User < ApplicationRecord
     has_many :comments, dependent: :destroy
     has_many :contact_messages, foreign_key: :email, primary_key: :email
     has_many :posts, dependent: :destroy
-    has_many :shard_users, dependent: :destroy
-  has_many :blessed_items, dependent: :destroy
     has_many :bingo_cards, dependent: :destroy
 
+    has_many :taggings, as: :taggable, dependent: :destroy
+  has_many :tags, through: :taggings
   store :global_inventory, coder: JSON
   store :purchased_items, coder: JSON
 has_many :won_games, class_name: 'BingoGame', foreign_key: 'winner_id'
 has_many :ledger_entries, dependent: :destroy
+has_many :giveaway_entries, dependent: :destroy
 
   def can_afford?(cost)
     wallet >= cost
@@ -25,12 +26,31 @@ has_many :ledger_entries, dependent: :destroy
       save
     end
 
+has_many :won_giveaways, class_name: 'Giveaway', foreign_key: 'winner_id', dependent: :nullify
+
     validates :uid, presence: true, uniqueness: true
 
   # Define roles
   enum :user_type, { admin: 0, regular: 1 }
 
-  
+# Helper to check for the specific ban tag
+  def banned_from_giveaways?
+    tags.where(name: 'giveaway_banned').exists?
+  end
+
+  # Scope to help with the "Secret" filter in queries
+  scope :not_banned_from_giveaways, -> {
+    where.not(id: Tagging.where(taggable_type: 'User', tag: Tag.where(name: 'giveaway_banned')).select(:taggable_id))
+  }
+
+  def self.recent_winners(time_frame)
+  joins(:won_giveaways).where("giveaways.drawn_at >= ?", time_frame.ago)
+end
+
+def won_recently?(time_frame)
+  won_giveaways.where("drawn_at >= ?", time_frame.ago).exists?
+end
+
 
   def self.admin_exists?
     where(user_type: :admin).exists?
