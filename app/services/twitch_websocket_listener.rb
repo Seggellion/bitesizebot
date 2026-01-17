@@ -160,6 +160,11 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
         TwitchService.send_chat_message(bid, sid, response)
       end
 
+    when /^!gamble/
+      # We use the 'viewer' object already instantiated earlier in the method
+      response = GambleService.process_command(viewer, text)
+      TwitchService.send_chat_message(bid, sid, "@#{username} #{response}")
+
     # --- NEW GIVEAWAY COMMANDS ---
     when "!fellowship", /^!lembas/
       response_message = GiveawayService.process_command(uid, username, bid, text)
