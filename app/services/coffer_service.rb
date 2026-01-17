@@ -1,5 +1,5 @@
-# app/services/bank_service.rb
-class BankService
+# app/services/coffer_service.rb
+class CofferService
   def self.process_command(uid, username, text, is_mod = false)
     user = User.find_or_create_by(uid: uid) do |u|
       u.username = username
@@ -7,10 +7,10 @@ class BankService
     end
 
     case text.downcase
-    when "!bank"
-      "Your balance is #{user.wallet} credits."
+    when "!coffer"
+      "Your balance is #{user.wallet} farthings."
 
-    when /^!bank redeem (.+)/
+    when /^!coffer redeem (.+)/
     name = $1.strip
     investment = user.investments.active.find_by("lower(investment_name) = ?", name.downcase)
     
@@ -29,10 +29,10 @@ class BankService
         
         # 2. Close the investment
         investment.redeemed!
-        "Redeemed '#{name}' for #{final_amount} credits! (Profit: +#{investment.profit})"
+        "Redeemed '#{name}' for #{final_amount} farthings! (Profit: +#{investment.profit})"
     end
 
-    when /^!bank transfer (\d+) (\w+)/
+    when /^!coffer transfer (\d+) (\w+)/
       amount = $1.to_i
       receiver_name = $2.delete('@')
       receiver = User.find_by(username: receiver_name)
@@ -47,12 +47,12 @@ class BankService
         "Transaction failed: Insufficient funds."
       end
 
-    when /^!bank invest (\d+) (.+)/
+    when /^!coffer invest (\d+) (.+)/
       amount = $1.to_i
       name = $2.strip
     invest_logic(user, amount, name, is_mod)
     else
-      "Unknown bank command. Use !bank, !bank transfer, or !bank invest."
+      "Unknown coffer command. Use !coffer, !coffer transfer, or !coffer invest."
     end
   end
 
@@ -78,7 +78,7 @@ if existing_investment.nil?
       buy_into_investment(user, amount, existing_investment)
     end
   rescue CurrencyService::InsufficientFundsError
-    "You don't have enough credits to invest that much!"
+    "You don't have enough farthings to invest that much!"
   end
 
 def self.create_new_investment(user, amount, name, rate)
@@ -86,7 +86,7 @@ def self.create_new_investment(user, amount, name, rate)
       CurrencyService.update_balance(user: user, amount: -amount, type: 'investment_creation', metadata: { name: name })
       Investment.create!(user: user, amount: amount, interest_rate: rate, investment_name: name)
     end
-    "New public offering! '#{name}' established with #{amount} credits!"
+    "New public offering! '#{name}' established with #{amount} farthings!"
   end
 
   def self.buy_into_investment(user, amount, template)
@@ -95,7 +95,7 @@ def self.create_new_investment(user, amount, name, rate)
       # We create a NEW investment record for THIS user, using the template's name and rate
       Investment.create!(user: user, amount: amount, interest_rate: template.interest_rate, investment_name: template.investment_name)
     end
-    "You bought into '#{template.investment_name}' with #{amount} credits!"
+    "You bought into '#{template.investment_name}' with #{amount} farthings!"
   end
 
 end

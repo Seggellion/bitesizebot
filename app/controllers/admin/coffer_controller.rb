@@ -1,5 +1,5 @@
 module Admin
-    class BankController < Admin::ApplicationController
+    class CofferController < Admin::ApplicationController
     def index
    @total_supply = User.sum(:wallet)
     @active_investments = Investment.active
@@ -33,7 +33,7 @@ def inject_currency
       flash[:error] = "User not found or invalid amount."
     end
 
-    redirect_to admin_bank_path
+    redirect_to admin_coffer_path
   end
 
 end

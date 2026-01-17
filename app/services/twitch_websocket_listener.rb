@@ -69,6 +69,7 @@ class TwitchWebsocketListener
       run # Restart the whole loop
     end
   end
+
 def self.subscribe_to_chat(session_id)
     # Fetch IDs and confirm they aren't nil
     bid = get_user_id("seggellion")
@@ -153,6 +154,12 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     when "!ping"
       TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
 
+    when /^!raffle/
+      response = RaffleService.process_command(uid, username, bid, text, is_mod)
+      if response
+        TwitchService.send_chat_message(bid, sid, response)
+      end
+
     # --- NEW GIVEAWAY COMMANDS ---
     when "!fellowship", /^!lembas/
       response_message = GiveawayService.process_command(uid, username, bid, text)
@@ -160,8 +167,8 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
         TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
       end
 
-    when /^!bank/
-      response = BankService.process_command(uid, username, text, is_mod)
+    when /^!coffer/
+      response = CofferService.process_command(uid, username, text, is_mod)
       TwitchService.send_chat_message(bid, sid, "@#{username}: #{response}")
 
     # Handle all Bingo commands

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_17_164142) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_17_195340) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -314,6 +314,28 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_164142) do
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
+  create_table "raffle_entries", force: :cascade do |t|
+    t.bigint "raffle_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["raffle_id", "user_id"], name: "index_raffle_entries_on_raffle_id_and_user_id", unique: true
+    t.index ["raffle_id"], name: "index_raffle_entries_on_raffle_id"
+    t.index ["user_id"], name: "index_raffle_entries_on_user_id"
+  end
+
+  create_table "raffles", force: :cascade do |t|
+    t.bigint "host_id", null: false
+    t.string "status", default: "active"
+    t.integer "max_participants", default: 500
+    t.integer "prize_amount", default: 0
+    t.integer "winner_id"
+    t.datetime "ended_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["host_id"], name: "index_raffles_on_host_id"
+  end
+
   create_table "sections", force: :cascade do |t|
     t.string "name", null: false
     t.string "template", null: false
@@ -420,6 +442,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_164142) do
   add_foreign_key "pending_actions", "users"
   add_foreign_key "posts", "categories"
   add_foreign_key "posts", "users"
+  add_foreign_key "raffle_entries", "raffles"
+  add_foreign_key "raffle_entries", "users"
+  add_foreign_key "raffles", "users", column: "host_id"
   add_foreign_key "services", "categories"
   add_foreign_key "taggings", "tags"
   add_foreign_key "testimonials", "categories"
