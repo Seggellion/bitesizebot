@@ -5,7 +5,8 @@ class BingoGame < ApplicationRecord
   has_many :bingo_items, through: :bingo_game_items
   
   has_many :bingo_cards, dependent: :destroy
-  
+  has_many :pending_actions, through: :bingo_cards, source: :pending_actions
+  has_many :bingo_cells, through: :bingo_cards
   validates :title, presence: true
   belongs_to :winner, class_name: "User", optional: true
 
@@ -49,4 +50,9 @@ end
       end
     end
   end
+
+def pending_actions
+    PendingAction.where(target: self).or(PendingAction.where(target: bingo_cells))
+  end
+
 end

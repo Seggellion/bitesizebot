@@ -37,6 +37,9 @@ application.register("settings-form", SettingsFormController)
 import SlideshowController from "./slideshow_controller"
 application.register("slideshow", SlideshowController)
 
+import OverlayNotificationController from "./overlay_notification_controller"
+application.register("overlay-notification", OverlayNotificationController)
+
 import LightboxController from "./lightbox_controller"
 application.register("lightbox", LightboxController)
 

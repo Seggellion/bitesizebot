@@ -1,0 +1,72 @@
+
+
+
+
+
+    <%# app/views/admin/bingo_games/overlay.html.erb %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bingo OBS Overlay</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= favicon_link_tag favicon_url, rel: "shortcut icon" %>
+
+    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application.tailwind", "data-turbo-track": "reload" %>
+
+    <%= stylesheet_link_tag "fonts", "data-turbo-track": "reload" %>
+
+    <%= stylesheet_link_tag current_theme, "data-turbo-track": "reload" %>
+
+    <%= javascript_importmap_tags %>
+
+<style>
+      /* Force transparency for OBS and remove scrollbars */
+      body { 
+        background-color: transparent !important; 
+        margin: 0; 
+        padding: 0; 
+        overflow: hidden; 
+      }
+        .overlay-notification{
+    right:210px;
+}
+
+/* Ticker Animation */
+      @keyframes scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); } /* Scroll half the width of the doubled content */
+      }
+
+      .ticker-wrapper {
+        display: flex;
+        white-space: nowrap;
+        animation: scroll 30s linear infinite; /* Adjust 30s for speed */
+      }
+
+      .ticker-wrapper:hover {
+        animation-play-state: paused; /* Optional: pause on hover for testing */
+      }
+    </style>
+  </head>
+  <body>
+    <%= turbo_stream_from "game_overlay_#{@current_game.id}" %>
+
+    <div id="overlay_notifications" class="relative w-screen h-screen">
+      </div>
+
+
+    <div class="fixed bottom-0 left-0 w-full bg-black/60 backdrop-blur-md border-t-2 border-yellow-500/50 h-14 flex items-center overflow-hidden">
+      <div class="flex items-center bg-yellow-500 text-black px-4 h-full font-black italic skew-x-[-12deg] -ml-2 z-10 shadow-lg">
+        <span class="skew-x-[12deg]">LATEST MARKS</span>
+      </div>
+      
+      <div id="ticker_container" class="relative flex-1 overflow-hidden">
+        <%= render partial: "admin/bingo_games/ticker", locals: { game: @current_game } %>
+      </div>
+    </div>
+
+  </body>
+</html>

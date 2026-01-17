@@ -1,0 +1,27 @@
+<div id="ticker_content" class="ticker-wrapper flex items-center gap-8">
+  <% 
+    approved_actions = PendingAction.where(
+      action_type: 'mark_cell', 
+      status: 'approved',
+      target_type: 'BingoCell',
+      target_id: game.bingo_cells.pluck(:id)
+    ).order(updated_at: :desc).limit(20)
+  %>
+  
+    <div class="flex items-center gap-8 pr-8">
+      <% approved_actions.each do |action| %>
+        <% cell = action.target %>
+        <div class="flex items-center gap-2 text-white font-medium bg-white/5 px-3 py-1 rounded-full border border-white/10">
+          <span class="text-yellow-400 font-bold">[<%= cell.coordinate %>]</span>
+          <span class="text-gray-100">@<%= action.user.username %></span>
+          <span class="text-gray-400 text-xs italic">
+            <%= time_ago_in_words(action.updated_at).gsub('about ', '') %> ago
+          </span>
+        </div>
+      <% end %>
+      
+      <% if approved_actions.empty? %>
+        <span class="text-gray-500 italic">No marks yet... eyes on the board!</span>
+      <% end %>
+    </div>
+</div>

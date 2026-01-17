@@ -9,3 +9,4 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin "trix"
 pin "leaflet", to: "https://ga.jspm.io/npm:leaflet@1.9.4/dist/leaflet-src.js"
 pin "@rails/actiontext", to: "actiontext.esm.js"
+pin "canvas-confetti" # @1.9.4

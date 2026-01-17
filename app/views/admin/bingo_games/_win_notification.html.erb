@@ -1,0 +1,23 @@
+<%# app/views/admin/bingo_games/_win_notification.html.erb %>
+
+<div data-controller="overlay-notification" 
+     data-overlay-notification-confetti-value="true"
+     data-overlay-notification-duration-value="10000"
+     class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+  
+  <div class="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 p-1 rounded-2xl shadow-2xl animate-bounce">
+    <div class="bg-black/90 text-white p-12 rounded-xl text-center border-4 border-yellow-300">
+      <h1 class="text-6xl font-black mb-4 uppercase tracking-tighter text-yellow-400">
+        BINGO!
+      </h1>
+      
+      <div class="text-3xl font-bold mb-2">
+        @<%= user.username %>
+      </div>
+      
+      <div class="text-xl text-gray-300 uppercase tracking-widest">
+        Has Won The Game!
+      </div>
+    </div>
+  </div>
+</div>

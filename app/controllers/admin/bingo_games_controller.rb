@@ -54,6 +54,13 @@ end
       end
     end
 
+
+def overlay
+  @current_game = BingoGame.current_or_latest
+  # layout: false removes the admin wrapper entirely
+  render template: "admin/bingo_games/overlay", layout: false
+end
+
     private
 
     def process_items(text)

@@ -16,6 +16,7 @@ def approve!
       case action_type
       when 'mark_cell'        
         target.update!(is_marked: true)
+        broadcast_overlay_notification
      when 'claim_win'
         # target is the BingoCard
         game = target.bingo_game
@@ -26,6 +27,7 @@ def approve!
         )
         user.increment!(:karma, 100)
         announce_win_to_twitch(game)
+        broadcast_overlay_win
       end
       update!(status: 'approved')
     end
@@ -60,6 +62,38 @@ def approve!
     # 2. Update the Player's Card (clears the spinner)
     refresh_target_cell
   end
+
+
+  def broadcast_overlay_notification
+  return unless action_type == 'mark_cell' && target.is_a?(BingoCell)
+  
+  game = target.bingo_game
+  broadcast_prepend_to(
+    "game_overlay_#{game.id}",
+    target: "overlay_notifications",
+    partial: "admin/bingo_games/notification",
+    locals: { user: user, cell: target }
+  )
+
+  broadcast_replace_to(
+    "game_overlay_#{game.id}",
+    target: "ticker_container",
+    partial: "admin/bingo_games/ticker",
+    locals: { game: game }
+  )
+end
+
+def broadcast_overlay_win
+  # For 'claim_win', target is the BingoCard
+  game = target.bingo_game
+  
+  broadcast_prepend_to(
+    "game_overlay_#{game.id}",
+    target: "overlay_notifications",
+    partial: "admin/bingo_games/win_notification",
+    locals: { user: user, game: game }
+  )
+end
 
   def announce_win_to_twitch(game)
   # 1. Get the bot user (Seggellion)

@@ -3,7 +3,6 @@ Rails.application.routes.draw do
   # Health check
   # ------------------------------------------------------------
   get "up" => "rails/health#show", as: :rails_health_check
-get "/obs/overlay", to: "obs_overlays#show", as: :obs_overlay
   # ------------------------------------------------------------
   # Authentication
   # ------------------------------------------------------------
@@ -64,6 +63,9 @@ get "/obs/overlay", to: "obs_overlays#show", as: :obs_overlay
     end
 
     resources :bingo_games do
+      collection do
+        get :overlay
+      end
       member do
         post :start
         post :end
