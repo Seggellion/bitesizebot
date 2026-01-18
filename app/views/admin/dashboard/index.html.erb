@@ -1,64 +1,68 @@
-<h1 class="text-3xl font-bold mb-4">Admin Dashboard</h1>
+<%# app/views/admin/dashboard/index.html.erb %>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-  <!-- At a Glance Section -->
-  <div class="bg-white p-6 rounded shadow col-span-2">
-    <h2 class="text-xl font-semibold mb-4">At a Glance</h2>
-    <ul>
-      <li class="mb-2"><strong>1</strong> Post</li>
-      <li class="mb-2"><strong>2</strong> Pages</li>
-      <li class="mb-2"><strong>1</strong> Comment</li>
-    </ul>
+<div class="min-h-screen bg-[#FDF5E6] p-8 font-serif text-[#3E2723]">
+  <header class="mb-8 border-b-2 border-[#8B4513] pb-4 flex justify-between items-center">
+    <h1 class="text-4xl font-bold italic">The Great Smial Dashboard</h1>
+    <div class="text-sm italic">"Not all those who wander are lost, but the bot shouldn't be."</div>
+  </header>
 
-    <%= button_to "Hobbit Theme", set_theme_path(theme: 'Hobbit'), method: :post, class: "btn btn-primary" %>
-    <%= button_to "Dusk Theme", set_theme_path(theme: 'Dusk'), method: :post, class: "btn btn-secondary" %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-[#FFF8DC] border-2 border-[#D2B48C] p-6 rounded-lg shadow-md relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-2 opacity-10">
+          <i class="fas fa-leaf text-4?xl text-green-800"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-4 border-b border-[#D2B48C]">At a Glance in the Shire</h2>
+        <div class="flex gap-8 mb-6">
+          <div class="text-center">
+            <span class="block text-3xl font-bold text-green-800">1</span>
+            <span class="text-sm uppercase tracking-widest">Tale</span>
+          </div>
+          <div class="text-center">
+            <span class="block text-3xl font-bold text-green-800">2</span>
+            <span class="text-sm uppercase tracking-widest">Maps</span>
+          </div>
+          <div class="text-center">
+            <span class="block text-3xl font-bold text-green-800">1</span>
+            <span class="text-sm uppercase tracking-widest">Rumor</span>
+          </div>
+        </div>
 
-  </div>
-
-  <!-- Quick Draft Section -->
-  <div class="bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-semibold mb-4">Quick Draft</h2>
-    <form>
-      <div class="mb-4">
-        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-        <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+        <div class="flex gap-2">
+          <%= button_to "Hobbit Theme", set_theme_path(theme: 'Hobbit'), class: "bg-[#556B2F] text-white px-4 py-2 rounded-full hover:bg-[#6B8E23] transition" %>
+          <%= button_to "Dusk Theme", set_theme_path(theme: 'Dusk'), class: "bg-[#2F4F4F] text-white px-4 py-2 rounded-full hover:bg-[#3E5E5E] transition" %>
+        </div>
       </div>
-      <div class="mb-4">
-        <label for="content" class="block text-sm font-medium text-gray-700">What's on your mind?</label>
-        <textarea id="content" name="content" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+
+      <div class="bg-white border-2 border-green-700 p-6 rounded-lg shadow-inner">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <span class="text-green-700">◈</span> Twitch Bot Machinery
+        </h2>
+
+        <%= render "admin/dashboard/bot_status", setting: SystemSetting.instance %>
+
       </div>
-      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save Draft</button>
-    </form>
-  </div>
-</div>
-
-
-  <!-- Activity Section -->
-  <div class="bg-white p-6 rounded shadow col-span-2">
-    <h2 class="text-xl font-semibold mb-4">Activity</h2>
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold">Recently Published</h3>
-      <p>Nov 9th, 7:59 am - <a href="#" class="text-blue-500 hover:underline">Hello world!</a></p>
     </div>
-    <div>
-      <h3 class="text-lg font-semibold">Recent Comments</h3>
-      <p>From <strong>A RailPress Commenter</strong> on <a href="#" class="text-blue-500 hover:underline">Hello world!</a></p>
-      <p>Hi, this is a comment. To get started with moderating, editing, and deleting comments, please visit the Comments screen in the dashboard.</p>
-      <p class="mt-2"><a href="#" class="text-blue-500 hover:underline">All</a> | <a href="#" class="text-blue-500 hover:underline">Pending</a> | <a href="#" class="text-blue-500 hover:underline">Approved</a> | <a href="#" class="text-blue-500 hover:underline">Spam</a> | <a href="#" class="text-blue-500 hover:underline">Trash</a></p>
-    </div>
-  </div>
 
-  <!-- RailPress Events and News Section -->
-  <div class="bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-semibold mb-4">RailPress Events and News</h2>
-    <p>Attend an upcoming event near you.</p>
-    <p>There aren't any events scheduled near you at the moment. Would you like to <a href="#" class="text-blue-500 hover:underline">organize one</a>?</p>
-    <ul class="mt-4">
-      <li class="mb-2"><a href="#" class="text-blue-500 hover:underline">The Month in RailPress: November 2017</a></li>
-      <li class="mb-2"><a href="#" class="text-blue-500 hover:underline">Akismet: Version 4.0.2 of the Akismet RailPress Plugin Is Now Available</a></li>
-      <li class="mb-2"><a href="#" class="text-blue-500 hover:underline">WPTavern: Jetpack 5.6.1 Increases Security of the Contact Form Module</a></li>
-      <li class="mb-2"><a href="#" class="text-blue-500 hover:underline">WPWeekly Episode 297 – WordCamp US 2017 Recap</a></li>
-    </ul>
+    <div class="space-y-6">
+      <div class="bg-[#FAF3E0] border-2 border-[#8B4513] p-6 rounded-lg shadow-md transform rotate-1">
+        <h2 class="text-xl font-semibold mb-4 border-b border-[#8B4513]">Quick Parchment</h2>
+        <form>
+          <input type="text" placeholder="Title of your tale..." class="w-full mb-3 bg-transparent border-b border-[#D2B48C] focus:outline-none italic">
+          <textarea rows="4" placeholder="What's on your mind, Master Baggins?" class="w-full bg-transparent border-none focus:outline-none resize-none italic"></textarea>
+          <button class="w-full bg-[#8B4513] text-white py-2 rounded hover:bg-[#A0522D]">Seal with Wax</button>
+        </form>
+      </div>
+
+      <div class="bg-[#F5F5DC] p-6 rounded-lg border border-[#D2B48C] text-sm">
+        <h2 class="text-lg font-bold mb-4 text-[#5D4037]">📜 RailPress Gazettes</h2>
+        <ul class="space-y-3">
+          <li><a href="#" class="text-[#8B4513] hover:underline font-bold">The Month in RailPress: Nov 2026</a></li>
+          <li><a href="#" class="text-[#8B4513] hover:underline italic">Akismet: Orc-protection for your comments updated.</a></li>
+          <li><a href="#" class="text-[#8B4513] hover:underline underline-offset-4 decoration-dotted">WPTavern: New Elven plugins spotted in the wild.</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>

@@ -1,0 +1,21 @@
+<%= turbo_frame_tag "bot_status" do %>
+  <div class="flex items-center justify-between p-4 rounded bg-gray-50 border border-gray-200">
+    <div>
+      <p class="font-bold text-[#3E2723]">Bot Status: 
+        <span class="<%= setting.bot_enabled? ? 'text-green-600' : 'text-red-600' %>">
+          <%= setting.bot_enabled? ? "Awake & Feasting" : "Deep in Slumber" %>
+        </span>
+      </p>
+      <p class="text-xs text-gray-500 italic">Broadcaster UID: <%= setting.broadcaster_uid %></p>
+    </div>
+
+<%= button_to admin_system_setting_path(setting, system_setting: { bot_enabled: !setting.bot_enabled }), 
+                  method: :patch, 
+                  class: "#{setting.bot_enabled? ? 'bg-red-800' : 'bg-green-800'} text-white px-6 py-2 rounded-full shadow hover:opacity-90 transition active:scale-95 text-sm font-bold" do %>
+        <%= setting.bot_enabled? ? "Send to Bed" : "Wake Up Bot" %>
+
+                    <% end %>
+
+
+  </div>
+<% end %>

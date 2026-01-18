@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_18_192737) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_18_225826) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -378,6 +378,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_18_192737) do
     t.string "setting_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "system_settings", force: :cascade do |t|
+    t.string "broadcaster_uid"
+    t.boolean "bot_enabled", default: false, null: false
+    t.integer "singleton_guard", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["singleton_guard"], name: "index_system_settings_on_singleton_guard", unique: true
   end
 
   create_table "taggings", force: :cascade do |t|

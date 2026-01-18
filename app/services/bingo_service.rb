@@ -18,13 +18,14 @@ class BingoService
       return end_game(host)
     end
     
-    game = BingoGame.find_by(host: host, status: 'invite')
+    game = BingoGame.find_by(host: host, status: 'active')
     
     return "No active game right now!" unless game
 
     viewer = User.find_or_create_by(uid: uid) do |u|
         u.provider = 'twitch'
         u.username = username
+        u.user_type = 1
         end
 
     case text.downcase

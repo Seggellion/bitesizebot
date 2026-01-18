@@ -4,6 +4,7 @@ class CofferService
     user = User.find_or_create_by(uid: uid) do |u|
       u.username = username
       u.provider = 'twitch'
+      u.user_type = 1
     end
 
     # pineapple

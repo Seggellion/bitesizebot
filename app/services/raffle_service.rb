@@ -113,7 +113,7 @@ end
     raffle = Raffle.find_by(status: 'active')
     return "No active raffle to join!" unless raffle
     
-    user = User.find_or_create_by(uid: uid) { |u| u.username = username; u.provider = 'twitch' }
+    user = User.find_or_create_by(uid: uid) { |u| u.username = username; u.provider = 'twitch'; u.user_type = 1 }
     
     # Safe against duplicates via Model Validation + DB Index
     entry = raffle.raffle_entries.new(user: user)

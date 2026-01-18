@@ -169,6 +169,10 @@ def self.make_id_request(url, token)
 end
 
 def self.handle_notification(event)
+  
+  unless SystemSetting.bot_enabled?
+    return 
+  end
   username = event["chatter_user_login"]
   display_name = event["chatter_user_name"]
   text     = event["message"]["text"].downcase.strip
@@ -193,6 +197,7 @@ def self.handle_notification(event)
   viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     u.first_name = display_name
     u.username = display_name
+    u.user_type = 1
     u.fame = 0 
   end
 

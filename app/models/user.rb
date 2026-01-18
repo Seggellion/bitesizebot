@@ -15,6 +15,9 @@ has_many :won_games, class_name: 'BingoGame', foreign_key: 'winner_id'
 has_many :ledger_entries, dependent: :destroy
 has_many :giveaway_entries, dependent: :destroy
 
+  # Define roles
+  enum :user_type, { admin: 0, regular: 1, bot: 5 }
+
   def can_afford?(cost)
     wallet >= cost
   end
@@ -30,8 +33,6 @@ has_many :won_giveaways, class_name: 'Giveaway', foreign_key: 'winner_id', depen
 
     validates :uid, presence: true, uniqueness: true
 
-  # Define roles
-  enum :user_type, { admin: 0, regular: 1 }
 
 # Helper to check for the specific ban tag
   def banned_from_giveaways?
@@ -65,6 +66,10 @@ end
 
   def admin?
     user_type == 'admin'
+  end
+
+    def bot?
+    user_type == 'bot'
   end
 
   end

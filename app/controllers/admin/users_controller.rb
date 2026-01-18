@@ -12,8 +12,12 @@ module Admin
         # The @user instance variable is set by the set_user method
       end
   
-      def update
+      def update        
         if @user.update(user_params)
+          
+          if @user.user_type == "bot"
+            SystemSetting.instance.update!(broadcaster_uid: @user.uid)
+          end
           redirect_to admin_users_path, notice: 'User was successfully updated.'
         else
           render :edit
@@ -44,7 +48,7 @@ module Admin
       end
   
       def user_params
-        params.require(:user).permit(:name, :email, :user_type)
+        params.require(:user).permit(:name, :user_type)
       end
     end
   end

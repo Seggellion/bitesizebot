@@ -46,11 +46,7 @@
             </td>
             <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
               <div class="text-sm leading-5 text-gray-900">
-                  <%= case user.user_type
-                      when 0 then "Administrator"
-                      when 5 then "Bot"
-                      else "User"
-                      end %>
+                  <%=user.user_type %>
                   </div>
             </td>
                         <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">

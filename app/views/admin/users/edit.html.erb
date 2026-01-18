@@ -4,18 +4,17 @@
 
   <%= form_with model: [:admin, @user], local: true, data: { turbo: true } do |form| %>
     <div class="mb-4">
-      <%= form.label :first_name, "Name", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :first_name, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
-    </div>
-
-    <div class="mb-4">
-      <%= form.label :email, "Email", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.email_field :email, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+      <%= form.label :username, "Username", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_field :username, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
     </div>
 
     <div class="mb-4">
       <%= form.label :user_type, "Role", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.select :user_type, [["Administrator", 0], ["User", 1], ["Bot", 5]], class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
+      <%= form.select :user_type, 
+          User.user_types.keys.map { |type| [type.humanize, type] }, 
+          {}, 
+          { class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" } 
+      %>
     </div>
 
     <div class="mb-4">

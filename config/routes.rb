@@ -57,6 +57,7 @@ Rails.application.routes.draw do
   # ------------------------------------------------------------
   namespace :admin do
     root "dashboard#index"
+resource :system_setting, only: [:update]
 
 resources :custom_commands
 

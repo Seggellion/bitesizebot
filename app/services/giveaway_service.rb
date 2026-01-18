@@ -5,6 +5,7 @@ class GiveawayService
     viewer = User.find_or_create_by(uid: uid) do |u|
       u.provider = 'twitch'
       u.username = username
+      u.user_type = 1
     end
 
     # Find the most recently created open giveaway
