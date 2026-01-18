@@ -21,6 +21,8 @@ def create
 end
 
   def index
+return unless @giveaway 
+
     @total_tickets = @giveaway.giveaway_entries.sum(:tickets_count)
     @unique_users = @giveaway.giveaway_entries.count
     @avg_tickets_per_user = @unique_users.positive? ? (@total_tickets.to_f / @unique_users).round(2) : 0

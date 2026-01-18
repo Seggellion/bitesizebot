@@ -6,6 +6,9 @@ class CofferService
       u.provider = 'twitch'
     end
 
+    # pineapple
+    is_host = (uid == "136591885")
+
     case text.downcase
     when "!coffer"
       "Your balance is #{user.wallet} farthings."
@@ -32,10 +35,46 @@ class CofferService
         "Redeemed '#{name}' for #{final_amount} farthings! (Profit: +#{investment.profit})"
     end
 
+    # MULTISEND START
+
+    when /^!coffer multisend -t(\d+)\s+(\d+)/
+      return "Access Denied: Only the Host can perform mass grants." unless is_host
+      
+      minutes = $1.to_i
+      amount = $2.to_i
+      
+      return "Amount must be greater than 0." if amount <= 0
+      
+      # Logic: Find users updated within the last X minutes
+      active_users = User.where("updated_at >= ?", minutes.minutes.ago)
+      
+      if active_users.any?
+        # Using a transaction for database integrity
+        ActiveRecord::Base.transaction do
+          active_users.find_each do |target_user|
+            CurrencyService.update_balance(
+              user: target_user,
+              amount: amount,
+              type: 'mass_grant',
+              metadata: { 
+                trigger_source: 'twitch_command', 
+                triggered_by: username,
+                timeframe: minutes 
+              }
+            )
+          end
+        end
+        "Mass Grant Successful! Sent #{amount} farthings to #{active_users.count} users active in the last #{minutes}m."
+      else
+        "No users found active in the last #{minutes} minutes."
+      end
+
+      # EOL multisend
+
     when /^!coffer transfer (\d+) (\w+)/
       amount = $1.to_i
       receiver_name = $2.delete('@')
-      receiver = User.find_by(username: receiver_name)
+receiver = User.find_by("LOWER(username) = ?", receiver_name.downcase)
 
       return "User #{receiver_name} not found." unless receiver
       return "You can't transfer to yourself!" if receiver == user

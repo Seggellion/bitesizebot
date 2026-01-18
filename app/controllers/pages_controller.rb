@@ -8,21 +8,23 @@ def show
   theme_template_path = "pages/page-#{template_file}"
   fallback_template = "pages/page-default"
 
-  # Custom logic for screenshots page
-   if @page.slug =='downloads'
-@downloads_by_shard = Download
-  .includes(:shard)
-  .group_by(&:shard)
-  .sort_by { |shard, _| shard.name.downcase }
-  .to_h
-   end
+  # Custom logic for downloads
+  if @page.slug == 'downloads'
+    @downloads_by_shard = Download
+      .includes(:shard)
+      .group_by(&:shard)
+      .sort_by { |shard, _| shard.name.downcase }
+      .to_h
+  end
+
+  # ADD 'return' after authenticate_user! to prevent double rendering
   if @page.slug == 'bingo-card'
-      authenticate_user!
+    authenticate_user! and return
     load_bingo_data
   end
 
-  if @page.slug == 'giveaways'
-      authenticate_user!
+  if @page.slug == 'giveaways'    
+    authenticate_user! and return    
     load_giveaways_data
   end
 

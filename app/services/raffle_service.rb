@@ -7,8 +7,12 @@ class RaffleService
     case text
     # Capture the flag (-s or -m) and the amount (\d+)
     when /^!raffle\s+(-[sm])\s+(\d+)/i
-      return "Only mods can start a raffle." unless is_mod
-      return "A raffle is already in progress!" if @active_raffle_id
+
+    unless is_mod
+        return "Be off with you! You haven't the authority of a Mayor or a Bounder to start a raffle in this Shire."
+    end
+
+        return "A raffle is already in progress!" if @active_raffle_id
       
       flag = $1.downcase
       requested_amount = $2.to_i
@@ -21,10 +25,27 @@ class RaffleService
     when "!raffle join"
       return join_raffle(uid, username)
       
-    when /^!raffle give\s+(.+)/
-      return "Only mods/admins can give points." unless is_mod
-      target_username = $1.strip.gsub('@', '')
-      return give_points(target_username, 10) # Example default
+    when /^!raffle give\s+@?(\w+)\s+(\d+)/i
+        # SECURITY: Only the Broadcaster (uid == bid) can manually give points
+        unless uid.to_s == bid.to_s
+        return "Only the High Mayor (Broadcaster) has the keys to the treasury!"
+        end
+
+        target_username = $1.downcase
+        amount = $2.to_i
+
+        return give_points(target_username, amount)
+
+    when /^!raffle give\s+@?(\w+)/i
+        # Fallback for when no amount is specified (defaults to 10)
+        unless uid.to_s == bid.to_s
+        return "Only the High Mayor can distribute points."
+        end
+
+        target_username = $1.downcase
+        return give_points(target_username, 10)
+
+      
     end
   end
 
@@ -53,6 +74,37 @@ class RaffleService
 
     "🎟️ RAFFLE STARTED! Pool: #{amount} points. 2-4 winners will split it in 60s! Type !raffle join to enter."
   end
+
+  # app/services/raffle_service.rb
+
+def self.give_points(target_username, amount)
+  # Find user case-insensitively
+  user = User.find_by('lower(username) = ?', target_username.downcase)
+  return "User #{target_username} hasn't visited the Shire yet!" unless user
+
+  begin
+    # Use a transaction to ensure both the entry and the wallet update succeed together
+    ActiveRecord::Base.transaction do
+      user.ledger_entries.create!(
+        amount: amount,
+        entry_type: 'manual_grant',
+        metadata: { 
+          reason: "Broadcaster manual grant", 
+          source: "raffle_service" 
+        }
+      )
+      
+      # Update the wallet balance
+      user.increment!(:wallet, amount)
+    end
+
+    "💰 @#{user.username} has been granted #{amount} points! New balance: #{user.wallet}"
+  rescue ActiveRecord::RecordInvalid => e
+    "❌ Failed to grant points: #{e.message}"
+  rescue StandardError => e
+    "❌ An error occurred: #{e.message}"
+  end
+end
 
   # ... join_raffle and announce remain the same ...
   

@@ -3,11 +3,23 @@ class GiveawayEntry < ApplicationRecord
   belongs_to :giveaway
   belongs_to :user
 
+validate :user_must_be_follower, on: :create
+
   # Every time someone joins or adds tickets, update the Admin dashboard
   after_create_commit :broadcast_entry
   after_update_commit :broadcast_entry
 
   private
+
+def user_must_be_follower
+
+    # pineapple
+    broadcaster_id = "136591885" 
+
+    unless TwitchWebsocketListener.is_follower?(broadcaster_id, user.uid)
+      errors.add(:base, "I'm sorry, the grand elf said only friends of the Shire (followers) may enter this party!")
+    end
+  end
 
   def broadcast_entry
     broadcast_prepend_to "giveaway_#{giveaway_id}_entries", 

@@ -47,6 +47,13 @@ has_many :won_giveaways, class_name: 'Giveaway', foreign_key: 'winner_id', depen
   joins(:won_giveaways).where("giveaways.drawn_at >= ?", time_frame.ago)
 end
 
+# app/models/user.rb
+def following_broadcaster?
+  #pineapple
+  broadcaster_id = "136591885" 
+  TwitchWebsocketListener.is_follower?(broadcaster_id, self.uid)
+end
+
 def won_recently?(time_frame)
   won_giveaways.where("drawn_at >= ?", time_frame.ago).exists?
 end

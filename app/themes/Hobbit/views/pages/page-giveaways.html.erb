@@ -41,8 +41,8 @@
               </div>
             </div>
 
-            <%# Participation Progress %>
             <% if current_user %>
+            <% is_following = current_user.following_broadcaster? %>
               <% entry = giveaway.giveaway_entries.find_by(user: current_user) %>
               <div class="mb-8 bg-gray-950 p-4 rounded-2xl border border-gray-800">
                 <div class="flex justify-between text-xs mb-2">
@@ -56,6 +56,7 @@
 
               <%# Join/Buy Actions %>
               <div class="flex flex-col space-y-3">
+              <% if is_following %>
                 <% if entry.nil? %>
                    <%= button_to join_giveaway_path(giveaway, amount: 1), 
                         class: "w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-2xl shadow-lg transition transform active:scale-95" do %>
@@ -69,6 +70,18 @@
                     <% end %>
                   </div>
                 <% end %>
+
+                <% else %>
+                <div class="bg-amber-900/20 border border-amber-700/50 p-6 rounded-2xl text-center">
+                    <p class="text-amber-200 text-sm mb-2 font-bold italic">"You haven't been seen 'round these parts!"</p>
+                    <p class="text-amber-400 text-xs mb-4">Only followers of the channel may join the fellowship. Please follow on Twitch to claim your lembas bread.</p>
+                    <a href="https://twitch.tv/seggellion" target="_blank" class="inline-block bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 rounded-lg font-bold text-sm transition">
+                    Follow to Enter
+                    </a>
+                </div>
+                <% end %>
+
+
               </div>
             <% else %>
               <div class="bg-gray-800 p-6 rounded-2xl text-center">

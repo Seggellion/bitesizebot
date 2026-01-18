@@ -56,8 +56,13 @@ Rails.application.routes.draw do
   # ------------------------------------------------------------
   namespace :admin do
     root "dashboard#index"
-    get "coffer", to: "coffer#index", as: :coffer
-    post 'inject_currency', to: 'coffer#inject_currency'
+
+resources :coffer, only: [:index] do
+    collection do
+      post :inject_currency
+      post :mass_grant
+    end
+  end
 
   resources :giveaways do
       member do

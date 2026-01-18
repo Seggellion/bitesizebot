@@ -9,6 +9,44 @@ class TwitchWebsocketListener
     end
   end
 
+
+  
+    def self.is_follower?(broadcaster_id, user_id)
+  # Broadcaster is always a 'follower' of their own channel
+  
+  return true if broadcaster_id == user_id
+
+  user = User.find_by(username: 'Seggellion')
+  token = user.twitch_access_token
+  client_id = Rails.application.credentials.dig(:twitch, :client_id)
+
+  # Twitch API: Check if user follows broadcaster
+  # Endpoint: GET https://api.twitch.tv/helix/channels/followers?broadcaster_id=X&user_id=Y
+  url = "https://api.twitch.tv/helix/channels/followers?broadcaster_id=#{broadcaster_id}&user_id=#{user_id}"
+  
+  response = HTTParty.get(url, headers: {
+    "Authorization" => "Bearer #{token}",
+    "Client-Id" => client_id
+  })
+
+  # If the "total" field in the response is 1, they are following.
+  if response.code == 200
+    return response.dig("total").to_i > 0
+  elsif response.code == 401
+    # Handle token refresh if necessary, similar to your get_user_id method
+    new_token = TwitchService.refresh_token_for(user)
+    # Retry once
+    retry_res = HTTParty.get(url, headers: {
+      "Authorization" => "Bearer #{new_token}",
+      "Client-Id" => client_id
+    })
+    return retry_res.dig("total").to_i > 0 if retry_res.code == 200
+  end
+
+  false
+end
+
+
   def self.connect(url)
     @current_ws = Faye::WebSocket::Client.new(url)
 
@@ -138,6 +176,18 @@ def self.handle_notification(event)
     uid      = event["chatter_user_id"]     # The person typing
     is_mod = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
 
+
+    unless is_mod || is_follower?(bid, uid)
+    rejection_messages = [
+      "Alas, @#{username}, only friends of the Shire may use these tools. Pray, follow the path (hit follow) to enter!",
+      "I’m sorry, @#{username}, but you haven't been invited to the tea party yet. Follow the channel to join the Fellowship!",
+      "Be gone, foul Orc! Or just follow the channel to prove you're a true Hobbit of the Shire."
+    ]
+    TwitchService.send_chat_message(bid, sid, rejection_messages.sample)
+    return # Stop processing commands
+  end
+
+
 viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     u.first_name = display_name
     u.username = display_name
@@ -145,6 +195,7 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
   end
 
   viewer.increment!(:fame, 1)
+  viewer.touch
 
     # The bot user's ID for sending messages
     user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
@@ -194,7 +245,6 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
         TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
       end
     end
-  
 
 
 
