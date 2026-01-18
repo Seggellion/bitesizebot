@@ -1,5 +1,9 @@
 # app/services/bingo_service.rb
 class BingoService
+
+  REPLACEMENT_COST = 2000
+  MAX_REPLACEMENTS = 2
+
   def self.process_command(uid, username, broadcaster_uid, text)
     host = User.find_by(uid: broadcaster_uid)
     return "Host not found." unless host
@@ -30,6 +34,9 @@ class BingoService
       game.bingo_cards.create!(user: viewer)
       return "Welcome to Bitesize Bingo!"
 
+    when "!bingo replace"
+      return request_replacement(viewer, game)
+
     when "!bingo card"
       return list_card_cells(viewer, game)
 
@@ -47,6 +54,20 @@ class BingoService
       return request_mark(viewer, game, col_letter, row_num)
     end
   end
+
+# app/services/bingo_service.rb
+def self.request_replacement(viewer, game)
+  card = game.bingo_cards.find_by(user: viewer)
+  return "The game has already started! No more replacements." if game.active?
+  return "You need to join the game first!" unless card
+  return "You've reached the replacement limit." if card.replacement_count >= 2
+
+  if card.replace_card!(2000)
+    "Card replaced! 2,000 currency deducted. Check your new card on the website!"
+  else
+    card.errors.full_messages.to_sentence
+  end
+end
 
 def self.explain_cell(viewer, game, col_letter, row_num)
     
@@ -70,7 +91,7 @@ def self.request_win(viewer, game)
   # 1. Immediate validation check
   unless card.verify_win
     viewer.decrement!(:karma, 50)
-    return "False Bingo! You don't have 5 in a row. You've lost some karma."
+    return "False Bingo! You don't have 5 in a row."
   end
 
   # 2. Check if a win claim is already pending for this user

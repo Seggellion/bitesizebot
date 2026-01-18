@@ -10,14 +10,14 @@ class PendingAction < ApplicationRecord
   # Use one consolidated hook for updates
   after_update_commit :handle_action_update
 
-def approve!
+  def approve!
     
     transaction do
       case action_type
       when 'mark_cell'        
         target.update!(is_marked: true)
         broadcast_overlay_notification
-     when 'claim_win'
+      when 'claim_win'
         # target is the BingoCard
         game = target.bingo_game
         game.update!(
@@ -73,6 +73,7 @@ def approve!
         metadata: { giveaway_id: giveaway.id, bingo_game_id: target.bingo_game_id }
       )
   end
+end
 
   def handle_action_update
     # 1. Remove from Admin Dashboard
@@ -135,16 +136,16 @@ rescue => e
   Rails.logger.error "[Twitch Announcement Error] #{e.message}"
 end
 
-def refresh_target_cell
-  if target.is_a?(BingoCell)
-    target.broadcast_refresh 
-  elsif target.is_a?(BingoCard)
-    # Explicitly point to the Hobbit theme folder path
-    broadcast_replace_to target, 
-                         target: "bingo_card_container",
-                         partial: "Hobbit/views/pages/card_layout", 
-                         locals: { card: target, game: target.bingo_game }
+  def refresh_target_cell
+    if target.is_a?(BingoCell)
+      target.broadcast_refresh 
+    elsif target.is_a?(BingoCard)
+      # Explicitly point to the Hobbit theme folder path
+      broadcast_replace_to target, 
+                          target: "bingo_card_container",
+                          partial: "Hobbit/views/pages/card_layout", 
+                          locals: { card: target, game: target.bingo_game }
+    end
   end
-end
 
 end

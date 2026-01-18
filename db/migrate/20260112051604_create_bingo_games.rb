@@ -30,6 +30,7 @@ class CreateBingoGames < ActiveRecord::Migration[8.0]
     create_table :bingo_cards do |t|
       t.references :bingo_game, null: false, foreign_key: true
       t.references :user, null: false, foreign_key: true
+      t.integer :replacement_count, default: 0
       t.timestamps
     end
 

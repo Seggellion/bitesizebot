@@ -71,6 +71,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_18_192737) do
   create_table "bingo_cards", force: :cascade do |t|
     t.bigint "bingo_game_id", null: false
     t.bigint "user_id", null: false
+    t.integer "replacement_count", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["bingo_game_id"], name: "index_bingo_cards_on_bingo_game_id"

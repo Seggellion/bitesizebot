@@ -8,7 +8,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
     provider :twitch,
       twitch_creds[:client_id],
       twitch_creds[:client_secret],
-      scope: "user:read:email user:read:chat user:write:chat user:bot channel:bot"
+      scope: "user:read:email user:read:chat user:write:chat user:bot channel:bot moderator:read:followers"
   end
 
   # Adjust discord if it is also top-level in your credentials

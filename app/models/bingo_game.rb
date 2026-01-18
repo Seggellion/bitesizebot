@@ -12,6 +12,7 @@ class BingoGame < ApplicationRecord
 
   after_update_commit :broadcast_game_end, if: :saved_change_to_status?
   after_update_commit :broadcast_potential_win_cleanup, if: :saved_change_to_winner_id?
+  after_update_commit :broadcast_status_change, if: :saved_change_to_status?
 
   scope :joinable, -> { where(status: 'invite') }
   scope :active, -> { where(status: 'active') }
@@ -48,6 +49,23 @@ end
       bingo_cards.each do |card|
         broadcast_refresh_to card
       end
+    end
+  end
+
+def broadcast_status_change
+    if status == 'active'
+      # When the game goes active, we want to hide the replacement UI for everyone
+      bingo_cards.each do |card|
+        broadcast_replace_to(
+          card,
+          target: "bingo_card_container",
+        partial: "Hobbit/views/pages/card_layout", 
+          locals: { card: card, game: self }
+        )
+      end
+    elsif status == 'ended'
+      # Keep your existing logic for game end
+      bingo_cards.each { |card| broadcast_refresh_to card }
     end
   end
 

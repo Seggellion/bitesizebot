@@ -31,7 +31,7 @@ class TwitchWebsocketListener
 
   # If the "total" field in the response is 1, they are following.
   if response.code == 200
-    return response.dig("total").to_i > 0
+return response.dig("data").present?
   elsif response.code == 401
     # Handle token refresh if necessary, similar to your get_user_id method
     new_token = TwitchService.refresh_token_for(user)
@@ -182,7 +182,7 @@ def self.handle_notification(event)
 
   unless is_mod || is_follower?(bid, uid)
     rejection_messages = [
-      "Alas, @#{username}, only friends of the Shire may use these tools. Pray, follow the path (hit follow) to enter!",
+      "Alas, @#{username}, only friends of the Shire may use these tools. Follow the path (hit follow) to enter!",
       "I’m sorry, @#{username}, but you haven't been invited to the tea party yet. Follow the channel to join the Fellowship!",
       "Be gone, foul Orc! Or just follow the channel to prove you're a true Hobbit of the Shire."
     ]

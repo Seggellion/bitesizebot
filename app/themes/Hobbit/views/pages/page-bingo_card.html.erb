@@ -1,3 +1,7 @@
+<% if @bingo_card %>
 <%= turbo_stream_from @bingo_card %>
 
 <%= render "pages/card_layout", card: @bingo_card, game: @game %>
+<% else %>
+No bingo cards yet!
+<% end %>

@@ -23,7 +23,8 @@ def show
     load_bingo_data
   end
 
-  if @page.slug == 'giveaways'    
+  if @page.slug == 'giveaways'
+    
     authenticate_user! and return    
     load_giveaways_data
   end
@@ -109,20 +110,25 @@ end
 
 
 
-  def load_bingo_data
+def load_bingo_data
+  # 1. Find the active game (or the latest one)
+  @game = BingoGame.current_or_latest
 
-    @bingo_card = current_user.bingo_cards.last
-    @game = @bingo_card.bingo_game
-    
-    # Organize cells into a hash keyed by column letter for easy lookup
-    # e.g., { "B" => [cell, cell...], "I" => [...] }
+  # 2. If no game exists at all in the DB
+  return unless @game
+
+  # 3. Try to find the user's card for this specific game
+  @bingo_card = current_user.bingo_cards.find_by(bingo_game: @game)
+
+  # 4. Only setup grid data if the card exists
+  if @bingo_card
     @grouped_cells = @bingo_card.bingo_cells
                                 .includes(:bingo_item)
                                 .group_by { |cell| cell.bingo_item.column_letter }
     
     @columns = ["B", "I", "N", "G", "O"].first(@game.size)
-
   end
+end
     
     def set_page
       @page = Page.friendly.find(params[:slug])

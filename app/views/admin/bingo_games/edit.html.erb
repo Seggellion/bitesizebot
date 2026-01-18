@@ -8,12 +8,7 @@
         <%= form.label :title, "Game Title (e.g., Friday Night Variety)", class: "block text-sm font-medium text-gray-700" %>
         <%= form.text_field :title, placeholder: "Enter game title...", class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %>
       </div>
-      
-      <div class="mb-4">
-        <%= label_tag :bingo_items_text, "Bingo Phrases (One per line)", class: "block text-sm font-medium text-gray-700" %>
-        <p class="text-xs text-gray-500 mb-2">Provide at least <%= (@bingo_game.size || 5)**2 %> phrases for a full grid.</p>
-        <%= text_area_tag :bingo_items_text, params[:bingo_items_text], rows: 15, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Muted on Mic&#10;Technical Difficulties&#10;Cat on Keyboard..." %>
-      </div>
+
 
       <div class="mb-4 flex justify-end">
         <%= form.submit "Create Game", class: "bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600" %>

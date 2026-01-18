@@ -42,6 +42,7 @@ Rails.application.routes.draw do
     member do
       post :mark_cell
       post :claim_win
+      post :replace_card
     end
   end
 

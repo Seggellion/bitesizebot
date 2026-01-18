@@ -57,6 +57,9 @@
     <% end %>
   </div>
 
+
+  <%= render "Hobbit/views/pages/replacement_section", card: card, game: game %>
+
       <div class="header-main">
       <h1><%= game.title %></h1>
       <p>Status: <span class="badge"><%= game.status %></span></p>

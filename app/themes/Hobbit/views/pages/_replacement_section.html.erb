@@ -1,0 +1,53 @@
+
+<% if game.status == 'invite' %>
+  <div class="mt-8 p-6 bg-[#f4ece1] border-4 border-double border-[#8b5a2b] rounded-lg shadow-inner max-w-md mx-auto text-center font-serif">
+    <h3 class="text-[#3d5a1a] text-xl font-bold mb-2 uppercase tracking-wide">Market Services</h3>
+    
+    <% replacement_limit_reached = card.replacement_count >= 2 %>
+    <% can_afford = card.user.wallet >= 2000 %>
+    
+    <div class="flex flex-col items-center gap-4">
+      <% if !replacement_limit_reached %>
+        <div class="flex items-center justify-center gap-2 text-[#5d4037]">
+          <span class="text-sm italic">"Not all those who wander are lost... but sometimes you need a new map."</span>
+        </div>
+
+        <%= button_to replace_card_bingo_card_path(card),
+            method: :post,
+            disabled: !can_afford,
+            class: "group relative inline-flex flex-col items-center px-8 py-3 rounded-md transition-all duration-300 
+                    #{can_afford ? 'bg-[#5d7a3a] hover:bg-[#3d5a1a] text-[#f4ece1] shadow-lg hover:scale-105' : 'bg-gray-400 cursor-not-allowed opacity-70 text-gray-200'}",
+            data: { confirm: "Spend 2,000 currency for a fresh set of numbers?" } do %>
+          <span class="font-bold text-lg">Request New Card</span>
+          <span class="text-xs opacity-90">Cost: 2,000 Farthings</span>
+        <% end %>
+
+        <div class="space-y-1">
+          <p class="text-sm font-medium text-[#8b5a2b]">
+            Usage: <span class="font-bold"><%= card.replacement_count %> of 2</span> allowed per game
+          </p>
+          
+          <% unless can_afford %>
+            <div class="bg-red-100 border border-red-200 text-red-700 px-3 py-1 rounded-full text-xs animate-pulse">
+              You need <strong><%= number_with_delimiter(2000 - card.user.wallet) %></strong> more currency to afford this.
+            </div>
+          <% end %>
+        </div>
+
+      <% else %>
+        <div class="p-4 bg-[#e8dfd1] rounded border border-dashed border-[#8b5a2b]">
+          <p class="text-[#8b5a2b] font-bold italic text-sm">
+            The shopkeeper shakes his head. "No more maps for you today, friend!"
+          </p>
+          <span class="text-xs text-gray-500">(Maximum replacements reached)</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+
+<% elsif game.status == 'active' %>
+  <div class="mt-4 text-center italic text-[#8b5a2b] font-serif">
+    <p>"The journey has begun; the market is closed for travelers."</p>
+  </div>
+<% end %>

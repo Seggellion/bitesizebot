@@ -17,6 +17,42 @@ def pending_actions
                  .or(PendingAction.where(target: bingo_cells))
   end
 
+ def replace_card!(cost = 2000)
+    transaction do
+      # 1. Create the Ledger Entry
+      # This will trigger the 'user_has_sufficient_funds' validation in LedgerEntry
+      user.ledger_entries.create!(
+        amount: -cost,
+        entry_type: "bingo_card_replacement",
+        metadata: { bingo_game_id: bingo_game_id, bingo_card_id: id }
+      )
+
+      # 2. Update the user's wallet column
+      # We use lock! to prevent race conditions during the balance update
+      user.lock!
+      user.decrement!(:wallet, cost)
+
+      # 3. Regenerate the card
+      bingo_cells.destroy_all
+      generate_cells
+      increment!(:replacement_count)
+
+      # 4. Broadcast the update to the UI
+      # This replaces the 'bingo_card_container' with the new layout
+      broadcast_replace_to(
+        self,
+        target: "bingo_card_container",
+        partial: "Hobbit/views/pages/card_layout", 
+        locals: { card: self, game: self.bingo_game }
+      )
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    # If the ledger validation fails, the transaction rolls back
+    errors.add(:base, "Transaction failed: #{e.record.errors.full_messages.join(', ')}")
+    false
+  end
+
+
   def self.request_mark(viewer, game, col_letter, row_num)
     card = game.bingo_cards.find_by(user_id: viewer.id)
   coord = "#{col_letter.upcase}#{row_num}"
