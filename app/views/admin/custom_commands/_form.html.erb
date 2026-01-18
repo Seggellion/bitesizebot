@@ -1,0 +1,55 @@
+<div class="p-6 bg-slate-900 min-h-screen flex items-center justify-center">
+  <div class="max-w-2xl w-full bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-8">
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-white"><%= @custom_command.new_record? ? "Initialize New Command" : "Modify Command Registry" %></h2>
+      <p class="text-slate-400 text-sm">Define logic and output parameters for the Twitch bot.</p>
+    </div>
+
+    <%= form_with(model: [:admin, @custom_command], local: true, class: "space-y-6") do |f| %>
+      <% if @custom_command.errors.any? %>
+        <div class="p-4 bg-rose-900/20 border border-rose-800 rounded-lg">
+          <h3 class="text-rose-400 text-sm font-bold uppercase mb-2">Validation Errors Detected</h3>
+          <ul class="text-rose-300 text-xs list-disc pl-5 space-y-1">
+            <% @custom_command.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <%= f.label :name, "Activation Trigger", class: "block text-sm font-semibold text-slate-300 uppercase tracking-wider" %>
+          <div class="flex">
+            <span class="inline-flex items-center px-3 bg-slate-700 border border-r-0 border-slate-600 rounded-l text-slate-400 font-mono">!</span>
+            <%= f.text_field :name, placeholder: "discord", class: "w-full bg-slate-900 border border-slate-600 rounded-r px-4 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-600 font-mono" %>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <%= f.label :permission_level, "Access Protocol", class: "block text-sm font-semibold text-slate-300 uppercase tracking-wider" %>
+          <%= f.select :permission_level, [['Public (Everyone)', 'everyone'], ['Restricted (Moderator)', 'moderator']], {}, class: "w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer" %>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <%= f.label :response, "Response Payload", class: "block text-sm font-semibold text-slate-300 uppercase tracking-wider" %>
+        <%= f.text_area :response, rows: 5, placeholder: "Type the bot message...", class: "w-full bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all" %>
+        
+        <div class="mt-4 p-4 bg-slate-700/30 rounded-lg border border-slate-700">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Available Variable Tokens</span>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <span class="text-xs bg-slate-900 text-indigo-400 px-2 py-1 rounded border border-indigo-900/50"><code>{user}</code> - Caller Mention</span>
+            <span class="text-xs bg-slate-900 text-indigo-400 px-2 py-1 rounded border border-indigo-900/50"><code>{touser}</code> - Target Mention</span>
+          </div>
+          <p class="mt-2 text-[11px] text-slate-500 italic italic">Example: "Hey {user}, check out {touser}!"</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-700">
+        <%= link_to 'Abort', admin_custom_commands_path, class: "text-slate-400 hover:text-white transition-colors text-sm font-medium" %>
+        <%= f.submit (@custom_command.new_record? ? "Initialize Command" : "Commit Changes"), class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-bold transition-all shadow-lg cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+</div>

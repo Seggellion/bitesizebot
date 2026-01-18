@@ -169,26 +169,28 @@ def self.make_id_request(url, token)
 end
 
 def self.handle_notification(event)
-    username = event["chatter_user_login"]
-    display_name = event["chatter_user_name"]
-    text     = event["message"]["text"].downcase.strip
-    bid      = event["broadcaster_user_id"] # The host's ID
-    uid      = event["chatter_user_id"]     # The person typing
-    is_mod = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
+  username = event["chatter_user_login"]
+  display_name = event["chatter_user_name"]
+  text     = event["message"]["text"].downcase.strip
+  bid      = event["broadcaster_user_id"]
+  uid      = event["chatter_user_id"]
+  is_mod   = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
 
+  # The bot user's ID for sending messages
+  user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
+  sid  = user.uid
 
-    unless is_mod || is_follower?(bid, uid)
+  unless is_mod || is_follower?(bid, uid)
     rejection_messages = [
       "Alas, @#{username}, only friends of the Shire may use these tools. Pray, follow the path (hit follow) to enter!",
       "I’m sorry, @#{username}, but you haven't been invited to the tea party yet. Follow the channel to join the Fellowship!",
       "Be gone, foul Orc! Or just follow the channel to prove you're a true Hobbit of the Shire."
     ]
     TwitchService.send_chat_message(bid, sid, rejection_messages.sample)
-    return # Stop processing commands
+    return 
   end
 
-
-viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
+  viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     u.first_name = display_name
     u.username = display_name
     u.fame = 0 
@@ -197,56 +199,66 @@ viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
   viewer.increment!(:fame, 1)
   viewer.touch
 
-    # The bot user's ID for sending messages
-    user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
-    sid  = user.uid
+  # 1. HARDCODED COMMANDS (Static Logic)
+  case text
+  when "!ping"
+    TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
+    return
 
-    case text
-    when "!ping"
-      TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
-
-    when /^!raffle/
-      response = RaffleService.process_command(uid, username, bid, text, is_mod)
-      if response
-        TwitchService.send_chat_message(bid, sid, response)
-      end
-
-    when /^!gamble/
-      # We use the 'viewer' object already instantiated earlier in the method
-      response = GambleService.process_command(viewer, text)
-      TwitchService.send_chat_message(bid, sid, "@#{username} #{response}")
-
-    # --- NEW GIVEAWAY COMMANDS ---
-    when "!fellowship", /^!lembas/
-      response_message = GiveawayService.process_command(uid, username, bid, text)
-      if response_message
-        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
-      end
-
-    when /^!coffer/
-      response = CofferService.process_command(uid, username, text, is_mod)
-      TwitchService.send_chat_message(bid, sid, "@#{username}: #{response}")
-
-    # Handle all Bingo commands
-    when /^!bingo/
-      # Permission Check: Only the broadcaster (host) can start or end
-      if text == "!bingo start" || text == "!bingo end"
-        if uid != bid
-          TwitchService.send_chat_message(bid, sid, "@#{username}: Only the host can use that command!")
-          return
-        end
-      end
-
-      # Process the command through the service
-      response_message = BingoService.process_command(uid, username, bid, text)
-      
-      # Send response to Twitch chat if the service returned a message
-      if response_message
-        TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}")
-      end
+  when /^!(addcmd|delcmd)/
+    if is_mod
+      response = CommandService.process_command(text, is_mod, display_name)
+      TwitchService.send_chat_message(bid, sid, response)
+      return
     end
 
+  when /^!raffle/
+    response = RaffleService.process_command(uid, username, bid, text, is_mod)
+    TwitchService.send_chat_message(bid, sid, response) if response
+    return
 
+  when /^!gamble/
+    response = GambleService.process_command(viewer, text)
+    TwitchService.send_chat_message(bid, sid, "@#{username} #{response}")
+    return
 
+  when "!fellowship", /^!lembas/
+    response_message = GiveawayService.process_command(uid, username, bid, text)
+    TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}") if response_message
+    return
+
+  when /^!coffer/
+    response = CofferService.process_command(uid, username, text, is_mod)
+    TwitchService.send_chat_message(bid, sid, "@#{username}: #{response}")
+    return
+
+  when /^!bingo/
+    if (text == "!bingo start" || text == "!bingo end") && uid != bid
+      TwitchService.send_chat_message(bid, sid, "@#{username}: Only the host can use that command!")
+      return
+    end
+
+    response_message = BingoService.process_command(uid, username, bid, text)
+    TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}") if response_message
+    return
   end
+
+  # 2. DYNAMIC DATABASE COMMANDS (Lookup)
+  if text.start_with?("!")
+    command_name = text.delete_prefix("!").split(" ").first
+    custom_cmd = CustomCommand.cached_find(command_name)
+
+    if custom_cmd
+      # Permission check
+      if custom_cmd.permission_level == 'moderator' && !is_mod
+        return 
+      end
+
+      # Variable parsing
+      final_message = custom_cmd.response.gsub("{user}", "@#{username}")
+      TwitchService.send_chat_message(bid, sid, final_message)
+    end
+  end
+end 
+
 end

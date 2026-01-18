@@ -57,6 +57,8 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#index"
 
+resources :custom_commands
+
 resources :coffer, only: [:index] do
     collection do
       post :inject_currency

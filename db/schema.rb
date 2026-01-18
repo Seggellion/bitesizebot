@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_17_195340) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_18_192737) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -161,6 +161,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_195340) do
     t.string "country_code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "custom_commands", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "response", null: false
+    t.string "author", null: false
+    t.string "permission_level", default: "everyone"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_custom_commands_on_name", unique: true
   end
 
   create_table "downloads", force: :cascade do |t|
