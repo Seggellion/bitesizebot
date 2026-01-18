@@ -25,6 +25,7 @@ If you are familiar with how WordPress separates *core* and *themes*, Railpress 
 - Installation
 - Configuration
 - Usage
+- Twitch modules
 - Themes
 - Admin Interface
 - Deployment
