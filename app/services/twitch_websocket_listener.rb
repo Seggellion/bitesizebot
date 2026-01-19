@@ -17,6 +17,11 @@ class TwitchWebsocketListener
   bot_user = User.bot_user
   return false unless bot_user&.twitch_access_token.present?
 
+puts "is_follower - BOT USERNAME: #{bot_user.username}"
+
+puts "is_follower - BROADCASTER ID: #{broadcaster_id}"
+
+
   token = bot_user.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
@@ -40,6 +45,8 @@ class TwitchWebsocketListener
 
     return retry_res.dig("data").present? if retry_res.code == 200
   end
+
+puts "FAILED FOLLOW CHECK"
 
   false
 end
@@ -114,6 +121,11 @@ def self.subscribe_to_chat(session_id)
 
   bid = broadcaster&.uid
   sid = bot&.uid
+
+puts "SUBSCRIBE - BOT USERNAME: #{bot.username}"
+
+puts "SUBSCRIBE - BROADCASTER USERNAME: #{broadcaster.username}"
+
 
   if bid.blank? || sid.blank?
     puts "[Twitch WS] ABORTING: Could not find IDs. (Broadcaster: #{bid.inspect}, Bot: #{sid.inspect})"
