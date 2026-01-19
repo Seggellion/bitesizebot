@@ -20,7 +20,7 @@ bot_user = User.bot.first
 return false unless bot_user
 
 
-token = user.twitch_access_token
+token = bot_user.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
   # Twitch API: Check if user follows broadcaster
@@ -37,7 +37,7 @@ token = user.twitch_access_token
 return response.dig("data").present?
   elsif response.code == 401
     # Handle token refresh if necessary, similar to your get_user_id method
-    new_token = TwitchService.refresh_token_for(user)
+    new_token = TwitchService.refresh_token_for(bot_user)
     # Retry once
     retry_res = HTTParty.get(url, headers: {
       "Authorization" => "Bearer #{new_token}",
