@@ -13,8 +13,7 @@ validate :user_must_be_follower, on: :create
 
 def user_must_be_follower
 
-    # pineapple
-    broadcaster_id = "136591885" 
+    broadcaster_id = User.broadcaster.uid
 
     unless TwitchWebsocketListener.is_follower?(broadcaster_id, user.uid)
       errors.add(:base, "I'm sorry, the grand elf said only friends of the Shire (followers) may enter this party!")

@@ -122,8 +122,8 @@ def self.subscribe_to_chat(session_id)
       return
     end
 
-    user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
-    token = user.twitch_access_token
+    # user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
+    token = bot.twitch_access_token
     client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
 
