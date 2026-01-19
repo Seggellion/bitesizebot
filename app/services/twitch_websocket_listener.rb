@@ -132,6 +132,9 @@ puts "SUBSCRIBE - BROADCASTER USERNAME: #{broadcaster.username}"
     return
   end
 
+puts "SUBSCRIBE - BOT Access token: #{bot.twitch_access_token}"
+
+
   token = bot.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
@@ -197,7 +200,7 @@ def self.handle_notification(event)
   # The bot user's ID for sending messages
   user = User.bot.first
   sid  = user.uid
-
+puts "NOTIFICATION - NOTIFICATION STARTED!"
   unless is_mod || is_follower?(bid, uid)
     rejection_messages = [
       "Alas, @#{username}, only friends of the Shire may use these tools. Follow the path (hit follow) to enter!",
@@ -207,7 +210,7 @@ def self.handle_notification(event)
     TwitchService.send_chat_message(bid, sid, rejection_messages.sample)
     return 
   end
-
+puts "NOTIFICATION - ATTEMPTING TO CREATE USER"
   viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
     u.first_name = display_name
     u.username = display_name
@@ -217,6 +220,7 @@ def self.handle_notification(event)
 
   viewer.increment!(:fame, 1)
   viewer.touch
+puts "NOTIFICATION - RUN COMMANDS"
 
   # 1. HARDCODED COMMANDS (Static Logic)
   case text
