@@ -11,43 +11,39 @@ class TwitchWebsocketListener
 
 
   
-    def self.is_follower?(broadcaster_id, user_id)
-  # Broadcaster is always a 'follower' of their own channel
-  
+ def self.is_follower?(broadcaster_id, user_id)
   return true if broadcaster_id == user_id
 
-bot_user = User.bot.first
-return false unless bot_user
+  bot_user = User.bot_user
+  return false unless bot_user&.twitch_access_token.present?
 
-
-token = bot_user.twitch_access_token
+  token = bot_user.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
-  # Twitch API: Check if user follows broadcaster
-  # Endpoint: GET https://api.twitch.tv/helix/channels/followers?broadcaster_id=X&user_id=Y
   url = "https://api.twitch.tv/helix/channels/followers?broadcaster_id=#{broadcaster_id}&user_id=#{user_id}"
-  
+
   response = HTTParty.get(url, headers: {
     "Authorization" => "Bearer #{token}",
     "Client-Id" => client_id
   })
 
-  # If the "total" field in the response is 1, they are following.
   if response.code == 200
-return response.dig("data").present?
+    return response.dig("data").present?
   elsif response.code == 401
-    # Handle token refresh if necessary, similar to your get_user_id method
     new_token = TwitchService.refresh_token_for(bot_user)
-    # Retry once
+    return false unless new_token.present?
+
     retry_res = HTTParty.get(url, headers: {
       "Authorization" => "Bearer #{new_token}",
       "Client-Id" => client_id
     })
-    return retry_res.dig("total").to_i > 0 if retry_res.code == 200
+
+    return retry_res.dig("data").present? if retry_res.code == 200
   end
 
   false
 end
+
 
 
   def self.connect(url)
@@ -111,40 +107,43 @@ end
     end
   end
 
+
 def self.subscribe_to_chat(session_id)
-    # Fetch IDs and confirm they aren't nil
-    bid = User.broadcaster.uid
-    bot = User.bot.first
-    sid = bot&.uid # The Bot's numerical ID
+  broadcaster = User.broadcaster
+  bot = User.bot_user
 
-    if bid.nil? || sid.nil?
-      puts "[Twitch WS] ABORTING: Could not find IDs. (Broadcaster: #{bid.inspect}, Bot: #{sid.inspect})"
-      return
-    end
+  bid = broadcaster&.uid
+  sid = bot&.uid
 
-    token = bot.twitch_access_token
-    client_id = Rails.application.credentials.dig(:twitch, :client_id)
-
-
-    response = HTTParty.post("https://api.twitch.tv/helix/eventsub/subscriptions", 
-      headers: {
-        "Authorization" => "Bearer #{token}",
-        "Client-Id"     => client_id,
-        "Content-Type"  => "application/json"
-      },
-      body: {
-        type: "channel.chat.message",
-        version: "1",
-        condition: { 
-          broadcaster_user_id: bid.to_s, # Ensure it's a string
-          user_id: sid.to_s              # Ensure it's a string
-        },
-        transport: { method: "websocket", session_id: session_id }
-      }.to_json
-    )
-    
-    puts "[Twitch WS] Subscription Result: #{response.code} - #{response.body}"
+  if bid.blank? || sid.blank?
+    puts "[Twitch WS] ABORTING: Could not find IDs. (Broadcaster: #{bid.inspect}, Bot: #{sid.inspect})"
+    return
   end
+
+  token = bot.twitch_access_token
+  client_id = Rails.application.credentials.dig(:twitch, :client_id)
+
+  response = HTTParty.post(
+    "https://api.twitch.tv/helix/eventsub/subscriptions",
+    headers: {
+      "Authorization" => "Bearer #{token}",
+      "Client-Id"     => client_id,
+      "Content-Type"  => "application/json"
+    },
+    body: {
+      type: "channel.chat.message",
+      version: "1",
+      condition: {
+        broadcaster_user_id: bid.to_s,
+        user_id: sid.to_s
+      },
+      transport: { method: "websocket", session_id: session_id }
+    }.to_json
+  )
+
+  puts "[Twitch WS] Subscription Result: #{response.code} - #{response.body}"
+end
+
 
  def self.get_user_id(login = nil)
   user = User.bot.first

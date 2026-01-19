@@ -33,6 +33,9 @@ has_many :won_giveaways, class_name: 'Giveaway', foreign_key: 'winner_id', depen
 
     validates :uid, presence: true, uniqueness: true
 
+ def self.bot_user
+    find_by(user_type: :bot)
+  end
 
 # Helper to check for the specific ban tag
   def banned_from_giveaways?
