@@ -6,7 +6,8 @@
           <%= setting.bot_enabled? ? "Awake & Feasting" : "Deep in Slumber" %>
         </span>
       </p>
-      <p class="text-xs text-gray-500 italic">Broadcaster UID: <%= setting.broadcaster_uid %></p>
+      <p class="text-xs text-gray-500 italic">Bot UID: <%= setting.bot_uid %></p>
+        <p class="text-xs text-gray-500 italic">Broadcaster UID: <%= setting.broadcaster_uid %></p>
     </div>
 
 <%= button_to admin_system_setting_path(setting, system_setting: { bot_enabled: !setting.bot_enabled }), 

@@ -15,6 +15,12 @@ class SystemSetting < ApplicationRecord
     instance.reload.broadcaster_uid
   end
 
+    def self.bot_uid
+    # We reload the instance to get fresh data from the DB disk
+    instance.reload.bot_uid
+  end
+
+
   def self.bot_enabled?
     # We reload the instance to get fresh data from the DB disk
     instance.reload.bot_enabled

@@ -19,6 +19,6 @@ def update
 
   def setting_params
     # Ensure bot_enabled is cast to a boolean properly
-    params.require(:system_setting).permit(:bot_enabled, :broadcaster_uid)
+    params.require(:system_setting).permit(:bot_enabled,:bot_uid, :broadcaster_uid)
   end
 end

@@ -16,6 +16,8 @@ module Admin
         if @user.update(user_params)
           
           if @user.user_type == "bot"
+            SystemSetting.instance.update!(bot_uid: @user.uid)
+          elsif @user.username == Setting.get("broadcaster_username")
             SystemSetting.instance.update!(broadcaster_uid: @user.uid)
           end
           redirect_to admin_users_path, notice: 'User was successfully updated.'

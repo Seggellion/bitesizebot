@@ -116,9 +116,7 @@ def broadcast_overlay_win
 end
 
   def announce_win_to_twitch(game)
-  # 1. Get the bot user (Seggellion)
-  # pineapple
-  bot_user = User.find_by(first_name: 'Seggellion')
+  bot_user = User.bot
   return unless bot_user
   
   # 2. Prepare the victory message

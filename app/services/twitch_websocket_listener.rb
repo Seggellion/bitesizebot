@@ -16,8 +16,11 @@ class TwitchWebsocketListener
   
   return true if broadcaster_id == user_id
 
-  user = User.find_by(username: 'Seggellion')
-  token = user.twitch_access_token
+bot_user = User.bot.first
+return false unless bot_user
+
+
+token = user.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
   # Twitch API: Check if user follows broadcaster
@@ -110,8 +113,9 @@ end
 
 def self.subscribe_to_chat(session_id)
     # Fetch IDs and confirm they aren't nil
-    bid = get_user_id("seggellion")
-    sid = get_user_id(nil) # This gets the ID of the token owner
+    bid = User.broadcaster.uid
+    bot = User.bot.first
+    sid = bot&.uid # The Bot's numerical ID
 
     if bid.nil? || sid.nil?
       puts "[Twitch WS] ABORTING: Could not find IDs. (Broadcaster: #{bid.inspect}, Bot: #{sid.inspect})"
@@ -144,7 +148,7 @@ def self.subscribe_to_chat(session_id)
   end
 
  def self.get_user_id(login = nil)
-  user = User.find_by(first_name: 'Seggellion')
+  user = User.bot
   return nil unless user
 
   url = login ? "https://api.twitch.tv/helix/users?login=#{login}" : "https://api.twitch.tv/helix/users"

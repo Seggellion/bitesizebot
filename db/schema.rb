@@ -382,6 +382,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_18_225826) do
 
   create_table "system_settings", force: :cascade do |t|
     t.string "broadcaster_uid"
+    t.string "bot_uid"
     t.boolean "bot_enabled", default: false, null: false
     t.integer "singleton_guard", default: 0, null: false
     t.datetime "created_at", null: false

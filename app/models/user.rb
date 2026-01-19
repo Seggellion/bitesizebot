@@ -50,8 +50,7 @@ end
 
 # app/models/user.rb
 def following_broadcaster?
-  #pineapple
-  broadcaster_id = "136591885" 
+  broadcaster_id = SystemSetting.broadcaster_uid
   TwitchWebsocketListener.is_follower?(broadcaster_id, self.uid)
 end
 
@@ -71,6 +70,12 @@ end
     def bot?
     user_type == 'bot'
   end
+
+
+  def self.broadcaster
+    User.find_by_uid(SystemSetting.broadcaster_uid)
+  end
+  
 
   end
   
