@@ -122,7 +122,6 @@ def self.subscribe_to_chat(session_id)
       return
     end
 
-    # user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
     token = bot.twitch_access_token
     client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
@@ -185,7 +184,7 @@ def self.handle_notification(event)
   is_mod   = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
 
   # The bot user's ID for sending messages
-  user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
+  user = User.bot.first
   sid  = user.uid
 
   unless is_mod || is_follower?(bid, uid)
