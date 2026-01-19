@@ -1,7 +1,7 @@
 # app/services/twitch_service.rb
 class TwitchService
   def self.send_chat_message(broadcaster_id, sender_id, message_text)
-    bot_user = User.bot
+    bot_user = User.bot_user
     return unless bot_user&.twitch_access_token
 
     response = post_message(broadcaster_id, sender_id, message_text, bot_user.twitch_access_token)
