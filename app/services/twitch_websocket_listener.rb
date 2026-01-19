@@ -148,7 +148,7 @@ def self.subscribe_to_chat(session_id)
   end
 
  def self.get_user_id(login = nil)
-  user = User.bot
+  user = User.bot.first
   return nil unless user
 
   url = login ? "https://api.twitch.tv/helix/users?login=#{login}" : "https://api.twitch.tv/helix/users"
