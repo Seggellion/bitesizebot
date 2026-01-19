@@ -122,17 +122,11 @@ def self.subscribe_to_chat(session_id)
   bid = broadcaster&.uid
   sid = bot&.uid
 
-puts "SUBSCRIBE - BOT USERNAME: #{bot.username}"
-
-puts "SUBSCRIBE - BROADCASTER USERNAME: #{broadcaster.username}"
-
 
   if bid.blank? || sid.blank?
     puts "[Twitch WS] ABORTING: Could not find IDs. (Broadcaster: #{bid.inspect}, Bot: #{sid.inspect})"
     return
   end
-
-puts "SUBSCRIBE - BOT Access token: #{bot.twitch_access_token}"
 
 
   token = bot.twitch_access_token
