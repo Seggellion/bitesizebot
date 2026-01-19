@@ -1,6 +1,3 @@
-# app/services/twitch_connector.rb
-require 'twitch-chat'
-
 class TwitchConnector
   def self.start
     client = Twitch::Chat::Client.new(

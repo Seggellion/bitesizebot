@@ -62,7 +62,7 @@ gem 'byebug'
 gem "shopify_api"
 gem 'sitemap_generator'
 gem 'omniauth-microsoft_graph'
-
+gem 'twitch-chat'
 gem 'faye-websocket'
 gem 'eventmachine'
 gem 'httparty' 
