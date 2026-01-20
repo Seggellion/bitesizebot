@@ -50,15 +50,16 @@ class RaffleService
 
 def self.start_threaded_raffle(bid, amount, flag)
   host = User.find_by(uid: bid)
-  # Store the flag (raffle_type) so we can use it during finalization
   raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active', raffle_type: flag)
+  
+  # ✅ ADD THIS: Track the active raffle ID so the "already in progress" check works
+  @active_raffle_id = raffle.id
   
   job_class = "RaffleFinalizerJob".constantize
   job_class.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
   job_class.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
   job_class.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
-  # Dynamic announcement based on flag
   mode_text = (flag == '-s') ? "One lucky winner takes it all!" : "2-4 winners will split the pot!"
   "🎟️ RAFFLE STARTED! Pool: #{amount} points. #{mode_text} Type !raffle join to enter."
 end
@@ -115,6 +116,7 @@ end
 def self.finalize_raffle(raffle, bid)
   winners = raffle.select_and_payout_winners!
   raffle.update(status: 'completed') 
+  @active_raffle_id = nil
   Rails.cache.delete("active_raffle_#{bid}")
 
   if winners.any?

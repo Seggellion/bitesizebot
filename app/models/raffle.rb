@@ -21,7 +21,7 @@ def select_and_payout_winners!
   payout_per_person = (self.prize_amount.to_f / winners.size).floor
 
   # Payout logic
-  Transaction.transaction do
+ActiveRecord::Base.transaction do
     winners.each do |winner|
       winner.ledger_entries.create!(
         amount: payout_per_person,
