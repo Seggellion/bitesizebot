@@ -21,9 +21,6 @@ class RaffleService
       final_amount = [requested_amount, MAX_PRIZE].min
       
       return start_threaded_raffle(bid, final_amount, flag)
-
-    when "!raffle join"
-      return join_raffle(uid, username)
       
     when /^!raffle give\s+@?(\w+)\s+(\d+)/i
         # SECURITY: Only the Broadcaster (uid == bid) can manually give points
@@ -45,6 +42,8 @@ class RaffleService
         target_username = $1.downcase
         return give_points(target_username, 10)
 
+    when "!raffle"
+        return join_raffle(uid, username)
       
     end
   end
@@ -114,7 +113,7 @@ end
   def self.finalize_raffle(raffle, bid)
     winners = raffle.select_and_payout_winners!
     @active_raffle_id = nil
-raffle.update(status: 'completed') 
+    raffle.update(status: 'completed') 
     
     # Clear the cache
     Rails.cache.delete("active_raffle_#{bid}")
