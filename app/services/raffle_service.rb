@@ -50,20 +50,18 @@ class RaffleService
   end
 
 def self.start_threaded_raffle(bid, amount, flag)
-  host = User.find_by(uid: bid)
-  raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active')
-  
-  # Use Redis to track the active raffle instead of a class variable
-  # This makes it accessible across all Heroku dynos/processes
-  Rails.cache.write("active_raffle_#{bid}", raffle.id)
+    host = User.find_by(uid: bid)
+    raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active')
+    
+    # ✅ FIX: Use string constantize to prevent "uninitialized constant" during boot
+    job_class = "RaffleFinalizerJob".constantize
+    
+    job_class.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
+    job_class.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
+    job_class.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
-  # ✅ Schedule jobs instead of threads
-  ::RaffleFinalizerJob.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
-  ::RaffleFinalizerJob.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
-  ::RaffleFinalizerJob.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
-
-  "🎟️ RAFFLE STARTED! Pool: #{amount} points..."
-end
+    "🎟️ RAFFLE STARTED! Pool: #{amount} points. Winners split it in 60s! Type !raffle join to enter."
+  end
 
   # app/services/raffle_service.rb
 
