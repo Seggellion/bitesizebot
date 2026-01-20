@@ -42,7 +42,7 @@ class RaffleService
         target_username = $1.downcase
         return give_points(target_username, 10)
 
-    when "!raffle"
+    when "!gimme"
         return join_raffle(uid, username)
       
     end

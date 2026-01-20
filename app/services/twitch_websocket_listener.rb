@@ -251,7 +251,7 @@ puts "NOTIFICATION - RUN COMMANDS"
       return
     end
 
-  when /^!raffle/
+  when /^!raffle/, /^!gimme/
     response = RaffleService.process_command(uid, username, bid, text, is_mod)
     TwitchService.send_chat_message(bid, sid, response) if response
     return
