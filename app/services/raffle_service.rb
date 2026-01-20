@@ -130,7 +130,7 @@ raffle.update(status: 'completed')
   end
 
   def self.announce(bid, message)
-    bot_user = User.where(provider: 'twitch').where.not(twitch_access_token: nil).first
+    bot_user = User.bot_user
     return unless bot_user
     
     TwitchService.send_chat_message(bid, bot_user.uid, message)
