@@ -1,5 +1,6 @@
 # app/services/raffle_service.rb
 class RaffleService
+  RaffleFinalizerJob
   @active_raffle_id = nil
   MAX_PRIZE = 500 # Internal maximum as requested
 
@@ -116,6 +117,10 @@ end
   def self.finalize_raffle(raffle, bid)
     winners = raffle.select_and_payout_winners!
     @active_raffle_id = nil
+raffle.update(status: 'completed') 
+    
+    # Clear the cache
+    Rails.cache.delete("active_raffle_#{bid}")
 
     if winners.any?
       names = winners.map { |w| "@#{w.username}" }.join(", ")
