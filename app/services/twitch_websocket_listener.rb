@@ -266,7 +266,7 @@ puts "NOTIFICATION - RUN COMMANDS"
     TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}") if response_message
     return
 
-  when /^!coffer/
+  when /^!coffer/, /^!market/
     response = CofferService.process_command(uid, username, text, is_mod)
     TwitchService.send_chat_message(bid, sid, "@#{username}: #{response}")
     return
@@ -294,7 +294,7 @@ puts "NOTIFICATION - RUN COMMANDS"
       end
 
       # Variable parsing
-      
+
       final_message = custom_cmd.response.gsub("{user}", "@#{username}")
       TwitchService.send_chat_message(bid, sid, final_message)
     end
