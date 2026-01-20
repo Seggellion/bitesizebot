@@ -1,6 +1,5 @@
 # app/services/bingo_service.rb
 class BingoService
-
   REPLACEMENT_COST = 2000
   MAX_REPLACEMENTS = 2
 
@@ -8,54 +7,72 @@ class BingoService
     host = User.find_by(uid: broadcaster_uid)
     return "Host not found." unless host
 
-    # Handle commands that don't necessarily require an active game first
-    case text.downcase
+    command = text.downcase.strip
+    
+    # 1. Handle Global Commands (Can be run anytime to start/end cycles)
+    case command
     when "!bingo start"
       return start_game(host)
-    when "!bingo halt"
-      return halt_game(host)
     when "!bingo end"
       return end_game(host)
     end
-    
-    game = BingoGame.find_by(host: host, status: 'invite')
-    
-    return "No active game right now!" unless game
 
+    # 2. Find the current game (either invite or active)
+    game = BingoGame.where(host: host, status: ['invite', 'active']).last
+    return "No active game right now! Type !bingo start to begin." unless game
+
+    # 3. Identify the Viewer
     viewer = User.find_or_create_by(uid: uid) do |u|
-        u.provider = 'twitch'
-        u.username = username
-        u.user_type = 1
-        end
+      u.provider = 'twitch'
+      u.username = username
+      u.user_type = 1
+    end
 
-    case text.downcase
-    when "!bingo join"        
-      return "The game has already started! Too late to join." if game.active?
-      return "You're already in!" if game.bingo_cards.exists?(user: viewer)
-      game.bingo_cards.create!(user: viewer)
-      return "Welcome to Bitesize Bingo!"
+    # 4. State-Based Command Gatekeeping
+    case game.status
+    when 'invite'
+      case command
+      when "!bingo join"
+        return join_game(viewer, game)
+      when "!bingo halt"
+        return halt_game(host)
+      when "!bingo replace" # Assuming replace is allowed during invite
+        return request_replacement(viewer, game)
+      else
+        return "Game is in signup mode. Use !bingo join to enter!"
+      end
 
-    when "!bingo replace"
-      return request_replacement(viewer, game)
-
-    when "!bingo card"
-      return list_card_cells(viewer, game)
-
-    when "!bingo win"
-      return request_win(viewer, game)
-
-    when /^!bingo explain\s+([a-z])(\d+)/i
-      col_letter = $1.upcase
-      row_num = $2.to_i
-      return explain_cell(viewer, game, col_letter, row_num)
-
-    when /^!bingo mark\s+([a-z])(\d+)/i
-      col_letter = $1.upcase      
-      row_num = $2.to_i
-      return request_mark(viewer, game, col_letter, row_num)
+    when 'active'
+      case command
+      when "!bingo card"
+        return list_card_cells(viewer, game)
+      when "!bingo win"
+        return request_win(viewer, game)
+      when /^!bingo mark\s+([a-z])(\d+)/i
+        return handle_mark(viewer, game, $1, $2)
+      when /^!bingo explain\s+([a-z])(\d+)/i
+        return explain_cell(viewer, game, $1, $2)
+      when "!bingo join"
+        return "The game has already started! Too late to join."
+      else
+        return "Command not recognized or not allowed during active play."
+      end
     end
   end
 
+  # --- Helper Methods for Cleanliness ---
+
+  def self.join_game(viewer, game)
+    return "You're already in!" if game.bingo_cards.exists?(user: viewer)
+    game.bingo_cards.create!(user: viewer)
+    "Welcome to Bitesize Bingo! Your card is ready."
+  end
+
+  def self.handle_mark(viewer, game, col, row)
+    request_mark(viewer, game, col.upcase, row.to_i)
+  end
+
+  
 # app/services/bingo_service.rb
 def self.request_replacement(viewer, game)
   card = game.bingo_cards.find_by(user: viewer)
