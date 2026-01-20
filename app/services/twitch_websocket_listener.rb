@@ -191,6 +191,8 @@ def self.handle_notification(event)
   uid      = event["chatter_user_id"]
   is_mod   = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
 
+  return unless text.start_with?("!")
+
   # The bot user's ID for sending messages
   user = User.bot.first
   sid  = user.uid
@@ -199,7 +201,27 @@ puts "NOTIFICATION - NOTIFICATION STARTED!"
     rejection_messages = [
       "Alas, @#{username}, only friends of the Shire may use these tools. Follow the path (hit follow) to enter!",
       "I’m sorry, @#{username}, but you haven't been invited to the tea party yet. Follow the channel to join the Fellowship!",
-      "Be gone, foul Orc! Or just follow the channel to prove you're a true Hobbit of the Shire."
+      "Be gone, foul Orc! Or just follow the channel to prove you're a true Hobbit of the Shire.",
+      "Hold fast, @#{username}. The Shire gates remain closed to strangers. Follow the channel to be welcomed inside.",
+      "Easy there, @#{username}. Not all who wander are lost, but followers find the good ale faster.",
+      "Beg pardon, @#{username}, but this path is for Shirefolk only. A follow will set things right.",
+      "Oi now, @#{username}. You’ll need a bit of Hobbit courage. Follow the channel to continue your journey.",
+      "Sorry, @#{username}. This pipe-weed is for friends of the Shire. Follow along and have a seat.",
+      "Steady on, @#{username}. The Green Dragon serves followers first. Tap follow and come on in.",
+      "Ah ah, @#{username}. Even Gandalf knocked before entering. Follow the channel to gain passage.",
+      "The road goes ever on and on, @#{username}, but it starts with a follow.",
+      "Not so fast, @#{username}. The Fellowship favors those who swear fealty with a follow.",
+      "Careful, @#{username}. These are quiet lands. Follow the channel and speak freely.",
+      "Begging your pardon, @#{username}, but Shire business is for Shire friends. Follow to join us.",
+      "Whoa there, @#{username}. Second breakfast is followers only. Follow the channel to claim yours.",
+      "You seem a decent sort, @#{username}, but the Hobbits insist on a follow first.",
+      "The door is round and welcoming, @#{username}, but only followers may knock.",
+      "Mind the hedges, @#{username}. A follow will see you safely into the Shire.",
+      "Hold your ponies, @#{username}. Even Bilbo had to settle in. Follow the channel to stay awhile.",
+      "Shire law, @#{username}. No adventuring without a follow.",
+      "The ale is warm and the fire is lit, @#{username}. Follow the channel and pull up a chair.",
+      "Now now, @#{username}. You’re almost home. Just follow the channel to step inside.",
+      "Patience, @#{username}. The Shire welcomes all friends, once they follow the road."
     ]
     TwitchService.send_chat_message(bid, sid, rejection_messages.sample)
     return 
