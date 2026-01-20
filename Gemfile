@@ -31,7 +31,7 @@ gem "jbuilder"
 
 # Use Redis adapter to run Action Cable in production
 gem "redis", ">= 4.0.1"
-
+gem 'sidekiq'
 gem 'profanity-filter'
 gem 'jsonapi-serializer'
 

@@ -350,6 +350,12 @@ GEM
       securerandom
       sorbet-runtime
       zeitwerk (~> 2.5)
+    sidekiq (7.3.10)
+      base64
+      connection_pool (>= 2.3.0, < 3)
+      logger
+      rack (>= 2.2.4, < 3.3)
+      redis-client (>= 0.23.0, < 1)
     signet (0.21.0)
       addressable (~> 2.8)
       faraday (>= 0.17.5, < 3.a)
@@ -439,6 +445,7 @@ DEPENDENCIES
   selenium-webdriver
   sendgrid-ruby
   shopify_api
+  sidekiq
   sitemap_generator
   sprockets-rails
   stimulus-rails
