@@ -61,7 +61,7 @@ def self.start_threaded_raffle(bid, amount, flag)
   job_class.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
   mode_text = (flag == '-s') ? "One lucky winner takes it all!" : "2-4 winners will split the pot!"
-  "🎟️ RAFFLE STARTED! Pool: #{amount} points. #{mode_text} Type !raffle join to enter."
+  "🎟️ RAFFLE STARTED! Pool: #{amount} points. #{mode_text} Type !gimme to enter."
 end
 
   # app/services/raffle_service.rb
@@ -142,4 +142,8 @@ end
     TwitchService.send_chat_message(bid, bot_user.uid, message)
   end
 
+
 end
+
+
+
