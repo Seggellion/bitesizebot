@@ -36,7 +36,7 @@ class RaffleService
     when /^!raffle give\s+@?(\w+)/i
         # Fallback for when no amount is specified (defaults to 10)
         unless uid.to_s == bid.to_s
-        return "Only the High Mayor can distribute points."
+        return "Only the High Mayor can distribute farthings."
         end
 
         target_username = $1.downcase
@@ -61,7 +61,7 @@ def self.start_threaded_raffle(bid, amount, flag)
   job_class.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
   mode_text = (flag == '-s') ? "One lucky winner takes it all!" : "2-4 winners will split the pot!"
-  "🎟️ RAFFLE STARTED! Pool: #{amount} points. #{mode_text} Type !gimme to enter."
+  "🎟️ RAFFLE STARTED! Pool: #{amount} farthings. #{mode_text} Type !gimme to enter."
 end
 
   # app/services/raffle_service.rb
@@ -87,9 +87,9 @@ def self.give_points(target_username, amount)
       user.increment!(:wallet, amount)
     end
 
-    "💰 @#{user.username} has been granted #{amount} points! New balance: #{user.wallet}"
+    "💰 @#{user.username} has been granted #{amount} farthings! New balance: #{user.wallet}"
   rescue ActiveRecord::RecordInvalid => e
-    "❌ Failed to grant points: #{e.message}"
+    "❌ Failed to grant farthings: #{e.message}"
   rescue StandardError => e
     "❌ An error occurred: #{e.message}"
   end
@@ -124,14 +124,14 @@ def self.finalize_raffle(raffle, bid)
     each_gets = (raffle.prize_amount.to_f / winners.size).floor
     
     msg = if winners.size > 1
-            "🎉 Raffle Over! Winners: #{names}. They split the pot and receive #{each_gets} points each!"
+            "🎉 Raffle Over! Winners: #{names}. They split the pot and receive #{each_gets} farthings each!"
           else
-            "🎉 Raffle Over! @#{winners.first.username} won the jackpot of #{each_gets} points!"
+            "🎉 Raffle Over! @#{winners.first.username} won the jackpot of #{each_gets} farthings!"
           end
           
     announce(bid, msg)
   else
-    announce(bid, "Raffle ended, but nobody joined. No points awarded!")
+    announce(bid, "Raffle ended, but nobody joined. No farthings awarded!")
   end
 end
 

@@ -294,6 +294,7 @@ puts "NOTIFICATION - RUN COMMANDS"
       end
 
       # Variable parsing
+      
       final_message = custom_cmd.response.gsub("{user}", "@#{username}")
       TwitchService.send_chat_message(bid, sid, final_message)
     end
