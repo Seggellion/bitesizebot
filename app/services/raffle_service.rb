@@ -49,18 +49,19 @@ class RaffleService
   end
 
 def self.start_threaded_raffle(bid, amount, flag)
-    host = User.find_by(uid: bid)
-    raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active')
-    
-    # ✅ FIX: Use string constantize to prevent "uninitialized constant" during boot
-    job_class = "RaffleFinalizerJob".constantize
-    
-    job_class.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
-    job_class.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
-    job_class.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
+  host = User.find_by(uid: bid)
+  # Store the flag (raffle_type) so we can use it during finalization
+  raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active', raffle_type: flag)
+  
+  job_class = "RaffleFinalizerJob".constantize
+  job_class.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
+  job_class.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
+  job_class.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
-    "🎟️ RAFFLE STARTED! Pool: #{amount} points. Winners split it in 60s! Type !raffle join to enter."
-  end
+  # Dynamic announcement based on flag
+  mode_text = (flag == '-s') ? "One lucky winner takes it all!" : "2-4 winners will split the pot!"
+  "🎟️ RAFFLE STARTED! Pool: #{amount} points. #{mode_text} Type !raffle join to enter."
+end
 
   # app/services/raffle_service.rb
 
@@ -110,23 +111,27 @@ end
     end
   end
 
-  def self.finalize_raffle(raffle, bid)
-    winners = raffle.select_and_payout_winners!
-    @active_raffle_id = nil
-    raffle.update(status: 'completed') 
-    
-    # Clear the cache
-    Rails.cache.delete("active_raffle_#{bid}")
+ # app/services/raffle_service.rb
+def self.finalize_raffle(raffle, bid)
+  winners = raffle.select_and_payout_winners!
+  raffle.update(status: 'completed') 
+  Rails.cache.delete("active_raffle_#{bid}")
 
-    if winners.any?
-      names = winners.map { |w| "@#{w.username}" }.join(", ")
-      # Calculation for display (payout logic is inside raffle.select_and_payout_winners!)
-      each_gets = (raffle.prize_amount.to_f / winners.size).floor
-      announce(bid, "🎉 Raffle Over! Winners: #{names}. They each split the pot and receive #{each_gets} points!")
-    else
-      announce(bid, "Raffle ended, but nobody joined. No points awarded!")
-    end
+  if winners.any?
+    names = winners.map { |w| "@#{w.username}" }.join(", ")
+    each_gets = (raffle.prize_amount.to_f / winners.size).floor
+    
+    msg = if winners.size > 1
+            "🎉 Raffle Over! Winners: #{names}. They split the pot and receive #{each_gets} points each!"
+          else
+            "🎉 Raffle Over! @#{winners.first.username} won the jackpot of #{each_gets} points!"
+          end
+          
+    announce(bid, msg)
+  else
+    announce(bid, "Raffle ended, but nobody joined. No points awarded!")
   end
+end
 
   def self.announce(bid, message)
     bot_user = User.bot_user
