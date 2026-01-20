@@ -58,9 +58,9 @@ def self.start_threaded_raffle(bid, amount, flag)
   Rails.cache.write("active_raffle_#{bid}", raffle.id)
 
   # ✅ Schedule jobs instead of threads
-  RaffleFinalizerJob.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
-  RaffleFinalizerJob.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
-  RaffleFinalizerJob.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
+  ::RaffleFinalizerJob.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
+  ::RaffleFinalizerJob.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
+  ::RaffleFinalizerJob.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
   "🎟️ RAFFLE STARTED! Pool: #{amount} points..."
 end
