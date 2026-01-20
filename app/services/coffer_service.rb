@@ -11,8 +11,28 @@ class CofferService
     is_host =User.broadcaster
 
     case text.downcase
+
+    when "!market"
+      tickers = Ticker.all
+      return "The market is currently empty." if tickers.empty?
+
+      ticker_list = tickers.map do |t|
+        # Format: altama: 105.4 (▲ 5.4%)
+        change = ((t.current_price - 100.0) / 100.0 * 100).round(1)
+        direction = change >= 0 ? "▲" : "▼"
+        "#{t.name.upcase}: #{t.current_price.round(2)} (#{direction} #{change.abs}%)"
+      end.join(" | ")
+
+      "Current Market Prices: #{ticker_list}"
+
     when "!coffer"
-      "Your balance is #{user.wallet} farthings."
+      active_investments = user.investments.active
+      if active_investments.any?
+        total_value = active_investments.sum(&:current_value)
+        "Balance: #{user.wallet} | Portfolio Value: #{total_value} farthings across #{active_investments.count} stocks."
+      else
+        "Your balance is #{user.wallet} farthings. No active investments."
+      end
 
     when /^!coffer redeem (.+)/
     name = $1.strip
@@ -99,43 +119,55 @@ receiver = User.find_by("LOWER(username) = ?", receiver_name.downcase)
   private
 
 def self.invest_logic(user, amount, name, is_mod)
-    # Basic logic: Use a global interest rate from a setting or hardcoded for now
-    # In your CMS, you could update a 'GlobalSetting.interest_rate'
-    current_rate = 0.05 
+  current_market_price = Ticker.price_for(name)
 
-    return "Minimum investment is 10." if amount < 10
+  return "Minimum investment is 10 farthings." if amount < 10
 
-existing_investment = Investment.active.find_by("lower(investment_name) = ?", name.downcase)
-if existing_investment.nil?
-      # If it doesn't exist, only mods can create it
-      if is_mod
-        create_new_investment(user, amount, name, current_rate)
-      else
-        "Investment '#{name}' doesn't exist yet. Ask a Moderator to create it!"
-      end
+  # We check if this 'Ticker' has ever been traded
+  ticker_exists = Ticker.exists?(name: name.downcase)
+
+  if !ticker_exists
+    if is_mod
+      create_new_investment(user, amount, name, current_market_price)
     else
-      # If it exists, anyone can buy into their own instance of it
-      buy_into_investment(user, amount, existing_investment)
+      "Ticker '#{name}' isn't listed yet. Ask a Moderator to IPO it!"
     end
-  rescue CurrencyService::InsufficientFundsError
-    "You don't have enough farthings to invest that much!"
+  else
+    buy_into_investment(user, amount, name, current_market_price)
   end
+rescue CurrencyService::InsufficientFundsError
+  "You don't have enough farthings!"
+end
 
-def self.create_new_investment(user, amount, name, rate)
-    ActiveRecord::Base.transaction do
-      CurrencyService.update_balance(user: user, amount: -amount, type: 'investment_creation', metadata: { name: name })
-      Investment.create!(user: user, amount: amount, interest_rate: rate, investment_name: name)
-    end
-    "New public offering! '#{name}' established with #{amount} farthings!"
+def self.create_new_investment(user, amount, name, price)
+  ActiveRecord::Base.transaction do
+    # Create the global Ticker entry
+    Ticker.create!(name: name.downcase, current_price: price)
+    
+    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase')
+    Investment.create!(
+      user: user, 
+      amount: amount, 
+      investment_name: name, 
+      purchase_price: price # Store the entry price!
+    )
   end
+  "IPO Alert! '#{name}' listed at #{price} farthings. You bought in with #{amount}!"
+end
 
-  def self.buy_into_investment(user, amount, template)
-    ActiveRecord::Base.transaction do
-      CurrencyService.update_balance(user: user, amount: -amount, type: 'investment_buy_in', metadata: { name: template.investment_name })
-      # We create a NEW investment record for THIS user, using the template's name and rate
-      Investment.create!(user: user, amount: amount, interest_rate: template.interest_rate, investment_name: template.investment_name)
-    end
-    "You bought into '#{template.investment_name}' with #{amount} farthings!"
+def self.buy_into_investment(user, amount, name, price)
+  ActiveRecord::Base.transaction do
+    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase')
+    Investment.create!(
+      user: user, 
+      amount: amount, 
+      investment_name: name, 
+      purchase_price: price
+    )
   end
+  "Bought into '#{name}' at market price #{price.round(2)}!"
+end
+
+
 
 end
