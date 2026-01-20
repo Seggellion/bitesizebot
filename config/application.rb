@@ -17,7 +17,7 @@ module Railpress
     config.autoload_paths << Rails.root.join('app', 'themes')
     config.eager_load_paths << Rails.root.join('app', 'themes')
 
-
+    config.active_job.queue_adapter = :sidekiq
 
 
     config.autoload_lib(ignore: %w[assets tasks])

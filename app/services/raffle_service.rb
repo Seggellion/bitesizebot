@@ -49,31 +49,21 @@ class RaffleService
     end
   end
 
-  def self.start_threaded_raffle(bid, amount, flag)
-    host = User.find_by(uid: bid)
-    # flag can be used here if you want -s to change the winner logic 
-    # currently we follow your "Random 2-4 winners" requirement
-    
-    raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active')
-    @active_raffle_id = raffle.id
+def self.start_threaded_raffle(bid, amount, flag)
+  host = User.find_by(uid: bid)
+  raffle = Raffle.create!(host: host, prize_amount: amount, status: 'active')
+  
+  # Use Redis to track the active raffle instead of a class variable
+  # This makes it accessible across all Heroku dynos/processes
+  Rails.cache.write("active_raffle_#{bid}", raffle.id)
 
-    # ✅ 30-second warning
-    EM.add_timer(30) do
-      announce(bid, "⏳ 30 SECONDS LEFT! Type !raffle join for a share of #{amount} points!")
-    end
+  # ✅ Schedule jobs instead of threads
+  RaffleFinalizerJob.set(wait: 30.seconds).perform_later(raffle.id, bid, 'warning_30')
+  RaffleFinalizerJob.set(wait: 45.seconds).perform_later(raffle.id, bid, 'warning_15')
+  RaffleFinalizerJob.set(wait: 60.seconds).perform_later(raffle.id, bid, 'finalize')
 
-    # ✅ 15-second warning
-    EM.add_timer(45) do
-      announce(bid, "⚠️ 15 SECONDS! Last call to join the raffle!")
-    end
-
-    # ✅ Final Draw at 60 seconds
-    EM.add_timer(60) do
-      finalize_raffle(raffle, bid)
-    end
-
-    "🎟️ RAFFLE STARTED! Pool: #{amount} points. 2-4 winners will split it in 60s! Type !raffle join to enter."
-  end
+  "🎟️ RAFFLE STARTED! Pool: #{amount} points..."
+end
 
   # app/services/raffle_service.rb
 
@@ -106,7 +96,6 @@ def self.give_points(target_username, amount)
   end
 end
 
-  # ... join_raffle and announce remain the same ...
   
   def self.join_raffle(uid, username)
     

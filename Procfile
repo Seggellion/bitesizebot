@@ -1,2 +1,2 @@
 web: bundle exec rails server -p $PORT
-worker: bundle exec rails runner "TwitchWebsocketListener.run"
+worker: bundle exec sidekiq & bundle exec rails runner "TwitchWebsocketListener.run"

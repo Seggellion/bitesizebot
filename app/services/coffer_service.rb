@@ -8,7 +8,7 @@ class CofferService
     end
 
     # pineapple
-    is_host =User.find_by
+    is_host =User.broadcaster
 
     case text.downcase
     when "!coffer"
