@@ -1,6 +1,5 @@
 # app/services/raffle_service.rb
 class RaffleService
-  RaffleFinalizerJob
   @active_raffle_id = nil
   MAX_PRIZE = 500 # Internal maximum as requested
 
