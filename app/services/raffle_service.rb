@@ -22,7 +22,7 @@ class RaffleService
       
       return start_threaded_raffle(bid, final_amount, flag)
       
-    when /^!raffle give\s+@?(\w+)\s+(\d+)/i
+    when /^!gimme give\s+@?(\w+)\s+(\d+)/i
         # SECURITY: Only the Broadcaster (uid == bid) can manually give points
         unless uid.to_s == bid.to_s
         return "Only the High Mayor (Broadcaster) has the keys to the treasury!"
@@ -33,7 +33,7 @@ class RaffleService
 
         return give_points(target_username, amount)
 
-    when /^!raffle give\s+@?(\w+)/i
+    when /^!gimme give\s+@?(\w+)/i
         # Fallback for when no amount is specified (defaults to 10)
         unless uid.to_s == bid.to_s
         return "Only the High Mayor can distribute points."
@@ -42,7 +42,7 @@ class RaffleService
         target_username = $1.downcase
         return give_points(target_username, 10)
 
-    when "!raffle"
+    when "!gimme"
         return join_raffle(uid, username)
       
     end
@@ -144,4 +144,5 @@ end
 
 
 end
+
 
