@@ -116,7 +116,7 @@ def broadcast_overlay_win
 end
 
   def announce_win_to_twitch(game)
-  bot_user = User.bot
+  bot_user = User.bot_user
   return unless bot_user
   
   # 2. Prepare the victory message
