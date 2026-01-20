@@ -2,9 +2,9 @@ module Admin
     class CofferController < Admin::ApplicationController
     def index
    @total_supply = User.sum(:wallet)
-    @active_investments = Investment.active
-    @investment_liability = @active_investments.map(&:current_value).sum
-    
+
+    @total_market_cap = Investment.active.all.sum(&:current_value)
+    @tickers = Ticker.all.order(name: :asc)
     @top_holders = User.order(wallet: :desc).limit(10)
     
     @recent_transactions = LedgerEntry.includes(:user).order(created_at: :desc).limit(20)

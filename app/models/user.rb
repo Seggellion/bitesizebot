@@ -6,7 +6,7 @@ class User < ApplicationRecord
     has_many :contact_messages, foreign_key: :email, primary_key: :email
     has_many :posts, dependent: :destroy
     has_many :bingo_cards, dependent: :destroy
-
+has_many :investments, dependent: :destroy
     has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
   store :global_inventory, coder: JSON
