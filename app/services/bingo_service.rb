@@ -3,89 +3,82 @@ class BingoService
   REPLACEMENT_COST = 2000
   MAX_REPLACEMENTS = 2
 
-  def self.process_command(uid, username, broadcaster_uid, text)
-    host = User.find_by(uid: broadcaster_uid)
-    return "Host not found." unless host
-
-    command = text.downcase.strip
-    
-    # 1. Handle Global Commands (Can be run anytime to start/end cycles)
-    case command
-    when "!bingo start"
-      return start_game(host)
-    when "!bingo end"
-      return end_game(host)
-    end
-
-    # 2. Find the current game (either invite or active)
-    game = BingoGame.where(host: host, status: ['invite', 'active']).last
-    return "No active game right now! Type !bingo start to begin." unless game
-
-    # 3. Identify the Viewer
-    viewer = User.find_or_create_by(uid: uid) do |u|
-      u.provider = 'twitch'
-      u.username = username
-      u.user_type = 1
-    end
-
-    # 4. State-Based Command Gatekeeping
-    case game.status
-    when 'invite'
-      case command
-      when "!bingo join"
-        return join_game(viewer, game)
-      when "!bingo halt"
-        return halt_game(host)
-      when "!bingo replace" # Assuming replace is allowed during invite
-        return request_replacement(viewer, game)
-      else
-        return "Game is in signup mode. Use !bingo join to enter!"
-      end
-
-    when 'active'
-      case command
-      when "!bingo card"
-        return list_card_cells(viewer, game)
-      when "!bingo win"
-        return request_win(viewer, game)
-      when /^!bingo mark\s+([a-z])(\d+)/i
-        return handle_mark(viewer, game, $1, $2)
-      when /^!bingo explain\s+([a-z])(\d+)/i
-        return explain_cell(viewer, game, $1, $2)
-      when "!bingo join"
+# The ONLY command restricted by game status
+      if game.status == 'active'
         return "The game has already started! Too late to join."
-      else
-        return "Command not recognized or not allowed during active play."
       end
+      return join_game(viewer, game)
+
+    when "!bingo card"
+      return list_card_cells(viewer, game)
+
+    when "!bingo replace"
+      return request_replacement(viewer, game)
+
+    when "!bingo win"
+      return request_win(viewer, game)
+
+    when /^!bingo mark\s+([a-z])(\d+)/i
+      return handle_mark(viewer, game, $1, $2)
+
+    when /^!bingo explain\s+([a-z])(\d+)/i
+      return explain_cell(viewer, game, $1, $2)
+
+    else
+      return "Command not recognized. Try !bingo join, !bingo card, or !bingo mark."
     end
   end
 
   # --- Helper Methods for Cleanliness ---
-
-  def self.join_game(viewer, game)
+def self.join_game(viewer, game)
     return "You're already in!" if game.bingo_cards.exists?(user: viewer)
     game.bingo_cards.create!(user: viewer)
     "Welcome to Bitesize Bingo! Your card is ready."
   end
 
   def self.handle_mark(viewer, game, col, row)
+    # This now works regardless of game status
     request_mark(viewer, game, col.upcase, row.to_i)
   end
 
-  
-# app/services/bingo_service.rb
-def self.request_replacement(viewer, game)
-  card = game.bingo_cards.find_by(user: viewer)
-  return "The game has already started! No more replacements." if game.active?
-  return "You need to join the game first!" unless card
-  return "You've reached the replacement limit." if card.replacement_count >= 2
+  def self.request_replacement(viewer, game)
+    card = game.bingo_cards.find_by(user: viewer)
+    return "You need to join the game first!" unless card
+    # If you want to prevent swapping once the streamer starts the action:
+    return "The game is active! No more replacements." if game.status == 'active'
+    return "You've reached the replacement limit." if card.replacement_count >= MAX_REPLACEMENTS
 
-  if card.replace_card!(2000)
-    "Card replaced! 2,000 currency deducted. Check your new card on the website!"
-  else
-    card.errors.full_messages.to_sentence
+    if card.replace_card!(REPLACEMENT_COST)
+      "Card replaced! #{REPLACEMENT_COST} currency deducted."
+    else
+      card.errors.full_messages.to_sentence
+    end
   end
-end
+
+  def self.request_mark(viewer, game, col_letter, row_num)
+    card = game.bingo_cards.find_by(user: viewer)
+    return "You aren't in this game! Type !bingo join first." unless card
+
+    coord = "#{col_letter.upcase}#{row_num}"
+    cell = card.bingo_cells.find_by(coordinate: coord)
+    
+    return "Invalid cell coordinate!" unless cell
+    return "That's the free space!" if cell.coordinate == "FREE"
+    return "That cell is already marked!" if cell.is_marked
+    
+    if PendingAction.exists?(target: cell, status: 'pending')
+      return "A request for #{coord} is already awaiting approval!"
+    end
+
+    PendingAction.create!(
+      user: viewer,
+      target: cell,
+      action_type: 'mark_cell',
+      metadata: { coordinate: coord }
+    )
+
+    "Request sent! An admin will review your mark for #{coord}."
+  end
 
 def self.explain_cell(viewer, game, col_letter, row_num)
     
