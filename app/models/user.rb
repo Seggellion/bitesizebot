@@ -16,7 +16,9 @@ has_many :ledger_entries, dependent: :destroy
 has_many :giveaway_entries, dependent: :destroy
 
   # Define roles
-  enum :user_type, { admin: 0, regular: 1, bot: 5 }
+enum :user_type, { admin: 0, regular: 1, bot: 5 }
+  attr_accessor :twitch_scopes
+
 
   def can_afford?(cost)
     wallet >= cost
@@ -66,7 +68,7 @@ end
     where(user_type: :admin).exists?
   end
 
-  def admin?
+ def admin?
     user_type == 'admin'
   end
 

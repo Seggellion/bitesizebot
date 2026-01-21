@@ -28,6 +28,7 @@ class SessionsController < ApplicationController
         twitch_refresh_token: auth.dig('credentials', 'refresh_token'),
         avatar: auth.dig('info', 'image') 
       )
+      user.twitch_scopes = auth.dig('credentials', 'scopes')
     elsif provider == 'discord'
       user.update(avatar: auth.dig('info', 'image'))
     end
@@ -40,6 +41,29 @@ class SessionsController < ApplicationController
   path = user.admin? ? admin_root_path : root_path
   redirect_to path, notice: "Signed in via #{provider.titleize}!"
 end
+
+# app/models/user.rb
+def ensure_token
+  # 1. If we don't have a token at all, return nil
+  return nil if twitch_access_token.blank?
+
+  # 2. Check if the token is still valid with Twitch
+  # We use a memoized variable so we don't ping Twitch 100 times a second
+  return @validated_token if @validated_token
+
+  response = HTTParty.get("https://id.twitch.tv/oauth2/validate", headers: {
+    "Authorization" => "OAuth #{twitch_access_token}"
+  })
+
+  if response.code == 200
+    @validated_token = twitch_access_token
+  else
+    # 3. If invalid (401), use the refresh token to get a new one
+    puts "[OAuth] Token expired for #{username}. Refreshing..."
+    @validated_token = TwitchService.refresh_token_for(self)
+  end
+end
+
 
   private
 

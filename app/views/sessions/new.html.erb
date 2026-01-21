@@ -36,8 +36,8 @@
 
 <% if Rails.application.credentials.dig(:twitch, :client_id).present? %>
   <div class="flex items-center justify-between">
-    <%= button_to '/auth/twitch', 
-        method: :post, 
+    <%= button_to '/auth/twitch_login', 
+        method: :get, 
         class: 'bg-purple-600 text-white font-bold py-2 px-4 rounded', 
         data: { turbo: false } do %>
       Log in with Twitch

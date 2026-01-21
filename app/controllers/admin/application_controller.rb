@@ -9,7 +9,7 @@ module Admin
 
     def authenticate_user!
       unless current_user        
-        redirect_to login_path # Redirect to the login page if the user is not logged in
+        redirect_to auth_twitch_login_path # Redirect to the login page if the user is not logged in
       end
     end
 

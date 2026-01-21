@@ -6,13 +6,18 @@ Rails.application.routes.draw do
   # ------------------------------------------------------------
   # Authentication
   # ------------------------------------------------------------
-  get    "/login",  to: "sessions#new",     as: :login
+   get    "/login",  to: "sessions#new",     as: :login
   delete "/logout", to: "sessions#destroy", as: :logout
 
   get "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: redirect("/")
   post "/discord_login", to: redirect("/auth/discord"), as: :discord_login
   get "/microsoft_login", to: redirect("/auth/microsoft_graph"), as: :microsoft_login
+
+namespace :auth do
+  get :twitch_login, to: "twitch#login"
+  get :twitch_bot, to: "twitch#bot_setup"
+end
 
   # ------------------------------------------------------------
   # Public CMS

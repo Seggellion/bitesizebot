@@ -11,45 +11,28 @@ class TwitchWebsocketListener
 
 
   
- def self.is_follower?(broadcaster_id, user_id)
+def self.is_follower?(broadcaster_id, user_id)
   return true if broadcaster_id == user_id
 
   bot_user = User.bot_user
-  return false unless bot_user&.twitch_access_token.present?
+  token = TwitchService.valid_user_token_for(bot_user)
+  return false unless token.present?
 
-puts "is_follower - BOT USERNAME: #{bot_user.username}"
-
-puts "is_follower - BROADCASTER ID: #{broadcaster_id}"
-
-
-  token = bot_user.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
-
   url = "https://api.twitch.tv/helix/channels/followers?broadcaster_id=#{broadcaster_id}&user_id=#{user_id}"
 
   response = HTTParty.get(url, headers: {
     "Authorization" => "Bearer #{token}",
-    "Client-Id" => client_id
+    "Client-Id"     => client_id
   })
 
   if response.code == 200
-    return response.dig("data").present?
-  elsif response.code == 401
-    new_token = TwitchService.refresh_token_for(bot_user)
-    return false unless new_token.present?
-
-    retry_res = HTTParty.get(url, headers: {
-      "Authorization" => "Bearer #{new_token}",
-      "Client-Id" => client_id
-    })
-
-    return retry_res.dig("data").present? if retry_res.code == 200
+    return response.parsed_response.dig("data").present?
   end
-
-puts "FAILED FOLLOW CHECK"
 
   false
 end
+
 
 
 
@@ -117,19 +100,22 @@ end
 
 def self.subscribe_to_chat(session_id)
   broadcaster = User.broadcaster
-  bot = User.bot_user
+  bot         = User.bot_user
 
   bid = broadcaster&.uid
   sid = bot&.uid
-
 
   if bid.blank? || sid.blank?
     puts "[Twitch WS] ABORTING: Could not find IDs. (Broadcaster: #{bid.inspect}, Bot: #{sid.inspect})"
     return
   end
 
+  token = TwitchService.valid_user_token_for(bot)
+  if token.blank?
+    puts "[Twitch WS] ABORTING: Bot has no valid Twitch token (needs re-auth)."
+    return
+  end
 
-  token = bot.twitch_access_token
   client_id = Rails.application.credentials.dig(:twitch, :client_id)
 
   response = HTTParty.post(
@@ -150,8 +136,34 @@ def self.subscribe_to_chat(session_id)
     }.to_json
   )
 
+  # If the token was invalidated after validate/refresh, refresh once more and retry
+  if response.code == 401
+    puts "[Twitch WS] Subscription got 401. Refreshing token and retrying..."
+    new_token = TwitchService.refresh_token_for(bot)
+    if new_token.present?
+      response = HTTParty.post(
+        "https://api.twitch.tv/helix/eventsub/subscriptions",
+        headers: {
+          "Authorization" => "Bearer #{new_token}",
+          "Client-Id"     => client_id,
+          "Content-Type"  => "application/json"
+        },
+        body: {
+          type: "channel.chat.message",
+          version: "1",
+          condition: {
+            broadcaster_user_id: bid.to_s,
+            user_id: sid.to_s
+          },
+          transport: { method: "websocket", session_id: session_id }
+        }.to_json
+      )
+    end
+  end
+
   puts "[Twitch WS] Subscription Result: #{response.code} - #{response.body}"
 end
+
 
 
  def self.get_user_id(login = nil)
