@@ -38,5 +38,7 @@
 !/app/assets/builds/.keep
 config/gcs_keyfile.json
 
+*.dump
+*.sql
 
 cors.json
