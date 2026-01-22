@@ -1,6 +1,7 @@
 module Admin
   class BingoGamesController < Admin::ApplicationController
     before_action :set_bingo_game, only: [:edit, :update, :start, :destroy]
+    skip_before_action :authenticate_user!, if: -> { action_name == 'overlay' }
 
     def index
       @bingo_games = BingoGame.order(created_at: :desc)
