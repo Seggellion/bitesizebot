@@ -7,40 +7,57 @@ class GiveawayService
       u.username = username
       u.user_type = 1
     end
-
     # Find the most recently created open giveaway
     giveaway = Giveaway.where(status: 'open').order(created_at: :desc).first
     return "There are no active giveaways to join right now!" unless giveaway
 
-    # Eligibility Checks
-    return "You are banned from giveaways." if viewer.respond_to?(:banned_from_giveaways?) && viewer.banned_from_giveaways?
-    return "You won too recently! (6-month cooldown)" if viewer.won_recently?(6.months)
-    return "You don't meet the Karma/Fame requirements." if viewer.karma < giveaway.min_karma || viewer.fame < giveaway.min_fame
-
+    # Regex to capture "!fellowship max" or "!fellowship 10"
     case text.downcase
-    when "!fellowship"
-      handle_entry(viewer, giveaway, 1)
-    when /^!lembas\s+(.+)/
-      amt_param = $1.strip
-      amount = amt_param == 'max' ? viewer.wallet : amt_param.to_i
+    when /^!fellowship\s+(.+)/
+      param = $1.strip
       
-      return "Please specify a valid amount of Lembas." if amount <= 0
+      # Determine current status
+      entry = giveaway.giveaway_entries.find_by(user: viewer)
+      current_tickets = entry&.tickets_count || 0
+      remaining_slots = giveaway.max_entries_per_user - current_tickets
+
+      if remaining_slots <= 0
+        return "You already have the maximum of #{giveaway.max_entries_per_user} tickets!"
+      end
+
+      if param == 'max'
+        # Logic: If 0 tickets, first is free. Max = Wallet + 1.
+        # If >0 tickets, Max = Wallet.
+        affordable = (current_tickets == 0) ? (viewer.wallet + 1) : viewer.wallet
+        amount = [affordable, remaining_slots].min
+      else
+        amount = param.to_i
+      end
+
+      return "Please specify a valid amount of tickets." if amount <= 0
       handle_entry(viewer, giveaway, amount)
+    
+    when "!fellowship" # Default to 1 ticket
+      handle_entry(viewer, giveaway, 1)
     end
   end
-  
+
   private
-
-
-  def self.handle_entry(user, giveaway, amount)
+  
+def self.handle_entry(user, giveaway, amount)
+  message = "" # Initialize variable to capture the response
+  
   ActiveRecord::Base.transaction do
-    # 1. Check if they are already in THIS giveaway
     entry = giveaway.giveaway_entries.find_by(user: user)
     is_new_entry = entry.nil?
+    current_tickets = entry&.tickets_count || 0
+
+    # 1. Validation
+    if (current_tickets + amount) > giveaway.max_entries_per_user
+      return "You can only add #{giveaway.max_entries_per_user - current_tickets} more ticket(s)."
+    end
 
     # 2. Determine cost
-    # If they are new, the first ticket of the 'amount' is free.
-    # If they already have an entry, they must pay for every ticket in 'amount'.
     tickets_to_charge = is_new_entry ? (amount - 1) : amount
     tickets_to_charge = [0, tickets_to_charge].max
 
@@ -54,20 +71,27 @@ class GiveawayService
           metadata: { giveaway_id: giveaway.id }
         )
       rescue CurrencyService::InsufficientFundsError
-        return "You don't have enough Lembas! (Cost: #{tickets_to_charge})"
+        # Explicitly roll back the transaction
+        raise ActiveRecord::Rollback, "Insufficient funds"
       end
     end
 
-    # 4. Create or Update the record
+    # 4. Create or Update
     if is_new_entry
       entry = giveaway.giveaway_entries.create!(user: user, tickets_count: amount)
     else
       entry.update!(tickets_count: entry.tickets_count + amount)
     end
 
-    free_msg = is_new_entry ? " (Your first ticket was free!)" : ""
-    "You added #{amount} ticket(s) to #{giveaway.title}! Total: #{entry.tickets_count}#{free_msg}"
+    free_msg = (is_new_entry && amount > 0) ? " (Your first ticket was free!)" : ""
+    message = "You added #{amount} ticket(s) to #{giveaway.title}! Total: #{entry.tickets_count}/#{giveaway.max_entries_per_user}#{free_msg}"
   end
+
+  # If message is empty, it means we hit the Rollback
+  message.presence || "You don't have enough Lembas! (Cost: #{tickets_to_charge})"
+rescue => e
+  Rails.logger.error "Giveaway Error: #{e.message}"
+  "Something went wrong processing your entry."
 end
 
 end

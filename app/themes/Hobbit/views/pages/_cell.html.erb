@@ -3,7 +3,7 @@
 
 <%= button_to mark_cell_bingo_card_path(cell.bingo_card), 
       params: { coordinate: cell.coordinate },
-      disabled: cell.is_marked || cell.bingo_card.bingo_game.status != 'active' || is_free,
+      disabled: cell.is_marked || is_free,
       class: "bingo-cell #{'is-marked' if cell.is_marked} #{'free-space' if is_free}",
       id: dom_id(cell) do %>
   
