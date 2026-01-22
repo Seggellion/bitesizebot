@@ -31,35 +31,43 @@ class GiveawayService
   
   private
 
+
   def self.handle_entry(user, giveaway, amount)
-    ActiveRecord::Base.transaction do
-      entry = giveaway.giveaway_entries.find_or_initialize_by(user: user)
-      
-      # Logic: First time this user account EVER joins a giveaway, the first ticket is free.
-      # We check ledger entries to see if they've ever paid for a giveaway before.
-      is_first_join_ever = !user.ledger_entries.where(entry_type: 'giveaway_entry').exists?
-      
-      tickets_to_charge = is_first_join_ever ? (amount - 1) : amount
-      tickets_to_charge = [0, tickets_to_charge].max
+  ActiveRecord::Base.transaction do
+    # 1. Check if they are already in THIS giveaway
+    entry = giveaway.giveaway_entries.find_by(user: user)
+    is_new_entry = entry.nil?
 
-      if tickets_to_charge > 0
-        begin
-          CurrencyService.update_balance(
-            user: user,
-            amount: -tickets_to_charge,
-            type: 'giveaway_entry',
-            metadata: { giveaway_id: giveaway.id }
-          )
-        rescue CurrencyService::InsufficientFundsError
-          return "You don't have enough Lembas! (Cost: #{tickets_to_charge})"
-        end
+    # 2. Determine cost
+    # If they are new, the first ticket of the 'amount' is free.
+    # If they already have an entry, they must pay for every ticket in 'amount'.
+    tickets_to_charge = is_new_entry ? (amount - 1) : amount
+    tickets_to_charge = [0, tickets_to_charge].max
+
+    # 3. Handle Payment
+    if tickets_to_charge > 0
+      begin
+        CurrencyService.update_balance(
+          user: user,
+          amount: -tickets_to_charge,
+          type: 'giveaway_entry',
+          metadata: { giveaway_id: giveaway.id }
+        )
+      rescue CurrencyService::InsufficientFundsError
+        return "You don't have enough Lembas! (Cost: #{tickets_to_charge})"
       end
-
-      entry.tickets_count += amount
-      entry.save!
-
-      free_msg = is_first_join_ever ? " (Your first ticket was free!)" : ""
-      "You added #{amount} ticket(s) to #{giveaway.title}! Total: #{entry.tickets_count}#{free_msg}"
     end
+
+    # 4. Create or Update the record
+    if is_new_entry
+      entry = giveaway.giveaway_entries.create!(user: user, tickets_count: amount)
+    else
+      entry.update!(tickets_count: entry.tickets_count + amount)
+    end
+
+    free_msg = is_new_entry ? " (Your first ticket was free!)" : ""
+    "You added #{amount} ticket(s) to #{giveaway.title}! Total: #{entry.tickets_count}#{free_msg}"
   end
+end
+
 end
