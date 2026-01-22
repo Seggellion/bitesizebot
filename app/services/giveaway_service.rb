@@ -37,7 +37,7 @@ class GiveawayService
                  amount <= 0 ? "Please specify a valid amount." : handle_entry(viewer, giveaway, amount)
                end
 
-             when "!fellowship", "!lembas"
+             when "!fellowship"
                # Default to adding 1 ticket
                handle_entry(viewer, giveaway, 1)
              else

@@ -12,8 +12,8 @@ class RaffleService
         return "Be off with you! You haven't the authority of a Mayor or a Bounder to start a raffle in this Shire."
     end
 
-        return "A raffle is already in progress!" if @active_raffle_id
-      
+      return "A raffle is already in progress!" if Raffle.where(status: 'active').exists? 
+
       flag = $1.downcase
       requested_amount = $2.to_i
       
