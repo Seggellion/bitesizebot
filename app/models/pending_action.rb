@@ -11,6 +11,7 @@ class PendingAction < ApplicationRecord
   after_update_commit :handle_action_update
 
   def approve!
+    update!(status: 'approved')
     
     transaction do
       case action_type
@@ -32,7 +33,7 @@ class PendingAction < ApplicationRecord
         announce_win_to_twitch(game)
         broadcast_overlay_win
       end
-      update!(status: 'approved')
+
     end
   end
 
@@ -95,7 +96,7 @@ end
     locals: { user: user, cell: target }
   )
 
-  broadcast_replace_to(
+  broadcast_update_to(
     "game_overlay_#{game.id}",
     target: "ticker_container",
     partial: "admin/bingo_games/ticker",
