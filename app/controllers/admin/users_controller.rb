@@ -2,7 +2,7 @@
 module Admin
     class UsersController < ApplicationController
       before_action :require_admin
-      before_action :set_user, only: [:edit, :update]
+      before_action :set_user, only: [:edit, :update, :toggle_giveaway_ban]
   
       def index
 @users = User.order(updated_at: :desc)
@@ -26,26 +26,28 @@ module Admin
         end
       end
 
-      def toggle_giveaway_ban
-        @user = User.find(params[:id])
-        tag = Tag.find_or_create_by!(name: 'giveaway_banned')
-        
-        tagging = @user.taggings.find_by(tag: tag)
+    def toggle_giveaway_ban
+      
+        ban_tag = Tag.find_or_create_by(name: 'giveaway_banned')
 
-        if tagging
-          tagging.destroy
-          message = "Giveaway ban removed for #{@user.username}."
+        if @user.tags.include?(ban_tag)
+          # Unban logic
+          @user.tags.delete(ban_tag)
+          flash[:notice] = "User #{@user.username} is no longer banned from winning giveaways."
         else
-          @user.taggings.create!(tag: tag)
-          message = "Giveaway ban applied for #{@user.username}."
+          # Ban logic
+          @user.tags << ban_tag
+          flash[:alert] = "User #{@user.username} has been silently banned from winning giveaways."
         end
 
-        redirect_back fallback_location: admin_user_path(@user), notice: message
+        # Redirect back to the user list (preserving scroll position/page if possible)
+        redirect_back(fallback_location: root_path)
       end
-  
+
       private
   
       def set_user
+        
         @user = User.find(params[:id])
       end
   

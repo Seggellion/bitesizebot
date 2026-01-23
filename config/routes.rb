@@ -60,18 +60,18 @@ end
   # ------------------------------------------------------------
   # Admin
   # ------------------------------------------------------------
-  namespace :admin do
+namespace :admin do
     root "dashboard#index"
-resource :system_setting, only: [:update]
+    resource :system_setting, only: [:update]
 
-resources :custom_commands
+    resources :custom_commands
 
-resources :coffer, only: [:index] do
-    collection do
-      post :inject_currency
-      post :mass_grant
-    end
-  end
+    resources :coffer, only: [:index] do
+        collection do
+          post :inject_currency
+          post :mass_grant
+        end
+      end
 
   resources :giveaways do
       member do
@@ -153,7 +153,7 @@ resources :coffer, only: [:index] do
 
     resources :users, only: [:index, :show, :edit, :update] do
       member do
-        post :toggle_giveaway_ban
+        patch :toggle_giveaway_ban
       end
     end
 

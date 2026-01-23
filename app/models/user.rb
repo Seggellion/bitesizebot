@@ -40,7 +40,7 @@ has_many :won_giveaways, class_name: 'Giveaway', foreign_key: 'winner_id', depen
   end
 
 # Helper to check for the specific ban tag
-  def banned_from_giveaways?
+  def banned_from_giveaways?    
     tags.where(name: 'giveaway_banned').exists?
   end
 

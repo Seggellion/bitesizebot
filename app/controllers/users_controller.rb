@@ -1,9 +1,10 @@
 class UsersController < ApplicationController
-    before_action :set_user, only: [:edit_minecraft_uuid, :update_minecraft_uuid]
+    before_action :set_user, only: [:edit_minecraft_uuid, :update_minecraft_uuid, :toggle_giveaway_ban]
   
     # Display the form
     def edit_minecraft_uuid
     end
+
   
     # Handle form submission
     def update_minecraft_uuid
@@ -66,6 +67,7 @@ class UsersController < ApplicationController
     end
   
     def set_user
+
       @user = User.find(params[:id])
     end
   end
