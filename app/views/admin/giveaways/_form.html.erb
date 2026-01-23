@@ -1,0 +1,70 @@
+<%# app/views/admin/giveaways/new.html.erb %>
+<div class="min-h-screen bg-gray-900 text-gray-100 p-8 flex justify-center items-start">
+  <div class="w-full max-w-2xl bg-gray-800 rounded-3xl border border-gray-700 shadow-2xl overflow-hidden">
+    
+    <%# Form Header %>
+    <div class="bg-gray-700 p-6 border-b border-gray-600">
+      <h1 class="text-2xl font-bold text-white flex items-center">
+        <span class="mr-3">📜</span> Forge a New Giveaway
+      </h1>
+      <p class="text-gray-400 text-sm mt-1">Set the requirements for the fellowship's next reward.</p>
+    </div>
+
+    <%= form_with(model: [:admin, @giveaway], class: "p-8 space-y-6") do |f| %>
+      
+      <% if @giveaway.errors.any? %>
+        <div class="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-xl text-sm">
+          <p class="font-bold mb-1">Could not create giveaway:</p>
+          <ul class="list-disc list-inside">
+            <% @giveaway.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%# Basic Info Section %>
+      <div class="space-y-4">
+        <div>
+          <%= f.label :title, "Giveaway Title", class: "block text-sm font-medium text-gray-400 mb-1" %>
+          <%= f.text_field :title, placeholder: "e.g., The One Ring Given to One Lucky Winner", class: "w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" %>
+        </div>
+
+        <div>
+          <%= f.label :giveaway_type, "Type", class: "block text-sm font-medium text-gray-400 mb-1" %>
+          <%= f.select :giveaway_type, Giveaway.giveaway_types.keys.map { |k| [k.humanize, k] }, {}, class: "w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition appearance-none" %>
+        </div>
+      </div>
+
+      <hr class="border-gray-700 my-6">
+
+      <%# Analyst/Eligibility Section %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <%= f.label :min_karma, "Minimum Karma", class: "block text-sm font-medium text-gray-400 mb-1" %>
+          <%= f.number_field :min_karma, class: "w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+          <p class="text-[10px] text-gray-500 mt-1 italic">Prevents low-engagement alts from winning.</p>
+        </div>
+
+        <div>
+          <%= f.label :min_fame, "Minimum Fame", class: "block text-sm font-medium text-gray-400 mb-1" %>
+          <%= f.number_field :min_fame, class: "w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+          <p class="text-[10px] text-gray-500 mt-1 italic">Prevents brand new accounts from winning.</p>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :max_entries_per_user, "Max Tickets per User (Optional)", class: "block text-sm font-medium text-gray-400 mb-1" %>
+        <%= f.number_field :max_entries_per_user, placeholder: "Leave blank for unlimited", class: "w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+      </div>
+
+      <%# Submit Button %>
+      <div class="pt-4 flex items-center justify-between">
+        <%= link_to "Cancel", admin_giveaways_path, class: "text-gray-500 hover:text-white transition text-sm font-medium" %>
+        
+        <%= f.submit "Initialize Giveaway", class: "bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-indigo-900/40 transition transform active:scale-95 cursor-pointer" %>
+      </div>
+
+    <% end %>
+  </div>
+</div>

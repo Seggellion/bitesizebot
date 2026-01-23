@@ -59,7 +59,7 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticate_user!
-    byebug
+    
     unless current_user
       flash[:alert] = "You need to sign in to perform this action."
       redirect_to '/login'

@@ -8,7 +8,7 @@ module Admin
       @actions = PendingAction.pending.includes(:user, :target)
       @current_game = BingoGame.current_or_latest
 
-      @last_winner = @bingo_games.where.not(winner: nil).last&.winner&.username
+      @last_winner = @bingo_games.where.not(winner: nil).first&.winner&.username
       @total_games = BingoGame.count
       @total_participants = User.joins(:bingo_cards).distinct.count
       @most_frequent_player = User.joins(:bingo_cards)

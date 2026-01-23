@@ -76,6 +76,7 @@ resources :coffer, only: [:index] do
   resources :giveaways do
       member do
         patch :close # Locks entries
+        patch :reroll
         patch :draw  # Secretly filters and picks winner
       end
       
