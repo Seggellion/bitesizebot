@@ -57,13 +57,12 @@
       </div>
 
 
-    <div class="fixed bottom-0 left-0 w-full bg-black/60 backdrop-blur-md border-t-2 border-yellow-500/50 h-14 flex items-center overflow-hidden">
-      <div class="flex items-center bg-yellow-500 text-black px-4 h-full font-black italic skew-x-[-12deg] -ml-2 z-10 shadow-lg">
-        <span class="skew-x-[12deg]">LATEST MARKS</span>
-      </div>
-      
+    <div class="fixed bottom-0 left-0 w-full bg-black/60 backdrop-blur-md border-t-2 border-yellow-500/50 h-14 flex items-center overflow-hidden">      
       <div id="ticker_container" class="relative flex-1 overflow-hidden">
         <%= render partial: "admin/bingo_games/ticker", locals: { game: @current_game } %>
+      </div>
+            <div class="flex items-center bg-yellow-500 text-black px-4 h-full font-black italic skew-x-[-12deg] -ml-2 z-10 shadow-lg">
+        <span class="skew-x-[12deg]">LATEST MARKS</span>
       </div>
     </div>
 

@@ -34,12 +34,61 @@
       </div>
     </div>
 
-    <div class="mt-6 border-t pt-6">
-      <h3 class="text-lg font-semibold mb-4 text-gray-800">Card Management</h3>
-      <p class="text-sm text-gray-500 mb-4">
-        Note: Modifying the Game or User does not automatically regenerate the 5x5 grid cells. 
-        To reset the grid, you should delete this card and have the user rejoin.
+<div class="mt-6 border-t pt-6">
+  <div class="flex justify-between items-end mb-4">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-800">Manage Cell Marks</h3>
+      <p class="text-sm text-gray-500">
+        Check a box to <span class="text-green-600 font-bold">Mark</span> a cell. Uncheck to remove a mark.
       </p>
+    </div>
+    
+    <%# Visual Legend %>
+    <div class="flex space-x-3 text-xs">
+      <div class="flex items-center"><span class="w-3 h-3 bg-green-100 border border-green-500 rounded mr-1"></span> Marked</div>
+      <div class="flex items-center"><span class="w-3 h-3 bg-white border border-gray-300 rounded mr-1"></span> Empty</div>
+    </div>
+  </div>
+
+  <%# 5x5 Grid Container %>
+  <div class="grid grid-cols-5 gap-3 max-w-xl mx-auto bg-gray-100 p-4 rounded-lg border border-gray-200">
+    
+    <%# 
+       We use fields_for to iterate over cells. 
+       CRITICAL: We must order by ID to maintain the visual grid structure (B-I-N-G-O order).
+    %>
+    <%= f.fields_for :bingo_cells, @bingo_card.bingo_cells.order(:id) do |cell_form| %>
+      
+      <%# This label acts as the clickable container for the checkbox %>
+      <label class="relative group cursor-pointer">
+        
+        <%# Hidden Checkbox (Actual Form Input) %>
+        <%= cell_form.check_box :is_marked, class: "peer sr-only" %>
+        
+        <%# Visual Card Representation %>
+        <div class="aspect-square flex flex-col items-center justify-center p-1 border-2 rounded transition-all duration-200
+                    bg-white border-gray-300 text-gray-400 hover:border-blue-400
+                    peer-checked:bg-green-50 peer-checked:border-green-500 peer-checked:text-green-800">
+          
+          <%# Coordinate (e.g., B1) %>
+          <span class="text-[10px] font-bold mb-1 opacity-70">
+            <%= cell_form.object.coordinate %>
+          </span>
+          
+          <%# Item Content %>
+          <span class="text-[9px] leading-tight text-center font-medium">
+            <%= cell_form.object.bingo_item.content.truncate(12) %>
+          </span>
+
+          <%# Checkmark Icon (Only visible when checked) %>
+          <svg class="w-4 h-4 mt-1 hidden peer-checked:block text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+      </label>
+    <% end %>
+  </div>
+</div>
       
       <div class="flex items-center space-x-4">
         <%= f.submit "Update Card Settings", class: "bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 cursor-pointer" %>

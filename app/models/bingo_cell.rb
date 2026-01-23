@@ -7,6 +7,7 @@ class BingoCell < ApplicationRecord
 after_update_commit :broadcast_mini_card_update
 # This handles the "Approved" state update
   after_update_commit :broadcast_refresh
+after_update_commit :broadcast_cell_change
 
   def broadcast_refresh
         @active_theme = Setting.get("current-theme") || "Dusk"
@@ -30,6 +31,17 @@ after_update_commit :broadcast_mini_card_update
 
 
   private
+
+  def broadcast_cell_change
+    # We broadcast to the specific card instance
+    # The target is the dom_id of the cell (e.g., "bingo_cell_123")
+    broadcast_replace_to(
+      self.bingo_card,
+      target: self, 
+      partial: "admin/bingo_cards/cell",
+      locals: { cell: self }
+    )
+  end
 
   def broadcast_mini_card_update
   # This broadcasts to the specific card's mini-view

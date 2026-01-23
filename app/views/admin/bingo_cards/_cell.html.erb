@@ -1,0 +1,32 @@
+<%# app/views/bingo_cards/_cell.html.erb %>
+<%# We set the ID here so Turbo knows exactly what to replace %>
+<div id="<%= dom_id(cell) %>" class="relative w-full h-full">
+  <% if cell %>
+    <% 
+       base_classes = "w-full aspect-square relative flex items-center justify-center p-1 rounded-md border-2 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"
+       state_classes = cell.is_marked ? 'bg-blue-600 border-blue-400 text-white shadow-lg hover:bg-blue-700' : 'bg-gray-100 border-gray-300 text-gray-400 hover:bg-white hover:border-gray-400'
+    %>
+
+    <%= button_to toggle_admin_bingo_cell_path(cell), 
+        method: :patch, 
+        disabled: cell.coordinate == "FREE",
+        class: "#{base_classes} #{state_classes}",
+        form: { class: "h-full w-full" } do %>
+      
+      <div class="text-[10px] md:text-xs font-bold text-center leading-tight">
+        <%= cell.bingo_item.content %>
+      </div>
+      
+      <% if cell.is_marked %>
+        <div class="absolute top-1 right-1">
+          <svg class="h-4 w-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+        </div>
+      <% end %>
+
+    <% end %>
+  <% else %>
+    <div class="aspect-square bg-red-50 border-2 border-red-200 rounded-md"></div>
+  <% end %>
+</div>

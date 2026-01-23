@@ -23,7 +23,8 @@
     <div class="lg:col-span-2">
       <div class="bg-gray-800 p-4 rounded-xl shadow-2xl">
         <% columns = ["B", "I", "N", "G", "O"].first(@game.size) %>
-        
+<%= turbo_stream_from @bingo_card %>
+
         <div class="grid grid-cols-5 gap-2">
           <%# Header Letters %>
           <% columns.each do |letter| %>
@@ -38,29 +39,19 @@
             </div>
           <% end %>
 
+   
           <%# Grid Cells %>
           <% (0...@game.size).each do |row_index| %>
             <% columns.each do |letter| %>
               <% cell = @grouped_cells[letter]&.at(row_index) %>
-              <div class="aspect-square relative flex items-center justify-center p-1 rounded-md border-2 transition-all 
-                <%= cell&.is_marked ? 'bg-blue-600 border-blue-400 text-white shadow-lg' : 'bg-gray-100 border-gray-300 text-gray-400' %>">
-                
-                <% if cell %>
-                  <div class="text-[10px] md:text-xs font-bold text-center leading-tight">
-                    <%= cell.bingo_item.content %>
-                  </div>
-                  
-                  <% if cell.is_marked %>
-                    <div class="absolute top-1 right-1">
-                      <svg class="h-4 w-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                      </svg>
-                    </div>
-                  <% end %>
-                <% end %>
-              </div>
+
+              <%= render partial: "admin/bingo_cards/cell", locals: { cell: cell } %>
+
+
             <% end %>
           <% end %>
+
+
         </div>
       </div>
     </div>

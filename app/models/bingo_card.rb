@@ -7,6 +7,7 @@ has_many :bingo_items, through: :bingo_cells
 after_create_commit :broadcast_new_participant
 after_create_commit :broadcast_total_stats
 
+accepts_nested_attributes_for :bingo_cells, allow_destroy: false
   # This callback ensures that as soon as !join is triggered and a card is saved,
   # the 5x5 (or 3x3) grid is populated with items.
   after_create :generate_cells

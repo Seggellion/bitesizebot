@@ -108,6 +108,10 @@ namespace :admin do
 
     resources :bingo_items
     resources :bingo_cards
+    resources :bingo_cells, only: [] do
+        patch :toggle, on: :member
+      end
+
     resources :posts
     resources :sections do
       member do

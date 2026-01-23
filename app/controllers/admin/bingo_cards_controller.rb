@@ -54,7 +54,7 @@ end
 
 
     def bingo_card_params
-      params.require(:bingo_card).permit(:content, :column_letter, :row_number)
+      params.require(:bingo_card).permit(:content, :column_letter, :row_number, :user_id, :bingo_game_id, bingo_cells_attributes: [:id, :is_marked])
     end
   end
 end
