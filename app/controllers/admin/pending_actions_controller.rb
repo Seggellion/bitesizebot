@@ -22,6 +22,37 @@ def bulk_approve
   redirect_to admin_bingo_games_path, notice: "Approved #{@actions.count} mark requests."
 end
 
+def approve_similar
+  @action = PendingAction.find(params[:id])
+  
+  # 1. Get the coordinate using our safe helper
+  target_coord = @action.request_coordinate
+
+  if target_coord.blank?
+    redirect_back fallback_location: admin_dashboard_path, alert: "Could not determine coordinate."
+    return
+  end
+
+  # 2. Filter using the helper (Safe Ruby Filtering)
+  similar_requests = PendingAction.pending
+                                  .where(action_type: 'mark_cell')
+                                  .select do |pa|
+                                    pa.request_coordinate == target_coord
+                                  end
+
+  count = similar_requests.count
+
+  ActiveRecord::Base.transaction do
+    similar_requests.each do |pending_action|
+      pending_action.approve!
+    end
+  end
+
+  respond_to do |format|
+    format.html { redirect_back fallback_location: admin_dashboard_path, notice: "Approved #{count} requests for #{target_coord}!" }
+    format.turbo_stream { flash.now[:notice] = "Approved #{count} requests for #{target_coord}!" }
+  end
+end
 
 def update
 

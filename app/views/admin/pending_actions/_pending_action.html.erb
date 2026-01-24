@@ -21,6 +21,36 @@
     <% if action.action_type == 'mark_cell' %>
       <span class="font-semibold text-gray-800"><%= action.target.coordinate %></span>: 
       <span class="italic text-gray-500">"<%= action.target.bingo_item.content %>"</span>
+<% 
+   # USE THE HELPER HERE
+   target_coord = action.request_coordinate
+   
+   # Calculate similar count safely
+   similar_count = 0
+   if target_coord.present?
+     similar_count = PendingAction.pending
+                                  .where(action_type: 'mark_cell')
+                                  .select { |pa| pa.request_coordinate == target_coord }
+                                  .count
+   end
+%>
+
+<% if similar_count > 1 %>
+  <div class="mt-2">
+    <%= button_to approve_similar_admin_pending_action_path(action), 
+        method: :patch,
+        class: "group flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-1 rounded transition-all",
+        form: { style: "display:inline-block;" } do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+      Approve all <%= similar_count %> matching "<%= target_coord %>"
+    <% end %>
+  </div>
+<% end %>
+
+
+      
     <% elsif action.action_type == 'claim_win' %>
       <div class="flex flex-col gap-1">
         <span class="text-red-600 font-bold uppercase text-[10px] tracking-wider">Verification Required</span>

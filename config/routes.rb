@@ -84,6 +84,9 @@ namespace :admin do
     end
 
     resources :pending_actions, only: [:index, :update] do
+      member do
+        patch :approve_similar
+      end
         collection do
           patch :bulk_approve
         end

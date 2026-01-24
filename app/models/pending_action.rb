@@ -3,12 +3,16 @@ class PendingAction < ApplicationRecord
   belongs_to :target, polymorphic: true
 
   scope :pending, -> { where(status: 'pending') }
-
   # Use one consolidated hook for creation
   after_create_commit :handle_new_action
   
   # Use one consolidated hook for updates
   after_update_commit :handle_action_update
+
+def request_coordinate
+    # This regex pulls the value "N39" out of "{:coordinate=>\"N39\"}"
+    metadata.to_s[/coordinate=>"([^"]+)"/, 1]
+  end
 
   def approve!
     update!(status: 'approved')
