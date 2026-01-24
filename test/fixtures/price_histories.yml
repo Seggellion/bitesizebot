@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ticker: one
+  price: 9.99
+
+two:
+  ticker: two
+  price: 9.99

@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_20_054505) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_24_011814) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_stat_statements"
 
   create_table "achievements", force: :cascade do |t|
     t.string "name", null: false
@@ -326,6 +327,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_20_054505) do
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
+  create_table "price_histories", force: :cascade do |t|
+    t.bigint "ticker_id", null: false
+    t.decimal "price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ticker_id"], name: "index_price_histories_on_ticker_id"
+  end
+
   create_table "raffle_entries", force: :cascade do |t|
     t.bigint "raffle_id", null: false
     t.bigint "user_id", null: false
@@ -473,6 +482,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_20_054505) do
   add_foreign_key "pending_actions", "users"
   add_foreign_key "posts", "categories"
   add_foreign_key "posts", "users"
+  add_foreign_key "price_histories", "tickers"
   add_foreign_key "raffle_entries", "raffles"
   add_foreign_key "raffle_entries", "users"
   add_foreign_key "raffles", "users", column: "host_id"

@@ -1,0 +1,19 @@
+
+<% Ticker.all.each do |ticker| %>
+
+<div class="bg-gray-800 p-4 rounded-lg">
+  <h3 class="text-white mb-4"><%= ticker.name.upcase %> 24h Performance</h3>
+  
+  <%= line_chart ticker.chart_data, 
+        prefix: "ƒ", 
+        refresh: 300, 
+        library: { 
+          backgroundColor: "transparent",
+          scales: { 
+            x: { display: false }, # Hide dates for a cleaner sparkline look
+            y: { ticks: { color: "#9ca3af" } } 
+          } 
+        } %>
+</div>
+
+<% end %>

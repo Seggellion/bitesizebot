@@ -120,13 +120,17 @@ receiver = User.find_by("LOWER(username) = ?", receiver_name.downcase)
 
 def self.invest_logic(user, amount, name, is_mod)
   current_market_price = Ticker.price_for(name)
-
   return "Minimum investment is 10 farthings." if amount < 10
 
-  # We check if this 'Ticker' has ever been traded
   ticker_exists = Ticker.exists?(name: name.downcase)
+  
+  # Check if the user ALREADY has this stock
+  existing = user.investments.active.find_by("lower(investment_name) = ?", name.downcase)
 
-  if !ticker_exists
+  if existing
+    # Support for adding to an existing position
+    buy_more_of_investment(user, amount, existing, current_market_price)
+  elsif !ticker_exists
     if is_mod
       create_new_investment(user, amount, name, current_market_price)
     else
@@ -137,6 +141,40 @@ def self.invest_logic(user, amount, name, is_mod)
   end
 rescue CurrencyService::InsufficientFundsError
   "You don't have enough farthings!"
+end
+
+def self.buy_more_of_investment(user, amount, investment, market_price)
+  ActiveRecord::Base.transaction do
+    # 1. Calculate current "Shares" (Value / Purchase Price)
+    old_shares = investment.amount.to_f / investment.purchase_price
+    new_shares = amount.to_f / market_price
+    total_shares = old_shares + new_shares
+
+    # 2. Calculate New Weighted Average Purchase Price
+    total_investment_at_cost = investment.amount + amount
+    new_avg_price = total_investment_at_cost / total_shares
+
+    # 3. Update the record
+    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase_add')
+    investment.update!(
+      amount: total_investment_at_cost,
+      purchase_price: new_avg_price
+    )
+  end
+  "Added #{amount} to your #{investment.investment_name.upcase} position! New Avg. Price: #{investment.purchase_price.round(2)}"
+end
+
+def self.buy_into_investment(user, amount, name, price)
+  ActiveRecord::Base.transaction do
+    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase')
+    Investment.create!(
+      user: user, 
+      amount: amount, 
+      investment_name: name, 
+      purchase_price: price
+    )
+  end
+  "Bought into '#{name}' at market price #{price.round(2)}!"
 end
 
 def self.create_new_investment(user, amount, name, price)
@@ -155,18 +193,7 @@ def self.create_new_investment(user, amount, name, price)
   "IPO Alert! '#{name}' listed at #{price} farthings. You bought in with #{amount}!"
 end
 
-def self.buy_into_investment(user, amount, name, price)
-  ActiveRecord::Base.transaction do
-    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase')
-    Investment.create!(
-      user: user, 
-      amount: amount, 
-      investment_name: name, 
-      purchase_price: price
-    )
-  end
-  "Bought into '#{name}' at market price #{price.round(2)}!"
-end
+
 
 
 

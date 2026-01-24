@@ -15,6 +15,7 @@ class MarketService
         previous_price: old_price,
         current_price: [new_price, 1.0].max
       )
+      ticker.price_histories.create!(price: new_price)
     end
   end
 end

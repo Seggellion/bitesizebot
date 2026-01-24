@@ -70,7 +70,26 @@ class Giveaway < ApplicationRecord
     self.status = :completed
     self.drawn_at = Time.current
     save!
-    
+    announce_winner_to_twitch
     winner
   end
+
+private
+
+def announce_winner_to_twitch
+  # We need the Broadcaster (channel) and the Bot (sender)
+  broadcaster = User.broadcaster
+  bot = User.bot_user
+  
+  return unless broadcaster && bot && winner
+
+  message = "PROCLAMATION: The Horn of Helm Hammerhand shall sound in the Shire! " \
+            "Congratulations @#{winner.username}, you have won '#{title}'! 🏆"
+
+  # Call your existing TwitchService
+  TwitchService.send_chat_message(broadcaster.uid, bot.uid, message)
+rescue => e
+  Rails.logger.error "Failed to announce winner: #{e.message}"
+end
+
 end
