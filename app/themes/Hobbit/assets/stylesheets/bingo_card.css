@@ -1,48 +1,354 @@
-.bingo-grid{
-background-color:rgb(69 125 88);
+/* =========================================
+   1. Bingo Grid Layout & Container
+   ========================================= */
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 712px;
+  margin: 0 auto;
+  padding: 3px 13px 0 13px;
+  background-color: rgb(69, 125, 88);
 }
 
-.bingo-grid .cell-content, .bingo-grid button.bingo-cell:not(.is-marked){
-background-color:transparent;
-background:transparent;
+/* Mobile spacing: more room for text inside cells */
+@media (max-width: 640px) {
+  .bingo-grid {
+    gap: 4px;
+    padding: 6px 8px 0 8px;
+  }
 }
 
-.bingo-grid .cell-content{
-    font-family: 'Ringbearer';
-       font-size: 1.5rem;
-    line-height: 1.4rem;
-    z-index: 5;
-        color:white;
-
+/* Fix for form buttons inside grid */
+.bingo-grid .button_to {
+  width: 100%;
+  height: 100%;
+  display: contents; /* Makes the form container "invisible" to the grid */
 }
 
-.bingo-grid .free-space .cell-content{
-    line-height: 25px;
-    width: 102px;
-    overflow: hidden;
-    word-wrap: break-word;
-    font-size: 1rem;
+/* =========================================
+   2. Header Area
+   ========================================= */
+.header-main {
+  text-align: center;
+  margin-top: 10px;
 }
 
-.bingo-grid .bingo-cell{
-border-radius:24px;
-border-color: rgb(123 45 1);
-border-width:3px;
-    margin-bottom: 8px;
-        overflow: hidden;
-    height: 93%;
+.grid-header {
+  text-transform: lowercase;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  font-family: 'Ringbearer', serif;
+
+  /* Responsive typography */
+  font-size: clamp(5.2rem, 10vw, 10.8rem);
+  line-height: 1;
+
+  border-radius: 4px;
+  height: 110px;
+  margin-bottom: 5px;
+
+  /* Center content so image/letter align the same */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* On mobile, the header row shouldn’t be a fixed 110px tall */
+@media (max-width: 640px) {
+  .grid-header {
+    height: auto;
+    padding: 4px 0;
+    margin-bottom: 2px;
+  }
 }
 
 
+.grid-header-image {
+  height: clamp(2.2rem, 9vw, 6.5rem);
+  width: auto;
+  max-width: 90%;
+  object-fit: contain;
+}
 
+/* If you keep your old selector, override it */
+.grid-header img {
+  margin-left: 0; /* remove the desktop nudge that hurts small layouts */
+}
+
+@media (min-width: 641px) {
+  .grid-header-image {
+    margin-left: 10px;
+  }
+}
+
+
+/* =========================================
+   3. Bingo Cells (Base Styles)
+   ========================================= */
+.bingo-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  /* Layout & Size */
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 5px;
+  overflow: hidden;
+  
+  /* Visuals */
+  border: 3px solid rgb(123, 45, 1);
+  border-radius: 24px;
+  background-color: transparent; /* Default transparency */
+  
+  /* Text & Interaction */
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+/* Specific styling if the cell is a <button> element */
+button.bingo-cell {
+  appearance: none;
+  font-family: inherit;
+  background: white; /* Default background for interactive buttons */
+}
+
+/* Button Hover State */
+button.bingo-cell:hover:not(:disabled) {
+  background-color: #f0f0ff;
+  border-color: #6441a5;
+}
+
+button.bingo-cell:hover:not(:disabled) .cell-content {
+  color: black;
+}
+
+/* Button Disabled State */
+button.bingo-cell:disabled {
+  cursor: not-allowed;
+}
+
+/* =========================================
+   4. Cell Internals (Text & Coordinates)
+   ========================================= */
+.cell-content {
+  position: relative;
+  z-index: 5;
+  color: white;
+  font-family: 'Ringbearer', serif;
+
+  font-size: clamp(0.75rem, 2.6vw, 1.4rem);
+  line-height: 1.1;
+
+  /* Prevent overflow for long bingo item names */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+@media (max-width: 640px) {
+    .cell-content{
+        line-height: 1.3;
+    }
+}
+
+
+/* Override background for non-marked buttons to be transparent inside the grid context */
+.bingo-grid button.bingo-cell:not(.is-marked) {
+  background-color: transparent;
+}
+
+/* Coordinate Background Number Styling */
 .cell-coord {
-    font-size: 9.4rem;
-    font-family: 'Ringbearer';
-    color: rgb(103 92 58);
-    position: absolute;
-    bottom: -67px;
-    left: 2px;
-    z-index: 1;
-    width:100%;
-    letter-spacing: -15px;
+  position: absolute;
+  bottom: -69px;
+  left: 2px;
+  z-index: 1;
+  width: 100%;
+
+  color: rgb(103, 92, 58);
+  font-family: 'Ringbearer', serif;
+  font-size: 9.4rem;
+  letter-spacing: -15px;
 }
+
+@media (max-width: 640px) {
+  .cell-coord {
+    bottom: -17px;
+    font-size: clamp(2.5rem, 10vw, 5rem);
+    letter-spacing: -0.12em;
+  }
+}
+
+
+/* Free Space Specifics */
+.bingo-grid .free-space .cell-content {
+  font-size: 1rem;
+  line-height: 25px;
+}
+
+@media (max-width: 640px) {
+.bingo-grid .free-space .cell-content {
+    font-size: 10px;
+    line-height: 15px;
+  }
+}
+
+/* =========================================
+   5. Cell States (Marked/Victory)
+   ========================================= */
+.bingo-cell.is-marked {
+  background-color: #ffd700;
+  border-color: #ffa500;
+}
+
+.bingo-cell.is-marked .cell-content {
+  color: black;
+}
+
+/* The "X" overlay */
+.bingo-cell.is-marked::after {
+  content: "✖";
+  position: absolute;
+  font-size: 3rem;
+  color: rgba(255, 0, 0, 0.3);
+  z-index: 6;
+}
+
+/* Winning Animation */
+.game-over .bingo-cell.is-marked {
+  background-color: #ffd700;
+  animation: celebrate 0.5s infinite alternate;
+}
+
+/* =========================================
+   6. UI Elements (Action Bar, Overlays)
+   ========================================= */
+.win-action-container {
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(100, 65, 165, 0.1); /* Light Twitch Purple */
+  border-radius: 8px;
+}
+
+.btn-call-bingo {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  
+  width: 200px;
+  height: 50px;
+  margin: 0 auto;
+  
+  background-color: #675c3a;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  
+  font-family: 'Ringbearer', serif;
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+@media (max-width: 640px) {
+  .bingo-cell {
+    border-width: 2px;
+    border-radius: 16px;
+    padding: 3px;
+    margin-bottom: 4px;
+  }
+
+  .btn-call-bingo {
+    width: 100%;
+    max-width: 260px;
+    font-size: 1.2rem;
+    height: 44px;
+  }
+
+  .pending-overlay {
+    font-size: 1rem;
+  }
+}
+
+
+.btn-call-bingo:hover:not(:disabled) {
+  background-color: #7d5bbe;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-call-bingo:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.victory-banner {
+  background: #6441a5;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 4px solid gold;
+  border-radius: 8px;
+}
+
+.alert-penalty {
+  background-color: #ff4b4b;
+  color: white;
+  font-weight: bold;
+  animation: shake 0.5s;
+}
+
+/* =========================================
+   7. Pending / Loading States
+   ========================================= */
+.pending-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 1.5rem;
+}
+
+.pending-text {
+  margin-top: 10px;
+  color: #6441a5;
+  font-style: italic;
+  animation: pulse 1.5s infinite;
+}
+
+/* =========================================
+   8. Keyframes
+   ========================================= */
+@keyframes celebrate {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Note: 'shake' animation was referenced but not defined in original CSS. 
+   You may want to add it here. */

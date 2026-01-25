@@ -36,7 +36,7 @@
     <% columns.each do |letter| %>
       <div class="grid-header">
       <% if letter == "O" %>
-<%= image_tag "hobbit_hole.png", alt: "Hobbit Hole" %>
+<%= image_tag "hobbit_hole.png", alt: "Hobbit Hole", class: "grid-header-icon" %>
       <% else %>
 <%= letter %>
       <% end %>
@@ -60,8 +60,13 @@
 
   <%= render "Hobbit/views/pages/replacement_section", card: card, game: game %>
 
-      <div class="header-main">
-      <h1><%= game.title %></h1>
-      <p>Status: <span class="badge"><%= game.status %></span></p>
-    </div>
+<div class="header-main text-center mt-4 px-2">
+  <h1 class="leading-tight break-words text-2xl sm:text-3xl md:text-5xl">
+    <%= game.title %>
+  </h1>
+  <p class="mt-1 text-sm sm:text-base">
+    Status: <span class="badge"><%= game.status %></span>
+  </p>
+</div>
+
 </div>
