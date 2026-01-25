@@ -33,7 +33,7 @@ class BingoService
     # 4. Command Dispatcher
     case command
     when "!bingo join"
-      # Only block joining if the game is already active
+      # Only block joining if the game is already active      
       if game.status == 'active'
         return "The game has already started! Too late to join."
       end

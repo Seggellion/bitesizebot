@@ -13,6 +13,7 @@ class BingoGame < ApplicationRecord
   after_update_commit :broadcast_game_end, if: :saved_change_to_status?
   after_update_commit :broadcast_potential_win_cleanup, if: :saved_change_to_winner_id?
   after_update_commit :broadcast_status_change, if: :saved_change_to_status?
+  after_update_commit :cleanup_pending_actions, if: :game_ended?
 
   scope :joinable, -> { where(status: 'invite') }
   scope :active, -> { where(status: 'active') }
@@ -28,6 +29,15 @@ class BingoGame < ApplicationRecord
   def active?
     status == 'active'
   end
+
+  def game_ended?
+  saved_change_to_status? && status == "ended"
+end
+
+def cleanup_pending_actions
+  cleanup_pending_actions!
+end
+
 
   def self.current_or_latest
     active.first || order(created_at: :desc).first
@@ -69,6 +79,24 @@ end
 
     end
   end
+
+  def cleanup_pending_actions!
+    PendingAction
+      .where(action_type: %w[mark_cell claim_win])
+      .where(
+        target_type: "BingoCell",
+        target_id: bingo_cells.select(:id)
+      )
+      .or(
+        PendingAction.where(
+          action_type: %w[mark_cell claim_win],
+          target_type: "BingoCard",
+          target_id: bingo_cards.select(:id)
+        )
+      )
+      .delete_all
+  end
+
 
 def broadcast_status_change
     if status == 'active'

@@ -9,6 +9,9 @@ class PendingAction < ApplicationRecord
   # Use one consolidated hook for updates
   after_update_commit :handle_action_update
 
+  validate :game_must_be_active, on: :create
+
+
 def request_coordinate
     # This regex pulls the value "N39" out of "{:coordinate=>\"N39\"}"
     metadata.to_s[/coordinate=>"([^"]+)"/, 1]
@@ -18,6 +21,11 @@ def bingo_game
     return target.bingo_game if target.respond_to?(:bingo_game)
     nil
   end
+
+def game_must_be_active
+  game = bingo_game
+  errors.add(:base, "Game has already ended") if game&.status == "ended"
+end
 
   def approve!
     update!(status: 'approved')
