@@ -14,22 +14,30 @@ def request_coordinate
     metadata.to_s[/coordinate=>"([^"]+)"/, 1]
   end
 
+def bingo_game
+    return target.bingo_game if target.respond_to?(:bingo_game)
+    nil
+  end
+
   def approve!
     update!(status: 'approved')
-    
+
     transaction do
       case action_type
-      when 'mark_cell'        
+      when 'mark_cell'
         target.update!(is_marked: true)
+
+        coord = request_coordinate
+        game  = target.bingo_game
+        if coord.present? && game.present?
+          game.remember_coordinate!(coord, approved_by: user)
+        end
+
         broadcast_overlay_notification
+
       when 'claim_win'
-        # target is the BingoCard
         game = target.bingo_game
-        game.update!(
-            status: 'ended', 
-            winner: user, 
-            ended_at: Time.current
-        )
+        game.update!(status: 'ended', winner: user, ended_at: Time.current)
         user.increment!(:karma, 100)
         user.increment!(:fame, 100)
 
@@ -37,9 +45,9 @@ def request_coordinate
         announce_win_to_twitch(game)
         broadcast_overlay_win
       end
-
     end
   end
+
 
   def deny!
     transaction do
@@ -52,16 +60,25 @@ def request_coordinate
 
   private
 
-  def handle_new_action
-    # 1. Update the Admin Dashboard
-    broadcast_prepend_to "pending_actions", 
-                         target: "pending_actions_table_body", 
-                         partial: "admin/pending_actions/pending_action", 
-                         locals: { action: self }
+def handle_new_action
+  if action_type == 'mark_cell'
+    coord = request_coordinate
+    game  = bingo_game
 
-    # 2. Update the Player's Card
-    refresh_target_cell
+    if coord.present? && game&.coordinate_auto_approved?(coord)
+      approve!
+      return
+    end
   end
+
+  broadcast_prepend_to "pending_actions",
+                       target: "pending_actions_table_body",
+                       partial: "admin/pending_actions/pending_action",
+                       locals: { action: self }
+
+  refresh_target_cell
+end
+
 
   def add_to_monthly_giveaway
     giveaway = Giveaway.bingo.open.order(created_at: :desc).first

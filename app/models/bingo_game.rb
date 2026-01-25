@@ -3,7 +3,7 @@ class BingoGame < ApplicationRecord
   
   has_many :bingo_game_items, dependent: :destroy
   has_many :bingo_items, through: :bingo_game_items
-  
+  has_many :mark_memories, class_name: "BingoGameMarkMemory", dependent: :delete_all
   has_many :bingo_cards, dependent: :destroy
   has_many :pending_actions, through: :bingo_cards, source: :pending_actions
   has_many :bingo_cells, through: :bingo_cards
@@ -33,6 +33,16 @@ class BingoGame < ApplicationRecord
     active.first || order(created_at: :desc).first
   end
 
+  def coordinate_auto_approved?(coord)
+    mark_memories.exists?(coordinate: coord)
+  end
+
+  def remember_coordinate!(coord, approved_by: nil)
+    mark_memories.find_or_create_by!(coordinate: coord) do |rec|
+      rec.approved_by = approved_by
+    end
+  end
+
   private
 
 def broadcast_potential_win_cleanup
@@ -49,6 +59,14 @@ end
       bingo_cards.each do |card|
         broadcast_refresh_to card
       end
+
+      # Overlay refresh signal
+      broadcast_append_to(
+        "game_overlay_#{id}",
+        target: "overlay_notifications",
+        partial: "admin/bingo_games/game_ended_signal"
+      )
+
     end
   end
 

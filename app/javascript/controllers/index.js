@@ -40,6 +40,9 @@ application.register("slideshow", SlideshowController)
 import OverlayNotificationController from "./overlay_notification_controller"
 application.register("overlay-notification", OverlayNotificationController)
 
+import OverlayRefreshController  from "./overlay_refresh_controller"
+application.register("overlay-refresh", OverlayRefreshController )
+
 import LightboxController from "./lightbox_controller"
 application.register("lightbox", LightboxController)
 

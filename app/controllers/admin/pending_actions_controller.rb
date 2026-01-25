@@ -24,8 +24,6 @@ end
 
 def approve_similar
   @action = PendingAction.find(params[:id])
-  
-  # 1. Get the coordinate using our safe helper
   target_coord = @action.request_coordinate
 
   if target_coord.blank?
@@ -33,19 +31,17 @@ def approve_similar
     return
   end
 
-  # 2. Filter using the helper (Safe Ruby Filtering)
+  game = @action.bingo_game
+  game&.remember_coordinate!(target_coord, approved_by: @action.user)
+
   similar_requests = PendingAction.pending
                                   .where(action_type: 'mark_cell')
-                                  .select do |pa|
-                                    pa.request_coordinate == target_coord
-                                  end
+                                  .select { |pa| pa.request_coordinate == target_coord }
 
   count = similar_requests.count
 
   ActiveRecord::Base.transaction do
-    similar_requests.each do |pending_action|
-      pending_action.approve!
-    end
+    similar_requests.each(&:approve!)
   end
 
   respond_to do |format|
