@@ -34,8 +34,6 @@ def self.is_follower?(broadcaster_id, user_id)
 end
 
 
-
-
   def self.connect(url)
     @current_ws = Faye::WebSocket::Client.new(url)
 
@@ -203,12 +201,26 @@ def self.handle_notification(event)
   uid      = event["chatter_user_id"]
   is_mod   = event["badges"]&.any? { |b| b["set_id"] == "moderator" || b["set_id"] == "broadcaster" }
 
+
+
+  viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
+    u.first_name = display_name
+    u.username = display_name
+    u.user_type = 1
+    u.fame = 0 
+  end
+
+  viewer.increment!(:fame, 1)
+  viewer.touch
+
+
   return unless text.start_with?("!")
 
   # The bot user's ID for sending messages
-  user = User.bot.first
+  user = User.bot_user
   sid  = user.uid
-puts "NOTIFICATION - NOTIFICATION STARTED!"
+
+
   unless is_mod || is_follower?(bid, uid)
     rejection_messages = [
       "Alas, @#{username}, only friends of the Shire may use these tools. Follow the path (hit follow) to enter!",
@@ -238,17 +250,6 @@ puts "NOTIFICATION - NOTIFICATION STARTED!"
     TwitchService.send_chat_message(bid, sid, rejection_messages.sample)
     return 
   end
-puts "NOTIFICATION - ATTEMPTING TO CREATE USER"
-  viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
-    u.first_name = display_name
-    u.username = display_name
-    u.user_type = 1
-    u.fame = 0 
-  end
-
-  viewer.increment!(:fame, 1)
-  viewer.touch
-puts "NOTIFICATION - RUN COMMANDS"
 
   # 1. HARDCODED COMMANDS (Static Logic)
   case text
