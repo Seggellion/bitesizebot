@@ -8,6 +8,9 @@ class Giveaway < ApplicationRecord
 
   validates :title, presence: true
 
+attribute :ticket_cost, :integer, default: 1
+  validates :ticket_cost, numericality: { greater_than_or_equal_to: 0 }
+
   def total_tickets
     giveaway_entries.sum(:tickets_count)
   end
@@ -55,8 +58,8 @@ class Giveaway < ApplicationRecord
                                  .where.not(user_id: recent_winner_ids)
 
     # 3. Filter by visible requirements (Karma/Fame)
-    eligible_entries = eligible_entries.where("users.karma >= ?", min_karma)
-                                     .where("users.fame >= ?", min_fame)
+    eligible_entries = eligible_entries.where("users.karma >= ?", min_karma) if min_karma.present?
+    eligible_entries = eligible_entries.where("users.fame >= ?", min_fame) if min_fame.present?  
 
     return nil if eligible_entries.empty?
 

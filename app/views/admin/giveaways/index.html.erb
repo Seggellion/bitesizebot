@@ -141,6 +141,7 @@
                 <th class="px-6 py-4">Title</th>
                 <th class="px-6 py-4">Date</th>
                 <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4">Type</th>
                 <th class="px-6 py-4">Winner</th>
                 <th class="px-6 py-4">Entries</th>
                 <th class="px-6 py-4 text-right">Actions</th>
@@ -159,6 +160,7 @@
                       <%= g.status %>
                     </span>
                   </td>
+                  <td class="px-6 py-4 text-gray-400"><%= g.giveaway_type %></td>
                   <td class="px-6 py-4 text-indigo-300 font-mono"><%= g.winner&.username || '-' %></td>
                   <td class="px-6 py-4 text-gray-400"><%= g.giveaway_entries.count %></td>
                   <td class="px-6 py-4 text-right space-x-2">

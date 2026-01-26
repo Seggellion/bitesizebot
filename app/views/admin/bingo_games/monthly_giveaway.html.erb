@@ -1,0 +1,190 @@
+<%# Dark Mode Dashboard Container %>
+<div class="min-h-screen bg-slate-900 text-slate-300 font-sans selection:bg-cyan-500 selection:text-slate-900">
+  
+  <%# --- TOP NAVIGATION / HEADER --- %>
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <div class="h-8 w-8 bg-cyan-500 rounded flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+          <svg class="w-5 h-5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">VANDUUL <span class="text-cyan-500">ANALYTICS</span></h1>
+          <p class="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Bingo Operations // Monthly Draw</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6 text-xs font-mono">
+        <div class="flex flex-col items-end">
+          <span class="text-slate-500">SERVER TIME</span>
+          <span class="text-cyan-400"><%= Time.current.strftime("%H:%M:%S UTC") %></span>
+        </div>
+        <div class="h-8 w-px bg-slate-800"></div>
+        <div class="flex flex-col items-end">
+          <span class="text-slate-500">NET STATUS</span>
+          <span class="text-emerald-400 flex items-center gap-1">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            ONLINE
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+    <%# --- CONTROL SECTOR (THE BUTTON) --- %>
+    <section class="grid grid-cols-12 gap-6">
+      <div class="col-span-12 lg:col-span-8 bg-slate-800/50 rounded-lg border border-slate-700 p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <svg class="w-32 h-32 text-cyan-500" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" /></svg>
+        </div>
+
+        <h2 class="text-2xl font-bold text-white mb-2">Initiate Monthly Protocol</h2>
+        <p class="text-slate-400 mb-6 max-w-xl">
+          Warning: This action will audit all Bingo wins from <span class="text-cyan-400 font-mono"><%= 30.days.ago.to_date %></span> to present. 
+          Eligibility filters (Ban Tags, 6-Month Cooldown) will be applied strictly.
+        </p>
+
+        <%= button_to draw_admin_bingo_games_path, 
+            method: :post,
+            class: "relative inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-cyan-600 border border-transparent rounded hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 shadow-[0_0_20px_rgba(8,145,178,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] active:scale-95",
+            data: { turbo_confirm: "CONFIRM: Execute Random Selection Protocol?" } do %>
+          <svg class="w-5 h-5 mr-3 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          EXECUTE DRAW
+        <% end %>
+      </div>
+
+      <%# --- KPI METRICS --- %>
+      <div class="col-span-12 lg:col-span-4 grid grid-rows-3 gap-4">
+        
+        <%# Metric 1 %>
+        <div class="bg-slate-800 rounded p-4 border border-slate-700 flex justify-between items-center">
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-500">Eligible Candidates</div>
+            <div class="text-3xl font-mono font-bold text-white"><%= @eligible_users.count %></div>
+          </div>
+          <div class="text-emerald-500 bg-emerald-500/10 p-2 rounded">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+          </div>
+        </div>
+
+        <%# Metric 2 %>
+        <div class="bg-slate-800 rounded p-4 border border-slate-700 flex justify-between items-center">
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-500">Excluded (Cooldown/Ban)</div>
+            <div class="text-3xl font-mono font-bold text-slate-400"><%= @excluded_count %></div>
+          </div>
+          <div class="text-rose-500 bg-rose-500/10 p-2 rounded">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+          </div>
+        </div>
+
+        <%# Metric 3 %>
+        <div class="bg-slate-800 rounded p-4 border border-slate-700 flex justify-between items-center">
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-500">Avg Win Probability</div>
+            <div class="text-3xl font-mono font-bold text-cyan-400">
+              <%= @eligible_users.count > 0 ? (100.0 / @eligible_users.count).round(2) : 0 %>%
+            </div>
+          </div>
+          <div class="text-cyan-500 bg-cyan-500/10 p-2 rounded">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <%# --- ANALYST DATA TABLE --- %>
+    <section class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-lg">
+      <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-800">
+        <h3 class="font-bold text-white flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+          CANDIDATE POOL MATRIX
+        </h3>
+        <div class="flex gap-2">
+           <span class="text-xs font-mono text-slate-500 bg-slate-900 px-2 py-1 rounded border border-slate-700">FILTER: WINNERS (30D)</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-900/50 text-xs font-mono text-slate-500 uppercase tracking-wider">
+              <th class="px-6 py-3 border-b border-slate-700">User Entity</th>
+              <th class="px-6 py-3 border-b border-slate-700">Winning Game</th>
+              <th class="px-6 py-3 border-b border-slate-700 text-right">Karma</th>
+              <th class="px-6 py-3 border-b border-slate-700">Win Date</th>
+              <th class="px-6 py-3 border-b border-slate-700 text-center">Eligibility</th>
+              <th class="px-6 py-3 border-b border-slate-700 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-700/50 text-sm">
+            <%# We iterate over raw pool to show WHY people are excluded - Analysts love this %>
+            <% @raw_pool.each do |user| %>
+              <% 
+                 is_banned = @banned_ids.include?(user.id)
+                 is_recent = @recent_winner_ids.include?(user.id)
+                 is_eligible = !is_banned && !is_recent
+                 last_game = user.won_games.order(ended_at: :desc).first
+              %>
+              <tr class="hover:bg-slate-700/30 transition-colors group">
+                <td class="px-6 py-3 font-medium text-white group-hover:text-cyan-400 transition-colors">
+                  <%= user.username %>
+                </td>
+                <td class="px-6 py-3 text-slate-400 font-mono text-xs">
+                  <%= last_game&.title || "ERR_NO_REF" %>
+                </td>
+                <td class="px-6 py-3 text-slate-400 font-mono text-right">
+                  <%= user.karma %>
+                </td>
+                <td class="px-6 py-3 text-slate-500 font-mono text-xs">
+                   <%= last_game&.ended_at&.strftime("%Y-%m-%d %H:%M") %>
+                </td>
+                <td class="px-6 py-3 text-center">
+                  <% if is_eligible %>
+                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                       QUALIFIED
+                     </span>
+                  <% elsif is_banned %>
+                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                       TAG_BAN
+                     </span>
+                  <% elsif is_recent %>
+                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                       COOLDOWN
+                     </span>
+                  <% end %>
+                </td>
+                <td class="px-6 py-3 text-right">
+                   <div class="flex justify-end gap-1">
+                      <div class="w-1.5 h-1.5 rounded-full <%= is_eligible ? 'bg-cyan-500' : 'bg-slate-600' %>"></div>
+                      <div class="w-1.5 h-1.5 rounded-full <%= is_eligible ? 'bg-cyan-500' : 'bg-slate-600' %> opacity-60"></div>
+                      <div class="w-1.5 h-1.5 rounded-full <%= is_eligible ? 'bg-cyan-500' : 'bg-slate-600' %> opacity-30"></div>
+                   </div>
+                </td>
+              </tr>
+            <% end %>
+            
+            <% if @raw_pool.empty? %>
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-mono">
+                  [NULL_SET] NO GAMES FOUND IN T-MINUS 30 DAYS
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="bg-slate-900 px-6 py-3 border-t border-slate-700 text-xs font-mono text-slate-500 flex justify-between">
+         <span>TOTAL RECORDS: <%= @raw_pool.count %></span>
+         <span>PAGE 1 OF 1</span>
+      </div>
+    </section>
+
+  </main>
+</div>

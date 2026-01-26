@@ -29,7 +29,7 @@ module Admin
     def create
       @giveaway = Giveaway.new(giveaway_params)
       if @giveaway.save
-        redirect_to admin_giveaway_path(@giveaway), notice: "Giveaway '#{@giveaway.title}' is now LIVE!"
+              redirect_to admin_giveaways_path, notice: "Giveaway was Created."
       else
         render :new, status: :unprocessable_entity
       end
@@ -122,7 +122,7 @@ module Admin
     end
 
     def giveaway_params
-      params.require(:giveaway).permit(:title, :giveaway_type, :min_karma, :min_fame, :max_entries_per_user)
+      params.require(:giveaway).permit(:title, :giveaway_type, :min_karma, :min_fame, :max_entries_per_user, :ticket_cost)
     end
   end
 end

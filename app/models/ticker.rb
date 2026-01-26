@@ -4,8 +4,8 @@ class Ticker < ApplicationRecord
 
   # Helper to get price or seed a default if a new stock is created
 
-  def chart_data
-    price_histories.where(created_at: 24.hours.ago..).order(:created_at).pluck(:created_at, :price)
+  def chart_data    
+price_histories.order(:created_at).map { |h| [h.created_at, h.price.to_f] }
   end
 
   def self.price_for(name)

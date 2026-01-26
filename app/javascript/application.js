@@ -6,3 +6,20 @@ import "controllers"
 
 import "trix"
 import "@rails/actiontext"
+
+
+
+// 1. Import Chart.js and its components
+import { Chart, registerables } from "chart.js"
+
+import "chartjs-adapter-date-fns"
+
+// 2. Register the components (Lines, Bars, etc.)
+Chart.register(...registerables)
+
+// 3. Import Chartkick for "side effects" only
+// (This runs the script and creates 'window.Chartkick')
+import "chartkick"
+
+// 4. Manually link them using the global variable
+window.Chartkick.use(Chart)

@@ -102,6 +102,8 @@ namespace :admin do
     resources :bingo_games do
       collection do
         get :overlay
+        get :monthly_giveaway
+        post :draw
       end
       member do
         post :start

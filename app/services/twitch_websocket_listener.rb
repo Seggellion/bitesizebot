@@ -274,7 +274,7 @@ def self.handle_notification(event)
     TwitchService.send_chat_message(bid, sid, "@#{username} #{response}")
     return
 
-  when "!fellowship", /^!lembas/
+  when /^!fellowship/, /^!lembas/  
     response_message = GiveawayService.process_command(uid, username, bid, text)
     TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}") if response_message
     return
