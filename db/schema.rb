@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_26_204744) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_26_230923) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -344,6 +344,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_26_204744) do
     t.decimal "price"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "volume", default: 0.0
+    t.float "open"
+    t.float "high"
+    t.float "low"
+    t.float "close"
     t.index ["ticker_id"], name: "index_price_histories_on_ticker_id"
   end
 
@@ -445,6 +450,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_26_204744) do
     t.decimal "previous_price"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "buy_pressure", default: 0.0
+    t.float "sell_pressure", default: 0.0
+    t.text "description"
+    t.string "symbol"
+    t.float "liquidity", default: 1000.0
+    t.float "max_liquidity", default: 1000.0
   end
 
   create_table "users", force: :cascade do |t|

@@ -44,6 +44,14 @@
       <%= link_to "Coffer", admin_coffer_index_path,
         class: "block px-4 py-2 rounded hover:bg-slate-700" %>
 
+<% if controller_name.include?('coffer') || controller_name.include?('ticker') %>
+  <div class="ml-4">
+    <%= link_to "Investments", admin_tickers_path,
+        class: "block px-4 py-1 rounded text-slate-300 hover:bg-slate-700" %>
+  </div>
+
+<% end %>
+
       <%= link_to "Commands", admin_custom_commands_path,
         class: "block px-4 py-2 rounded hover:bg-slate-700" %>
 

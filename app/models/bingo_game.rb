@@ -10,10 +10,13 @@ class BingoGame < ApplicationRecord
   validates :title, presence: true
   belongs_to :winner, class_name: "User", optional: true
 
+  after_create_commit :broadcast_overlay_refresh
+
   after_update_commit :broadcast_game_end, if: :saved_change_to_status?
   after_update_commit :broadcast_potential_win_cleanup, if: :saved_change_to_winner_id?
   after_update_commit :broadcast_status_change, if: :saved_change_to_status?
   after_update_commit :cleanup_pending_actions, if: :game_ended?
+
 
   scope :joinable, -> { where(status: 'invite') }
   scope :active, -> { where(status: 'active') }
@@ -63,22 +66,31 @@ def broadcast_potential_win_cleanup
 
 end
 
-  def broadcast_game_end
+def broadcast_game_end
     if status == 'ended'
-      # Tell all card-holders to refresh or show the victory banner
-      bingo_cards.each do |card|
-        broadcast_refresh_to card
-      end
-
-      # Overlay refresh signal
-      broadcast_append_to(
-        "game_overlay_#{id}",
-        target: "overlay_notifications",
-        partial: "admin/bingo_games/game_ended_signal"
-      )
-
+      # Tell all card-holders to refresh
+      bingo_cards.each { |card| broadcast_refresh_to card }
+      
+      # Trigger the overlay refresh
+      broadcast_overlay_refresh
     end
   end
+
+# Extracted method to signal the overlay via Turbo
+  def broadcast_overlay_refresh
+    # Note: If a new game is created, the overlay might still be subscribed 
+    # to the OLD game's ID. To fix this, the overlay should ideally subscribe 
+    # to a general "bingo_games" stream or the "current_or_latest" stream.
+    
+    # Using your existing stream naming convention:
+    broadcast_append_to(
+      "game_overlay_#{id}", 
+      target: "overlay_notifications",
+      partial: "admin/bingo_games/game_ended_signal"
+    )
+  end
+
+
 
   def cleanup_pending_actions!
     PendingAction

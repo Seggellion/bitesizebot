@@ -4,7 +4,7 @@ import confetti from "canvas-confetti"
 
 export default class extends Controller {
   static values = { 
-    duration: { type: Number, default: 5000 },
+    duration: { type: Number, default: 10000 },
     confetti: { type: Boolean, default: false }
   }
 
@@ -17,12 +17,12 @@ export default class extends Controller {
     // Standard cleanup logic
     setTimeout(() => {
       this.element.style.opacity = "0"
-      setTimeout(() => this.element.remove(), 600)
+      setTimeout(() => this.element.remove(), 1200)
     }, this.durationValue)
   }
 
   fireConfetti() {
-    const duration = 5 * 1000;
+    const duration = 8 * 1000;
     const animationEnd = Date.now() + duration;
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 

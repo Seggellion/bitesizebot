@@ -1,0 +1,43 @@
+<div class="min-h-screen bg-slate-900 text-slate-100 p-8">
+  <div class="max-w-5xl mx-auto">
+    <%= link_to "← Back to Market", admin_tickers_path, class: "text-slate-500 hover:text-white text-sm mb-4 inline-block" %>
+    
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-4xl font-black text-white">$<%= @ticker.name.upcase %></h1>
+      <div class="text-right">
+        <p class="text-slate-400 text-xs uppercase tracking-widest">Current Market Price</p>
+        <p class="text-3xl font-mono text-emerald-400"><%= number_to_currency(@ticker.current_price) %></p>
+      </div>
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6">
+      <h3 class="text-lg font-bold mb-4 text-indigo-300">Price History (Last 50 Records)</h3>
+      <div class="overflow-y-auto max-h-[600px] custom-scrollbar">
+        <table class="w-full text-xs font-mono">
+          <thead class="sticky top-0 bg-slate-800 text-slate-500 border-b border-slate-700">
+            <tr>
+              <th class="py-2 text-left">Timestamp</th>
+              <th class="py-2 text-right">Open</th>
+              <th class="py-2 text-right">High</th>
+              <th class="py-2 text-right">Low</th>
+              <th class="py-2 text-right">Close</th>
+              <th class="py-2 text-right">Vol</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <% @recent_history.each do |history| %>
+              <tr class="hover:bg-slate-700/20">
+                <td class="py-2 text-slate-400"><%= history.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+                <td class="py-2 text-right"><%= history.open %></td>
+                <td class="py-2 text-right text-emerald-500"><%= history.high %></td>
+                <td class="py-2 text-right text-rose-500"><%= history.low %></td>
+                <td class="py-2 text-right font-bold text-white"><%= history.close %></td>
+                <td class="py-2 text-right text-slate-500"><%= history.volume.round(2) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

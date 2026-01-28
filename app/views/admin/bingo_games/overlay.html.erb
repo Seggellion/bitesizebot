@@ -1,8 +1,3 @@
-
-
-
-
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -34,20 +29,25 @@
 }
 
 /* Ticker Animation */
-      @keyframes scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); } /* Scroll half the width of the doubled content */
-      }
+  @keyframes scroll {
+    0% { 
+      transform: translateX(75vw); 
+    }
+    100% { 
+      transform: translateX(-100%); 
+    }
+  }
 
-      .ticker-wrapper {
-        display: flex;
-        white-space: nowrap;
-        animation: scroll 30s linear infinite; /* Adjust 30s for speed */
-      }
+  .ticker-wrapper {
+    display: flex;
+    white-space: nowrap;
+    animation: scroll 30s linear infinite; 
+    width: max-content;
+  }
 
-      .ticker-wrapper:hover {
-        animation-play-state: paused; /* Optional: pause on hover for testing */
-      }
+  .ticker-wrapper:hover {
+    animation-play-state: paused; 
+  }
     </style>
   </head>
   <body>

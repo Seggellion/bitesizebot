@@ -14,7 +14,6 @@ module Admin
     @points_spent_24h = LedgerEntry.where("amount < 0 AND created_at > ?", 24.hours.ago).sum(:amount).abs
     end
 
-
     def mass_grant
       amount = params[:amount].to_i
       minutes = params[:minutes].to_i

@@ -21,5 +21,6 @@ Chart.register(...registerables)
 // (This runs the script and creates 'window.Chartkick')
 import "chartkick"
 
+
 // 4. Manually link them using the global variable
 window.Chartkick.use(Chart)

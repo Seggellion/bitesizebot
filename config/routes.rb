@@ -66,6 +66,8 @@ namespace :admin do
 
     resources :custom_commands
 
+    resources :tickers
+
     resources :coffer, only: [:index] do
         collection do
           post :inject_currency

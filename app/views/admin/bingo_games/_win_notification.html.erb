@@ -2,22 +2,25 @@
 
 <div data-controller="overlay-notification" 
      data-overlay-notification-confetti-value="true"
-     data-overlay-notification-duration-value="10000"
+     data-overlay-notification-duration-value="15000"
      class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
   
-  <div class="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 p-1 rounded-2xl shadow-2xl animate-bounce">
-    <div class="bg-black/90 text-white p-12 rounded-xl text-center border-4 border-yellow-300">
-      <h1 class="text-6xl font-black mb-4 uppercase tracking-tighter text-yellow-400">
+  <div class="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 p-2 rounded-[3rem] shadow-[0_0_100px_rgba(234,179,8,0.6)] animate-bounce">
+    
+    <div class="bg-black/95 text-white p-20 rounded-[2.5rem] text-center border-8 border-yellow-300">
+      
+      <h1 class="text-9xl font-black mb-6 uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-yellow-500 drop-shadow-2xl">
         BINGO!
       </h1>
       
-      <div class="text-3xl font-bold mb-2">
+      <div class="text-6xl font-extrabold mb-4 text-white">
         @<%= user.username %>
       </div>
       
-      <div class="text-xl text-gray-300 uppercase tracking-widest">
+      <div class="text-3xl text-yellow-100 uppercase tracking-[0.2em] font-medium">
         Has Won The Game!
       </div>
+      
     </div>
   </div>
 </div>

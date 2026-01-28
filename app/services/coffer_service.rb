@@ -12,18 +12,30 @@ class CofferService
 
     case text.downcase
 
-    when "!market"
+   when "!coffer market"
       tickers = Ticker.all
       return "The market is currently empty." if tickers.empty?
 
       ticker_list = tickers.map do |t|
-        # Format: altama: 105.4 (▲ 5.4%)
         change = ((t.current_price - 100.0) / 100.0 * 100).round(1)
         direction = change >= 0 ? "▲" : "▼"
-        "#{t.name.upcase}: #{t.current_price.round(2)} (#{direction} #{change.abs}%)"
+
+        # Volume from pressure deltas
+        volume = (t.buy_pressure + t.sell_pressure).round(0)
+
+        # Liquidity percentage
+        liquidity_pct =
+          if t.max_liquidity.to_f > 0
+            ((t.liquidity / t.max_liquidity) * 100).round
+          else
+            0
+          end
+
+        "#{t.name.upcase}: #{t.current_price.round(2)} #{direction} #{change.abs}% | VOL #{volume} | LIQ #{liquidity_pct}%"
       end.join(" | ")
 
       "Current Market Prices: #{ticker_list}"
+
 
     when "!coffer"
       active_investments = user.investments.active
@@ -34,27 +46,11 @@ class CofferService
         "Your balance is #{user.wallet} farthings. No active investments."
       end
 
-    when /^!coffer redeem (.+)/
-    name = $1.strip
-    investment = user.investments.active.find_by("lower(investment_name) = ?", name.downcase)
-    
-    return "Investment '#{name}' not found." unless investment
-
-    ActiveRecord::Base.transaction do
-        final_amount = investment.current_value
-        
-        # 1. Add the total (principal + interest) back to balance
-        CurrencyService.update_balance(
-        user: user, 
-        amount: final_amount, 
-        type: 'investment_redemption', 
-        metadata: { name: name, principal: investment.amount, interest: investment.profit }
-        )
-        
-        # 2. Close the investment
-        investment.redeemed!
-        "Redeemed '#{name}' for #{final_amount} farthings! (Profit: +#{investment.profit})"
-    end
+when /^!coffer sell (\w+) (\d+)/
+      name = $1.strip
+      sell_amount = $2.to_i
+      
+      sell_logic(user, name, sell_amount)
 
     # MULTISEND START
 
@@ -143,6 +139,57 @@ rescue CurrencyService::InsufficientFundsError
   "You don't have enough farthings!"
 end
 
+def self.sell_logic(user, name, sell_amount)
+    investment = user.investments.active.find_by("lower(investment_name) = ?", name.downcase)
+    return "Investment '#{name}' not found." unless investment
+    return "You must sell at least 1 farthing." if sell_amount <= 0
+
+    # Ensure the user isn't trying to sell more than the cost basis they put in
+    # (Or you can interpret sell_amount as the 'shares' value, but usually cost is safer)
+    if sell_amount > investment.amount
+      return "You only have #{investment.amount.to_i} farthings invested in #{name.upcase}."
+    end
+
+    ticker = Ticker.find_by!(name: investment.investment_name.downcase)
+    current_market_price = ticker.current_price
+
+    ActiveRecord::Base.transaction do
+      # 1. Calculate the 'Proportion' of the investment being sold
+      # Since value = (cost / purchase_price) * current_price
+      # We find how much of the original cost is being 'liquidated'
+      proportion = sell_amount.to_f / investment.amount
+      
+      # 2. Calculate the payout based on current market performance
+      # Payout = (Amount Sold / Purchase Price) * Current Market Price
+      shares_sold = sell_amount.to_f / investment.purchase_price
+      payout_value = (shares_sold * current_market_price).round(2)
+      profit = (payout_value - sell_amount).round(2)
+
+      # 3. Apply Sell Pressure to the Market
+      # Pressure is typically shares sold relative to price/liquidity
+      ticker.increment!(:sell_pressure, shares_sold)
+
+      # 4. Update User Balance
+      CurrencyService.update_balance(
+        user: user, 
+        amount: payout_value, 
+        type: 'investment_sale', 
+        metadata: { name: name, cost_basis: sell_amount, profit: profit }
+      )
+
+      # 5. Update or Close the Investment record
+      if sell_amount == investment.amount
+        investment.redeemed!
+        "Sold your entire position in '#{name.upcase}' for #{payout_value} farthings! (Profit: #{profit >= 0 ? '+' : ''}#{profit})"
+      else
+        investment.update!(amount: investment.amount - sell_amount)
+        "Sold #{sell_amount} (at cost) of '#{name.upcase}' for #{payout_value} farthings! (Profit: #{profit >= 0 ? '+' : ''}#{profit}). Remaining basis: #{investment.amount.to_i}"
+      end
+    end
+  rescue => e
+    "Error processing sale: #{e.message}"
+  end
+
 def self.buy_more_of_investment(user, amount, investment, market_price)
   ActiveRecord::Base.transaction do
     # 1. Calculate current "Shares" (Value / Purchase Price)
@@ -154,8 +201,26 @@ def self.buy_more_of_investment(user, amount, investment, market_price)
     total_investment_at_cost = investment.amount + amount
     new_avg_price = total_investment_at_cost / total_shares
 
+    ticker = Ticker.find_by!(name: investment.investment_name.downcase)
+
+    pressure = amount.to_f / ticker.current_price
+    ticker.increment!(:buy_pressure, pressure)
+
+    old_shares = investment.amount.to_f / investment.purchase_price
+    new_shares = amount.to_f / market_price
+    total_shares = old_shares + new_shares
+
+    total_investment_at_cost = investment.amount + amount
+    new_avg_price = total_investment_at_cost / total_shares
+
     # 3. Update the record
-    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase_add')
+
+    CurrencyService.update_balance(
+      user: user,
+      amount: -amount,
+      type: 'stock_purchase_add'
+    )
+
     investment.update!(
       amount: total_investment_at_cost,
       purchase_price: new_avg_price
@@ -166,32 +231,60 @@ end
 
 def self.buy_into_investment(user, amount, name, price)
   ActiveRecord::Base.transaction do
-    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase')
+    ticker = Ticker.find_by!(name: name.downcase)
+
+    pressure = amount.to_f / price
+    ticker.increment!(:buy_pressure, pressure)
+
+    CurrencyService.update_balance(
+      user: user,
+      amount: -amount,
+      type: 'stock_purchase'
+    )
+
     Investment.create!(
-      user: user, 
-      amount: amount, 
-      investment_name: name, 
+      user: user,
+      amount: amount,
+      investment_name: name,
       purchase_price: price
     )
   end
+
   "Bought into '#{name}' at market price #{price.round(2)}!"
 end
 
+
 def self.create_new_investment(user, amount, name, price)
   ActiveRecord::Base.transaction do
-    # Create the global Ticker entry
-    Ticker.create!(name: name.downcase, current_price: price)
-    
-    CurrencyService.update_balance(user: user, amount: -amount, type: 'stock_purchase')
+    ticker = Ticker.create!(
+      name: name.downcase,
+      current_price: price,
+      liquidity: 1_000.0,
+      max_liquidity: 1_000.0,
+      buy_pressure: 0.0,
+      sell_pressure: 0.0
+    )
+
+    pressure = amount.to_f / price
+    ticker.increment!(:buy_pressure, pressure)
+
+    CurrencyService.update_balance(
+      user: user,
+      amount: -amount,
+      type: 'stock_purchase'
+    )
+
     Investment.create!(
-      user: user, 
-      amount: amount, 
-      investment_name: name, 
-      purchase_price: price # Store the entry price!
+      user: user,
+      amount: amount,
+      investment_name: name,
+      purchase_price: price
     )
   end
+
   "IPO Alert! '#{name}' listed at #{price} farthings. You bought in with #{amount}!"
 end
+
 
 
 

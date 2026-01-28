@@ -4,16 +4,38 @@
 <div class="bg-gray-800 p-4 rounded-lg">
   <h3 class="text-white mb-4"><%= ticker.name.upcase %> 24h Performance</h3>
   
-  <%= line_chart ticker.chart_data, 
-        prefix: "ƒ", 
-        refresh: 300, 
-        library: { 
-          backgroundColor: "transparent",
-          scales: { 
-            x: { display: false }, # Hide dates for a cleaner sparkline look
-            y: { ticks: { color: "#9ca3af" } } 
-          } 
-        } %>
+<%= line_chart ticker.chart_data,
+      prefix: "ƒ",
+      library: {
+        backgroundColor: "transparent",
+        scales: {
+          x: { display: false },
+          y: { ticks: { color: "#9ca3af" } }
+        }
+      }
+%>
+
+</div>
+
+
+<%= column_chart ticker.volume_data,
+  height: "150px",
+  library: {
+    title: { text: "Volume" }
+  }
+%>
+
+
+
+<div class="bg-gray-800 p-4 rounded-lg">
+  <h3 class="text-white mb-2"><%= ticker.name.upcase %> Price</h3>
+
+  <canvas
+    data-controller="candlestick"
+    data-candlestick-data-value="<%= raw ticker.candlestick_data.to_json %>">
+  </canvas>
 </div>
 
 <% end %>
+
+

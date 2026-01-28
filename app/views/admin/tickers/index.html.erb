@@ -1,0 +1,80 @@
+<div class="min-h-screen bg-slate-900 text-slate-100 p-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <div class="flex justify-between items-end mb-8 border-b border-slate-700 pb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-white tracking-tight">Market Oversight</h1>
+        <p class="text-slate-400 mt-1">Real-time ticker management and investment metrics.</p>
+      </div>
+      <%= link_to 'Create New Ticker', new_admin_ticker_path, 
+          class: "bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow-lg shadow-indigo-500/20" %>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl">
+        <span class="text-slate-400 text-sm uppercase font-bold tracking-wider">Total Tickers</span>
+        <div class="text-2xl font-mono mt-1"><%= @tickers.count %></div>
+      </div>
+      <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl">
+        <span class="text-slate-400 text-sm uppercase font-bold tracking-wider">Active Investments</span>
+        <div class="text-2xl font-mono mt-1 text-emerald-400"><%= @active_investments %></div>
+      </div>
+      <div class="bg-slate-800 border border-slate-700 p-6 rounded-xl">
+        <span class="text-slate-400 text-sm uppercase font-bold tracking-wider">Avg Liquidity</span>
+        <div class="text-2xl font-mono mt-1 text-blue-400"><%= number_with_precision(Ticker.average(:liquidity), precision: 2) %></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-2xl">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-slate-700/50">
+          <tr>
+            <th class="p-4 text-xs font-bold uppercase text-slate-400">Ticker</th>
+            <th class="p-4 text-xs font-bold uppercase text-slate-400">Price</th>
+            <th class="p-4 text-xs font-bold uppercase text-slate-400 text-center">Pressure (B/S)</th>
+            <th class="p-4 text-xs font-bold uppercase text-slate-400">Liquidity</th>
+            <th class="p-4 text-xs font-bold uppercase text-slate-400 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-700">
+          <% @tickers.each do |ticker| %>
+            <tr class="hover:bg-slate-700/30 transition-colors group">
+              <td class="p-4">
+                <div class="font-bold text-indigo-400">$<%= ticker.name.upcase %></div>
+                <div class="text-xs text-slate-500 truncate max-w-[150px]"><%= ticker.description.body %></div>
+              </td>
+              <td class="p-4 font-mono">
+                <span class="<%= ticker.current_price >= (ticker.previous_price || 0) ? 'text-emerald-400' : 'text-rose-400' %>">
+                  <%= number_to_currency(ticker.current_price) %>
+                </span>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center justify-center gap-2">
+                  <span class="text-[10px] text-emerald-500 font-bold"><%= ticker.buy_pressure %></span>
+                  <div class="w-24 bg-slate-900 h-1.5 rounded-full overflow-hidden flex">
+                    <% total_p = ticker.buy_pressure + ticker.sell_pressure %>
+                    <% b_perc = total_p > 0 ? (ticker.buy_pressure / total_p * 100) : 50 %>
+                    <div class="bg-emerald-500 h-full" style="width: <%= b_perc %>%"></div>
+                    <div class="bg-rose-500 h-full" style="width: <%= 100 - b_perc %>%"></div>
+                  </div>
+                  <span class="text-[10px] text-rose-500 font-bold"><%= ticker.sell_pressure %></span>
+                </div>
+              </td>
+              <td class="p-4 text-sm text-slate-300">
+                <div class="w-full bg-slate-900 rounded-full h-1 mt-1">
+                   <div class="bg-blue-500 h-1 rounded-full" style="width: <%= (ticker.liquidity / ticker.max_liquidity * 100).clamp(0, 100) %>%"></div>
+                </div>
+                <div class="text-[10px] mt-1 text-slate-500 text-right font-mono"><%= ticker.liquidity.to_i %> / <%= ticker.max_liquidity.to_i %></div>
+              </td>
+              <td class="p-4 text-right space-x-3">
+                <%= link_to 'Analyze', admin_ticker_path(ticker), class: "text-slate-400 hover:text-white text-sm" %>
+                <%= link_to 'Edit', edit_admin_ticker_path(ticker), class: "text-indigo-400 hover:text-indigo-300 text-sm" %>
+                <%= button_to 'Del', admin_ticker_path(ticker), method: :delete, form: { data: { confirm: 'Are you sure?' }, class: 'inline' }, class: "text-rose-500 hover:text-rose-400 text-sm" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
