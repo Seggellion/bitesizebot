@@ -31,7 +31,7 @@ class CofferService
             0
           end
 
-        "#{t.name.upcase}: #{t.current_price.round(2)} #{direction} #{change.abs}% | VOL #{volume} | LIQ #{liquidity_pct}%"
+        "#{t.symbol.upcase}: #{t.current_price.round(2)} #{direction} #{change.abs}% | VOL #{volume} | LIQ #{liquidity_pct}%"
       end.join(" | ")
 
       "Current Market Prices: #{ticker_list}"
@@ -128,10 +128,10 @@ def self.invest_logic(user, amount, name, is_mod)
   current_market_price = Ticker.price_for(name)
   return "Minimum investment is 10 farthings." if amount < 10
 
-  ticker_exists = Ticker.exists?(name: name.downcase)
-  
+  ticker_exists = Ticker.exists?(symbol: name.upcase)
+   ticker = Ticker.find_by_symbol(symbol: name.upcase)
   # Check if the user ALREADY has this stock
-  existing = user.investments.active.find_by("lower(investment_name) = ?", name.downcase)
+  existing = user.investments.active.find_by(ticker_id: ticker.id)
 
   if existing
     # Support for adding to an existing position
@@ -150,7 +150,9 @@ rescue CurrencyService::InsufficientFundsError
 end
 
 def self.sell_logic(user, name, sell_amount)
-    investment = user.investments.active.find_by("lower(investment_name) = ?", name.downcase)
+    ticker = Ticker.find_by_symbol(name.upcase)
+    
+    investment = user.investments.active.find_by(ticker_id: ticker.id)
     return "Investment '#{name}' not found." unless investment
     return "You must sell at least 1 farthing." if sell_amount <= 0
 
@@ -160,7 +162,7 @@ def self.sell_logic(user, name, sell_amount)
       return "You only have #{investment.amount.to_i} farthings invested in #{name.upcase}."
     end
 
-    ticker = Ticker.find_by!(name: investment.investment_name.downcase)
+    ticker = investment.ticker
     current_market_price = ticker.current_price
 
     ActiveRecord::Base.transaction do
@@ -183,7 +185,7 @@ def self.sell_logic(user, name, sell_amount)
       CurrencyService.update_balance(
         user: user, 
         amount: payout_value, 
-        type: 'investment_sale', 
+        type: 'stock_purchase_sell', 
         metadata: { name: name, cost_basis: sell_amount, profit: profit }
       )
 
@@ -210,6 +212,9 @@ def self.buy_more_of_investment(user, amount, investment, market_price)
     # 2. Calculate New Weighted Average Purchase Price
     total_investment_at_cost = investment.amount + amount
     new_avg_price = total_investment_at_cost / total_shares
+
+    ticker = Ticker.find_by_symbol(name)
+
 
     ticker = Ticker.find_by!(name: investment.investment_name.downcase)
 
@@ -255,6 +260,7 @@ def self.buy_into_investment(user, amount, name, price)
     Investment.create!(
       user: user,
       amount: amount,
+      ticker_id: ticker.id,
       investment_name: name,
       purchase_price: price
     )
@@ -268,6 +274,7 @@ def self.create_new_investment(user, amount, name, price)
   ActiveRecord::Base.transaction do
     ticker = Ticker.create!(
       name: name.downcase,
+      ticker: name.upcase,
       current_price: price,
       liquidity: 1_000.0,
       max_liquidity: 1_000.0,
@@ -287,6 +294,7 @@ def self.create_new_investment(user, amount, name, price)
     Investment.create!(
       user: user,
       amount: amount,
+      ticker_id: ticker.id,
       investment_name: name,
       purchase_price: price
     )

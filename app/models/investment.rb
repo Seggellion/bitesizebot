@@ -1,7 +1,7 @@
 # app/models/investment.rb
 class Investment < ApplicationRecord
   belongs_to :user
-  
+  belongs_to :ticker
   # Change this line:
   enum :status, { active: 0, redeemed: 1 }
 

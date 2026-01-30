@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-700/50">
-            <% @recent_history.each do |history| %>
+            <% @recent_history&.each do |history| %>
               <tr class="hover:bg-slate-700/20">
                 <td class="py-2 text-slate-400"><%= history.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
                 <td class="py-2 text-right"><%= history.open %></td>

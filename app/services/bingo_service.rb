@@ -45,8 +45,11 @@ class BingoService
     when "!bingo replace"
       return request_replacement(viewer, game)
 
-    when "!bingo win"
-      return request_win(viewer, game)
+    when "!bingo bongo"
+      return "So bongo, bongo, bongo, I don't wanna leave the Congo, oh no no no no no! Bingo, bangle, bungle, I'm so happy in the jungle, I refuse to go"
+
+    when "!bingo win", "!bingo bingo"
+        return request_win(viewer, game)
 
     when /^!bingo mark\s+([a-z])(\d+)/i
       return handle_mark(viewer, game, $1, $2)

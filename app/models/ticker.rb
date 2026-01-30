@@ -4,7 +4,7 @@ class Ticker < ApplicationRecord
       has_rich_text :description
 
 before_validation :generate_symbol, on: :create
-
+has_many :investments
   # Helper to get price or seed a default if a new stock is created
 
 def chart_data

@@ -1,5 +1,4 @@
 <div class="min-h-screen bg-slate-950 text-slate-200 font-sans">
-  
   <nav class="border-b border-slate-800 bg-slate-900 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
     <div class="flex items-center gap-4">
       <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
@@ -22,96 +21,117 @@
     </div>
   </nav>
 
-  <div class="flex flex-col lg:flex-row">
+  <div class="flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden">
     
-    <aside class="w-full lg:w-80 border-r border-slate-800 bg-slate-900/50 h-auto lg:h-[calc(100vh-64px)] overflow-y-auto">
+    <aside class="w-full lg:w-80 border-r border-slate-800 bg-slate-900/50 flex flex-col">
       <div class="p-4 border-b border-slate-800">
         <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Market Overview</h2>
       </div>
-      <% @tickers.each do |ticker| %>
-        <div class="p-4 border-b border-slate-800/50 hover:bg-slate-800/40 cursor-pointer transition">
-          <div class="flex justify-between items-start mb-1">
-            <span class="font-bold text-slate-100"><%= ticker.symbol %></span>
-            <% price_change = ticker.current_price - ticker.previous_price %>
-            <span class="text-xs <%= price_change >= 0 ? 'text-green-400' : 'text-red-400' %>">
-              <%= price_change >= 0 ? '▲' : '▼' %> <%= number_to_percentage((price_change / ticker.previous_price) * 100, precision: 2) %>
-            </span>
-          </div>
-          <div class="text-lg font-mono">ƒ<%= number_with_precision(ticker.current_price, precision: 2) %></div>
-          <div class="w-full bg-slate-800 h-1 mt-2 rounded-full overflow-hidden">
-            <div class="bg-blue-500 h-full" style="width: <%= (ticker.liquidity / ticker.max_liquidity) * 100 %>%"></div>
-          </div>
-        </div>
-      <% end %>
+      <div class="flex-1 overflow-y-auto">
+        <% @tickers.each do |ticker| %>
+          <% # Calculate locally within the loop to avoid scope errors %>
+          <% current_price = ticker.current_price.to_f %>
+          <% previous_price = ticker.previous_price.to_f %>
+          <% diff = current_price - previous_price %>
+          
+          <%= link_to root_path(symbol: ticker.symbol), data: { turbo_frame: "active_market" }, class: "block p-4 border-b border-slate-800/50 hover:bg-slate-800/40 transition group" do %>
+            <div class="flex justify-between items-start mb-1">
+              <span class="font-bold text-slate-100 group-hover:text-purple-400"><%= ticker.symbol %></span>
+              <span class="text-xs <%= diff >= 0 ? 'text-green-400' : 'text-red-400' %>">
+                <%= diff >= 0 ? '▲' : '▼' %> 
+                <%= number_to_percentage((diff / (previous_price > 0 ? previous_price : 1) * 100), precision: 2) %>
+              </span>
+            </div>
+            <div class="text-lg font-mono">ƒ<%= number_with_precision(current_price, precision: 2) %></div>
+          <% end %>
+        <% end %>
+      </div>
     </aside>
 
-    <main class="flex-1 p-4 lg:p-6 overflow-y-auto">
+    <main class="flex-1 flex flex-col overflow-hidden">
       
-      <% @tickers.each do |ticker| %>
-        <section class="mb-10">
-          <div class="flex flex-col md:flex-row items-baseline gap-4 mb-6">
-            <h1 class="text-2xl font-bold"><%= ticker.name %> / <span class="text-slate-500">CREDIT</span></h1>
-            <span class="px-2 py-0.5 bg-slate-800 rounded text-xs text-slate-400 uppercase tracking-widest">Live Feed</span>
+      <div class="p-4 bg-slate-900/80 border-b border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="flex flex-col">
+          <span class="text-[10px] text-slate-500 uppercase font-bold text-slate-400">Total Invested</span>
+          <span class="text-sm font-mono font-bold">ƒ <%= number_with_delimiter(@total_invested.round(2)) %></span>
+        </div>
+        <div class="flex flex-col border-l border-slate-800 pl-4">
+          <span class="text-[10px] text-slate-500 uppercase font-bold text-slate-400">Current Value</span>
+          <span class="text-sm font-mono font-bold <%= @current_value >= @total_invested ? 'text-green-400' : 'text-red-400' %>">
+            ƒ <%= number_with_delimiter(@current_value.round(2)) %>
+          </span>
+        </div>
+        <div class="flex flex-col border-l border-slate-800 pl-4">
+          <span class="text-[10px] text-slate-500 uppercase font-bold text-slate-400">ROI</span>
+          <span class="text-sm font-mono font-bold <%= @current_value >= @total_invested ? 'text-green-400' : 'text-red-400' %>">
+            <%= number_to_percentage(((@current_value - @total_invested) / (@total_invested.to_f > 0 ? @total_invested : 1) * 100), precision: 2) %>
+          </span>
+        </div>
+        <div class="flex flex-col border-l border-slate-800 pl-4">
+          <span class="text-[10px] text-slate-500 uppercase font-bold text-slate-400">Portfolio Health</span>
+          <div class="w-full bg-slate-800 h-1.5 mt-2 rounded-full overflow-hidden">
+            <div class="bg-purple-500 h-full shadow-[0_0_8px_#a855f7]" style="width: 75%"></div>
           </div>
+        </div>
+      </div>
 
+      <div class="flex-1 overflow-y-auto p-4 lg:p-6">
+        <%= turbo_frame_tag "active_market" do %>
           <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             
-            <div class="xl:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-sm font-semibold text-slate-400 uppercase">Price Action</h3>
-                <div class="flex gap-2">
-                  <span class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50 animate-pulse"></span>
+            <div class="xl:col-span-2 space-y-6">
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                  <h1 class="text-xl font-bold flex items-center gap-2 uppercase">
+                    <%= @active_ticker.name %> 
+                    <span class="text-[10px] font-normal text-slate-500 bg-slate-800 px-2 py-0.5 rounded border border-slate-700 uppercase tracking-widest">Live Data</span>
+                  </h1>
+                  <span class="text-xs font-mono text-slate-500">LIQUIDITY: ƒ<%= number_with_delimiter(@active_ticker.liquidity.round) %></span>
+                </div>
+                <div class="h-[400px] w-full">
+                  <canvas data-controller="candlestick" data-candlestick-data-value="<%= @active_ticker.candlestick_data.to_json %>"></canvas>
                 </div>
               </div>
-              <div class="h-[400px] w-full">
-                <canvas
-                  data-controller="candlestick"
-                  data-candlestick-data-value="<%= ticker.candlestick_data.to_json %>">
-                </canvas>
+              
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Volume Activity</h3>
+                <%= column_chart @active_ticker.volume_data, height: "120px", library: { backgroundColor: "transparent", scales: { x: { display: false }, y: { grid: { color: "#1e293b" }, ticks: { display: false } } } } %>
               </div>
             </div>
 
-            <div class="flex flex-col gap-6">
+            <div class="space-y-6">
               <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase mb-4 text-center">Market Sentiment</h3>
+                <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Market Sentiment</h3>
                 <div class="flex justify-between mb-2 text-xs font-mono">
-                  <span class="text-green-400">BUY <%= ticker.buy_pressure %>%</span>
-                  <span class="text-red-400">SELL <%= ticker.sell_pressure %>%</span>
+                  <span class="text-green-400 font-bold">BUY <%= @active_ticker.buy_pressure %>%</span>
+                  <span class="text-red-400 font-bold">SELL <%= @active_ticker.sell_pressure %>%</span>
                 </div>
-                <div class="flex h-4 w-full rounded-full overflow-hidden border border-slate-700">
-                  <div class="bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" style="width: <%= ticker.buy_pressure %>%"></div>
-                  <div class="bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" style="width: <%= ticker.sell_pressure %>%"></div>
+                <div class="flex h-2.5 w-full rounded-full overflow-hidden bg-slate-800 border border-slate-700">
+                  <div class="bg-green-500 shadow-[0_0_10px_#22c55e]" style="width: <%= @active_ticker.buy_pressure %>%"></div>
+                  <div class="bg-red-500 shadow-[0_0_10px_#ef4444]" style="width: <%= @active_ticker.sell_pressure %>%"></div>
                 </div>
               </div>
 
-              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                <h3 class="text-xs font-semibold text-slate-500 uppercase mb-4">24h Performance</h3>
-                <%= line_chart ticker.chart_data,
-                      prefix: "ƒ",
-                      height: "140px",
-                      library: {
-                        backgroundColor: "transparent",
-                        scales: { x: { display: false }, y: { grid: { color: "#1e293b" }, ticks: { color: "#64748b", font: { size: 10 } } } }
-                      }
-                %>
-              </div>
+              <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[450px]">
+                <div class="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                  <h3 class="text-[10px] font-bold text-slate-500 uppercase">Global Order Book</h3>
+                  <div class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] text-purple-400 font-bold">LIVE FEED</span>
+                  </div>
+                </div>
 
-              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                 <h3 class="text-xs font-semibold text-slate-500 uppercase mb-4">Volume (f)</h3>
-                 <%= column_chart ticker.volume_data,
-                      height: "120px",
-                      library: {
-                        backgroundColor: "transparent",
-                        colors: ["#3b82f6"],
-                        scales: { x: { display: false }, y: { display: false } }
-                      }
-                 %>
+                <div class="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-[11px]" id="ledger_entries">
+                  <%= turbo_stream_from "global_ledger" %>
+                  <% # Note: Ensure partial is in app/views/shared/_entry.html.erb %>
+                  <%= render partial: "shared/entry", collection: @recent_ledger, as: :entry %>
+                </div>
               </div>
             </div>
 
           </div>
-        </section>
-      <% end %>
+        <% end %>
+      </div>
     </main>
   </div>
 </div>

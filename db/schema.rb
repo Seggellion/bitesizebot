@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_30_200523) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_30_222613) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -249,6 +249,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_200523) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "purchase_price"
+    t.bigint "ticker_id", null: false
+    t.index ["ticker_id"], name: "index_investments_on_ticker_id"
     t.index ["user_id"], name: "index_investments_on_user_id"
   end
 
@@ -498,6 +500,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_200523) do
   add_foreign_key "giveaway_entries", "giveaways"
   add_foreign_key "giveaway_entries", "users"
   add_foreign_key "giveaways", "users", column: "winner_id"
+  add_foreign_key "investments", "tickers"
   add_foreign_key "investments", "users"
   add_foreign_key "ledger_entries", "users"
   add_foreign_key "media", "users"
