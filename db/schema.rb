@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_26_230923) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_30_200523) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -114,7 +114,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_26_230923) do
     t.bigint "host_id", null: false
     t.bigint "winner_id"
     t.string "title"
-    t.string "status", default: "pending"
+    t.string "status", default: "invite"
     t.integer "size", default: 5
     t.datetime "started_at"
     t.datetime "ended_at"

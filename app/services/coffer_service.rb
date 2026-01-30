@@ -103,10 +103,20 @@ receiver = User.find_by("LOWER(username) = ?", receiver_name.downcase)
         "Transaction failed: Insufficient funds."
       end
 
-    when /^!coffer invest (\d+) (.+)/
-      amount = $1.to_i
-      name = $2.strip
-    invest_logic(user, amount, name, is_mod)
+    when /^!coffer invest (?<arg1>.+)\s+(?<arg2>.+)/
+      val1 = Regexp.last_match[:arg1]
+      val2 = Regexp.last_match[:arg2]
+
+      # Determine which one is the number and which is the name
+      if val1 =~ /^\d+$/
+        amount = val1.to_i
+        name = val2.strip
+      else
+        amount = val2.to_i
+        name = val1.strip
+      end
+
+      invest_logic(user, amount, name, is_mod)
     else
       "Unknown coffer command. Use !coffer, !coffer transfer, or !coffer invest."
     end

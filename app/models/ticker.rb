@@ -15,16 +15,20 @@ def chart_data
 end
 
 def candlestick_data
-  price_histories.order(:created_at).map do |h|
-    [
-      h.created_at,
-      h.open,
-      h.high,
-      h.low,
-      h.close
-    ]
-  end
+  price_histories
+    .where.not(open: nil, high: nil, low: nil, close: nil)
+    .order(:created_at)
+    .map do |h|
+      [
+        h.created_at,
+        h.open,
+        h.high,
+        h.low,
+        h.close
+      ]
+    end
 end
+
 
 def volume_data
   price_histories.order(:created_at).map do |h|

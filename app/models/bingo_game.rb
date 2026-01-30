@@ -1,6 +1,7 @@
 class BingoGame < ApplicationRecord
   belongs_to :host, class_name: 'User'
-  
+  after_initialize :set_default_status, if: :new_record?
+
   has_many :bingo_game_items, dependent: :destroy
   has_many :bingo_items, through: :bingo_game_items
   has_many :mark_memories, class_name: "BingoGameMarkMemory", dependent: :delete_all
@@ -90,7 +91,9 @@ def broadcast_game_end
     )
   end
 
-
+def set_default_status  
+    self.status ||= 'invite'
+  end
 
   def cleanup_pending_actions!
     PendingAction
