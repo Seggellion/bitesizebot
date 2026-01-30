@@ -8,8 +8,7 @@ class MarketService
 
   def self.fluctuate_prices
     Ticker.find_each do |ticker|
-      open_price = ticker.current_price
-
+      open_price = ticker.current_price.to_f
       # 1. PLAYER INFLUENCE
       # Net pressure is the difference between buys and sells
       net_pressure = ticker.buy_pressure - ticker.sell_pressure
@@ -22,6 +21,7 @@ class MarketService
 
       # 2. MARKET MOMENTUM (The "Spiky" Chart Logic)
       # We take the previous momentum, decay it slightly, and add a new random "push"
+      prev_momentum = ticker.momentum.is_a?(Numeric) ? ticker.momentum : 0.0
       new_push = rand(-BASE_VOLATILITY..BASE_VOLATILITY)
       current_momentum = ((ticker.momentum || 0) * MOMENTUM_DECAY) + new_push
 
@@ -42,22 +42,22 @@ class MarketService
 
       # 6. PERSISTENCE
       ticker.update!(
-        previous_price: open_price,
-        current_price:  close_price,
-        momentum:       current_momentum, # Persist the trend for the next tick
-        liquidity:      [[new_liquidity, ticker.max_liquidity].min, 10].max,
-        buy_pressure:   ticker.buy_pressure * PRESSURE_DECAY,
-        sell_pressure:  ticker.sell_pressure * PRESSURE_DECAY
+previous_price: open_price.to_f.round(4),
+        current_price:  close_price.to_f.round(4),
+        momentum:       current_momentum.to_f.round(6),
+      liquidity:      [[new_liquidity.to_f, ticker.max_liquidity.to_f].min, 10.0].max.round(2),
+buy_pressure:   (ticker.buy_pressure.to_f * PRESSURE_DECAY).round(4),
+        sell_pressure:  (ticker.sell_pressure.to_f * PRESSURE_DECAY).round(4)
       )
 
       # 7. HISTORY RECORDING
       ticker.price_histories.create!(
-        open:  open_price,
-        high:  high,
-        low:   low,
-        close: close_price,
-        price: close_price,
-        volume: volume
+        open:   open_price.to_f.round(4),
+        high:   high.to_f.round(4),
+        low:    low.to_f.round(4),
+        close:  close_price.to_f.round(4),
+        price:  close_price.to_f.round(4),
+        volume: volume.to_f.round(2)
       )
     end
   end

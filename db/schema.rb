@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_30_222613) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_30_235045) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -458,6 +458,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_222613) do
     t.string "symbol"
     t.float "liquidity", default: 1000.0
     t.float "max_liquidity", default: 1000.0
+    t.float "momentum"
   end
 
   create_table "users", force: :cascade do |t|
