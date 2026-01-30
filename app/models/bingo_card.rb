@@ -6,6 +6,7 @@ class BingoCard < ApplicationRecord
 has_many :bingo_items, through: :bingo_cells
 after_create_commit :broadcast_new_participant
 after_create_commit :broadcast_total_stats
+after_create_commit :refresh_game_overlay
 
 accepts_nested_attributes_for :bingo_cells, allow_destroy: false
   # This callback ensures that as soon as !join is triggered and a card is saved,
@@ -143,6 +144,12 @@ end
 
 
   private
+
+def refresh_game_overlay
+    # We call the method defined in the BingoGame model
+    # using the association 'bingo_game'
+    bingo_game.broadcast_overlay_refresh
+  end
 
 def broadcast_new_participant
   # 1. Add the new user to the list
