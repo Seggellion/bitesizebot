@@ -109,21 +109,17 @@ end
   end
 
 
-
-def load_bingo_data
-  # 1. Find the active game (or the latest one)
+  def load_bingo_data
   @game = BingoGame.current_or_latest
-
-  # 2. If no game exists at all in the DB
   return unless @game
 
-  # 3. Try to find the user's card for this specific game
   @bingo_card = current_user.bingo_cards.find_by(bingo_game: @game)
 
-  # 4. Only setup grid data if the card exists
   if @bingo_card
+    # We sort by row_number here so the vertical order is consistent everywhere
     @grouped_cells = @bingo_card.bingo_cells
                                 .includes(:bingo_item)
+                                .sort_by { |cell| cell.bingo_item.row_number || 0 }
                                 .group_by { |cell| cell.bingo_item.column_letter }
     
     @columns = ["B", "I", "N", "G", "O"].first(@game.size)

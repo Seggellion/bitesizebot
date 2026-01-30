@@ -29,33 +29,27 @@
   </header>
 
   <%# We need to re-group cells here because this partial might be called from a model %>
-  <% grouped_cells = card.bingo_cells.includes(:bingo_item).order(:id).group_by { |c| c.bingo_item.column_letter } %>
-<% columns = ["B", "I", "N", "G", "O"].first(game.size) %>
+ <%# Get the cells in a predictable order (B1-5, I1-5, etc) %>
+<% sorted_cells = card.cells_for_grid %>
+<% grid_size = game.size %>
 
-  <div class="bingo-grid size-<%= game.size %>">
-    <% columns.each do |letter| %>
-      <div class="grid-header">
-      <% if letter == "O" %>
-<%= image_tag "hobbit_hole.png", alt: "Hobbit Hole", class: "grid-header-icon" %>
-      <% else %>
-<%= letter %>
-      <% end %>
-      </div>
-    <% end %>
-    
+<div class="bingo-grid size-<%= grid_size %>">
+  <%# 1. Render Headers %>
+  <% ["B", "I", "N", "G", "O"].first(grid_size).each do |letter| %>
+    <div class="grid-header">
+      <%= letter == "O" ? image_tag("hobbit_hole.png", class: "grid-header-icon") : letter %>
+    </div>
+  <% end %>
 
-    <% (0...game.size).each do |row_index| %>
-      <% columns.each do |letter| %>
-            
-        <% cell = grouped_cells[letter]&.at(row_index) %>
-        <% if cell %>
-<%= render "Hobbit/views/pages/cell", cell: cell %>
-        <% else %>
-          <div class="bingo-cell empty"></div>
-        <% end %>
-      <% end %>
+  <%# 2. Render Rows (Horizontal loops) %>
+  <% (0...grid_size).each do |row_idx| %>
+    <% (0...grid_size).each do |col_idx| %>
+      <%# Calculate index in our sorted_cells array: (Column * 5) + Row %>
+      <% cell = sorted_cells[(col_idx * grid_size) + row_idx] %>
+      <%= render "Hobbit/views/pages/cell", cell: cell if cell %>
     <% end %>
-  </div>
+  <% end %>
+</div>
 
 
   <%= render "Hobbit/views/pages/replacement_section", card: card, game: game %>

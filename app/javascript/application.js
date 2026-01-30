@@ -11,11 +11,12 @@ import "@rails/actiontext"
 
 // 1. Import Chart.js and its components
 import { Chart, registerables } from "chart.js"
-
+import { CandlestickController, CandlestickElement } from "chartjs-chart-financial" // Add this
 import "chartjs-adapter-date-fns"
+    
+Chart.register(...registerables, CandlestickController, CandlestickElement)
 
 // 2. Register the components (Lines, Bars, etc.)
-Chart.register(...registerables)
 
 // 3. Import Chartkick for "side effects" only
 // (This runs the script and creates 'window.Chartkick')

@@ -121,6 +121,25 @@ def pending_actions
     false
   end
 
+  # app/models/bingo_card.rb
+def cells_for_grid
+  # Fetch all cells and sort them primarily by column letter (B, I, N, G, O)
+  # and secondarily by the row_number on the bingo_item.
+  bingo_cells.includes(:bingo_item).sort_by do |cell|
+    column_val = ["B", "I", "N", "G", "O"].index(cell.bingo_item.column_letter)
+    
+    # Handle the FREE space: force it to the middle of the 'N' column (index 2)
+    # otherwise use the row_number.
+    row_val = if cell.coordinate == "FREE"
+                2 
+              else
+                cell.bingo_item.row_number || 0
+              end
+    
+    [column_val, row_val]
+  end
+end
+
 
 
   private
@@ -144,6 +163,8 @@ def broadcast_total_stats
                       target: "total_all_time_participants", 
                       html: total_count.to_s
 end
+
+
 
 # app/models/bingo_card.rb
 def generate_cells

@@ -143,29 +143,22 @@ class BingoService
     "Win claim submitted! An admin will verify your card shortly. Good luck!"
   end
 
-  def self.list_card_cells(viewer, game)
-    card = game.bingo_cards.find_by(user: viewer)
-    return "You need to !bingo join first to see your card!" unless card
+def self.list_card_cells(viewer, game)
+  card = game.bingo_cards.find_by(user: viewer)
+  return "You need to !bingo join first!" unless card
 
-    cells = card.bingo_cells.includes(:bingo_item)
-    column_order = ["B", "I", "N", "G", "O"]
-    grouped = cells.group_by { |cell| cell.bingo_item&.column_letter }
+  # Use the shared logic from the model
+  all_cells = card.cells_for_grid
+  grid_size = game.size
 
-    formatted_card = column_order.map do |letter|
-      column_cells = grouped[letter] || []
-      
-      if letter == "N"
-        free_cell = column_cells.detect { |c| c.coordinate == "FREE"}
-        numbers = column_cells.reject { |c| c == free_cell }.sort_by { |c| c.bingo_item.row_number || 0 }
-        final_list = [numbers[0]&.coordinate, numbers[1]&.coordinate, free_cell&.coordinate, numbers[2]&.coordinate, numbers[3]&.coordinate].compact
-      else
-        final_list = column_cells.sort_by { |c| c.bingo_item.row_number || 0 }.map(&:coordinate)
-      end
-      final_list.join(', ')
-    end.join(' - - - ')
+  formatted_card = (0...grid_size).map do |col_idx|
+    # Slice the array to get just the 5 cells for this specific column
+    column_cells = all_cells.slice(col_idx * grid_size, grid_size)
+    column_cells.map(&:coordinate).join(', ')
+  end.join(' - - - ')
 
-    "Your Card (TOP TO BOTTOM) [#{viewer.username}]: #{formatted_card}"
-  end
+  "Your Card (TOP TO BOTTOM) [#{viewer.username}]: #{formatted_card}"
+end
 
   def self.start_game(host)
     BingoGame.where(host: host, status: ['invite', 'active']).update_all(status: 'ended', ended_at: Time.current)

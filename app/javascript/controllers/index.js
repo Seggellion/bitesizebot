@@ -25,6 +25,9 @@ application.register("google-map", GoogleMapController)
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 
+import CandlestickController from "./candlestick_controller"
+application.register("candlestick", CandlestickController)
+
 import MenuItemsController from "./menu_items_controller"
 application.register("menu-items", MenuItemsController)
 
