@@ -274,7 +274,7 @@ def self.create_new_investment(user, amount, name, price)
   ActiveRecord::Base.transaction do
     ticker = Ticker.create!(
       name: name.downcase,
-      ticker: name.upcase,
+      symbol: name.gsub(/[^0-9a-z]/i, '').first(4).upcase,
       current_price: price,
       liquidity: 1_000.0,
       max_liquidity: 1_000.0,
