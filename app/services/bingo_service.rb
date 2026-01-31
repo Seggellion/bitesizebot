@@ -150,12 +150,12 @@ def self.list_card_cells(viewer, game)
   card = game.bingo_cards.find_by(user: viewer)
   return "You need to !bingo join first!" unless card
 
-  # Use the shared logic from the model
   all_cells = card.cells_for_grid
   grid_size = game.size
 
+  # Since cells_for_grid returns [B1, B2... I1, I2... N1, N2, FREE...], 
+  # we just slice it into columns.
   formatted_card = (0...grid_size).map do |col_idx|
-    # Slice the array to get just the 5 cells for this specific column
     column_cells = all_cells.slice(col_idx * grid_size, grid_size)
     column_cells.map(&:coordinate).join(', ')
   end.join(' - - - ')

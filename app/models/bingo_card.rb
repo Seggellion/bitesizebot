@@ -122,25 +122,34 @@ def pending_actions
     false
   end
 
-  # app/models/bingo_card.rb
 def cells_for_grid
-  # Fetch all cells and sort them primarily by column letter (B, I, N, G, O)
-  # and secondarily by the row_number on the bingo_item.
-  bingo_cells.includes(:bingo_item).sort_by do |cell|
-    column_val = ["B", "I", "N", "G", "O"].index(cell.bingo_item.column_letter)
-    
-    # Handle the FREE space: force it to the middle of the 'N' column (index 2)
-    # otherwise use the row_number.
-    row_val = if cell.coordinate == "FREE"
-                2 
-              else
-                cell.bingo_item.row_number || 0
-              end
-    
-    [column_val, row_val]
-  end
-end
+  column_order = ["B", "I", "N", "G", "O"].first(bingo_game.size)
+  
+  # Fetch and group cells by column first to handle relative sorting
+  grouped = bingo_cells.includes(:bingo_item).group_by { |c| c.bingo_item.column_letter }
+  
+  final_sorted = []
 
+  column_order.each do |letter|
+    column_cells = grouped[letter] || []
+    
+    # Sort everything in this column that ISN'T the free space by its row_number
+    sorted_others = column_cells.reject { |c| c.coordinate == "FREE" }
+                                .sort_by { |c| c.bingo_item.row_number || 0 }
+    
+    if letter == "N" && bingo_game.size == 5
+      # Manually inject the FREE space at index 2
+      free_cell = column_cells.find { |c| c.coordinate == "FREE" }
+      column_list = [sorted_others[0], sorted_others[1], free_cell, sorted_others[2], sorted_others[3]]
+    else
+      column_list = sorted_others
+    end
+    
+    final_sorted.concat(column_list.compact)
+  end
+  
+  final_sorted
+end
 
 
   private
