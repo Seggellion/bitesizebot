@@ -9,13 +9,14 @@ has_many :investments
 
 def chart_data
   price_histories
-    .where("created_at >= ?", 48.hours.ago)
+    .where("created_at >= ?", 24.hours.ago)
     .order(:created_at)
     .map { |h| [h.created_at, h.price.to_f] }
 end
 
 def candlestick_data
   price_histories
+    .where("created_at >= ?", 24.hours.ago)
     .where.not(open: nil, high: nil, low: nil, close: nil)
     .order(:created_at)
     .map do |h|

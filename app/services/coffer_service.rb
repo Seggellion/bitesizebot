@@ -129,7 +129,7 @@ def self.invest_logic(user, amount, name, is_mod)
   return "Minimum investment is 10 farthings." if amount < 10
 
   ticker_exists = Ticker.exists?(symbol: name.upcase)
-   ticker = Ticker.find_by_symbol(symbol: name.upcase)
+ticker = Ticker.find_by(symbol: name.upcase)
   # Check if the user ALREADY has this stock
   existing = user.investments.active.find_by(ticker_id: ticker.id)
 
