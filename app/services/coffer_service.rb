@@ -12,7 +12,7 @@ class CofferService
 
     case text.downcase
 
-   when "!coffer market"
+   when "!coffer markets"
       tickers = Ticker.all
       return "The market is currently empty." if tickers.empty?
 

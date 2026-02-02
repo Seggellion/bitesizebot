@@ -4,14 +4,13 @@ export default class extends Controller {
   static values = { ended: Boolean }
 
   connect() {
-    console.log('Overlay signal received - triggering refresh')
     if (this.endedValue) {
       setTimeout(() => {
         // Force a hard refresh with a cache-buster param
         const url = new URL(window.location.href);
         url.searchParams.set('refresh', Date.now());
         window.location.href = url.toString();
-      }, 3000)
+      }, 16500)
     }
   }
 }

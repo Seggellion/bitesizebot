@@ -87,35 +87,44 @@ def pending_actions
   end
 
   def verify_win
-    # Fetch all marked cells and their positions in the grid
-    # We reconstruct the grid based on the order they were created (id)
-    marked_positions = bingo_cells.order(:id).each_with_index.map do |cell, index|
+    grid_size = bingo_game.size # Usually 5
+    
+    # 1. Get the cells in the EXACT same order as the View/Twitch
+    # This returns a flat array of 25 items: [B1..B5, I1..I5, N1..N5...]
+    current_grid = cells_for_grid
+    
+    # 2. Map coordinates based on that specific sort order
+    # Since cells_for_grid groups by Column first:
+    # index / 5 = Column Index
+    # index % 5 = Row Index
+    marked_positions = current_grid.each_with_index.map do |cell, index|
       { 
         marked: cell.is_marked, 
-        row: index % 5, 
-        col: index / 5 
+        col: index / grid_size,
+        row: index % grid_size
       }
     end
 
-    # 1. Check Rows
-    (0..4).each do |r|
-      return true if marked_positions.select { |cp| cp[:row] == r && cp[:marked] }.size == 5
+    # 3. Check Rows
+    (0...grid_size).each do |r|
+      return true if marked_positions.select { |cp| cp[:row] == r && cp[:marked] }.size == grid_size
     end
 
-    # 2. Check Columns
-    (0..4).each do |c|
-      return true if marked_positions.select { |cp| cp[:col] == c && cp[:marked] }.size == 5
+    # 4. Check Columns
+    (0...grid_size).each do |c|
+      return true if marked_positions.select { |cp| cp[:col] == c && cp[:marked] }.size == grid_size
     end
 
-    # 3. Check Diagonal (Top-Left to Bottom-Right)
-    # Positions: (0,0), (1,1), (2,2), (3,3), (4,4)
-    if marked_positions.select { |cp| cp[:row] == cp[:col] && cp[:marked] }.size == 5
+    # 5. Check Diagonal (Top-Left to Bottom-Right)
+    # Positions: (0,0), (1,1), (2,2)...
+    if marked_positions.select { |cp| cp[:row] == cp[:col] && cp[:marked] }.size == grid_size
       return true
     end
 
-    # 4. Check Anti-Diagonal (Top-Right to Bottom-Left)
-    # Positions: (0,4), (1,3), (2,2), (3,1), (4,0)
-    if marked_positions.select { |cp| cp[:row] + cp[:col] == 4 && cp[:marked] }.size == 5
+    # 6. Check Anti-Diagonal (Top-Right to Bottom-Left)
+    # Positions: (0,4), (1,3), (2,2)...
+    # Row + Col should equal (Size - 1)
+    if marked_positions.select { |cp| cp[:row] + cp[:col] == (grid_size - 1) && cp[:marked] }.size == grid_size
       return true
     end
 
