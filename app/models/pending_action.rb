@@ -119,14 +119,14 @@ end
   
   game = target.bingo_game
   broadcast_prepend_to(
-    "game_overlay_#{game.id}",
+  "active_game_overlay",
     target: "overlay_notifications",
     partial: "admin/bingo_games/notification",
     locals: { user: user, cell: target }
   )
 
   broadcast_update_to(
-    "game_overlay_#{game.id}",
+    "active_game_overlay",
     target: "ticker_container",
     partial: "admin/bingo_games/ticker",
     locals: { game: game }
@@ -138,7 +138,7 @@ def broadcast_overlay_win
   game = target.bingo_game
   
   broadcast_prepend_to(
-    "game_overlay_#{game.id}",
+    "active_game_overlay",
     target: "overlay_notifications",
     partial: "admin/bingo_games/win_notification",
     locals: { user: user, game: game }

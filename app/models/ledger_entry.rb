@@ -12,7 +12,7 @@ TRADING_TYPES = ["stock_purchase_add", "stock_purchase_sell"].freeze
     if TRADING_TYPES.include?(entry_type)
       broadcast_prepend_to "global_ledger", 
                           target: "ledger_entries", 
-                          partial: "shared/entry", 
+                          partial: "Hobbit/views/shared/entry", 
                           locals: { entry: self } 
     end
   }

@@ -29,15 +29,14 @@ class BingoGame < ApplicationRecord
     active.first || order(created_at: :desc).first
   end
 
-  def broadcast_overlay_refresh
-    # This sends a signal to the stream 'game_overlay_ID'
-    # The overlay should have: <%= turbo_stream_from "game_overlay_#{@game.id}" %>
-    broadcast_append_to(
-      "game_overlay_#{id}", 
-      target: "overlay_notifications",
-      partial: "admin/bingo_games/game_ended_signal"
-    )
-  end
+def broadcast_overlay_refresh
+  # Use a global string instead of self/id
+  broadcast_append_to(
+    "active_game_overlay", 
+    target: "overlay_notifications",
+    partial: "admin/bingo_games/game_ended_signal"
+  )
+end
 
   def broadcast_game_end
     if status == 'ended'

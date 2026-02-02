@@ -126,23 +126,27 @@ receiver = User.find_by("LOWER(username) = ?", receiver_name.downcase)
 
 def self.invest_logic(user, amount, name, is_mod)
   current_market_price = Ticker.price_for(name)
+  
   return "Minimum investment is 10 farthings." if amount < 10
 
   ticker_exists = Ticker.exists?(symbol: name.upcase)
 ticker = Ticker.find_by(symbol: name.upcase)
   # Check if the user ALREADY has this stock
+  
   existing = user.investments.active.find_by(ticker_id: ticker.id)
 
   if existing
     # Support for adding to an existing position
     buy_more_of_investment(user, amount, existing, current_market_price)
+    
   elsif !ticker_exists
-    if is_mod
+    if is_mod      
       create_new_investment(user, amount, name, current_market_price)
     else
       "Ticker '#{name}' isn't listed yet. Ask a Moderator to IPO it!"
     end
   else
+    
     buy_into_investment(user, amount, name, current_market_price)
   end
 rescue CurrencyService::InsufficientFundsError
@@ -204,6 +208,7 @@ def self.sell_logic(user, name, sell_amount)
 
 def self.buy_more_of_investment(user, amount, investment, market_price)
   ActiveRecord::Base.transaction do
+    
     # 1. Calculate current "Shares" (Value / Purchase Price)
     old_shares = investment.amount.to_f / investment.purchase_price
     new_shares = amount.to_f / market_price
@@ -213,10 +218,8 @@ def self.buy_more_of_investment(user, amount, investment, market_price)
     total_investment_at_cost = investment.amount + amount
     new_avg_price = total_investment_at_cost / total_shares
 
-    ticker = Ticker.find_by_symbol(name)
 
-
-    ticker = Ticker.find_by!(name: investment.investment_name.downcase)
+    ticker = investment.ticker
 
     pressure = amount.to_f / ticker.current_price
     ticker.increment!(:buy_pressure, pressure)
@@ -246,8 +249,7 @@ end
 
 def self.buy_into_investment(user, amount, name, price)
   ActiveRecord::Base.transaction do
-    ticker = Ticker.find_by!(name: name.downcase)
-
+    ticker = Ticker.find_by!(symbol: name.upcase)
     pressure = amount.to_f / price
     ticker.increment!(:buy_pressure, pressure)
 

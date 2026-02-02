@@ -41,7 +41,7 @@
   .ticker-wrapper {
     display: flex;
     white-space: nowrap;
-    animation: scroll 30s linear infinite; 
+    animation: scroll 60s linear infinite; 
     width: max-content;
   }
 
@@ -51,7 +51,7 @@
     </style>
   </head>
   <body>
-    <%= turbo_stream_from "game_overlay_#{@current_game.id}" %>
+<%= turbo_stream_from "active_game_overlay" %>
 
     <div id="overlay_notifications" class="relative w-screen h-screen">
       </div>

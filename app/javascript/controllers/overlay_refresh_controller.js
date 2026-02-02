@@ -1,15 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static values = { ended: Boolean }
 
   connect() {
+    console.log('Overlay signal received - triggering refresh')
     if (this.endedValue) {
       setTimeout(() => {
-        // Clear Turbo cache and force a fresh visit
-        Turbo.cache.clear()
-        Turbo.visit(window.location.pathname, { action: "replace" })
+        // Force a hard refresh with a cache-buster param
+        const url = new URL(window.location.href);
+        url.searchParams.set('refresh', Date.now());
+        window.location.href = url.toString();
       }, 3000)
     }
   }
