@@ -178,7 +178,18 @@ tickers = [
   liquidity: 900,
   momentum: 0.11,
   description: "Premium aged pipe-weed grown in the Southfarthing, favored by connoisseurs and wizards."
+},
+{
+   name: "Travin's Rum & Privateer Trade Co.",
+  symbol: "RUM",
+  price: 52.40,
+  liquidity: 1500.0,
+  max_liquidity: 1500.0,
+  momentum: -0.04,
+  description: "Southern spirits exporter and privateer-backed trade house operating out of Umbar, dealing in rum, sugar spirits, and high-risk maritime trade."
+   
 }
+
 ]
 
 tickers.each do |data|

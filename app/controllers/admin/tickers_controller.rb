@@ -72,6 +72,7 @@ module Admin
       :description, 
       :liquidity, 
         :symbol, 
+        :momentum, 
       :max_liquidity, 
       :buy_pressure, 
       :sell_pressure
