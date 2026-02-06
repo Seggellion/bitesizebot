@@ -111,6 +111,11 @@ end
 
     # 2. Update the Player's Card (clears the spinner)
     refresh_target_cell
+
+    if action_type == 'claim_win'
+      bingo_game.broadcast_potential_win_cleanup
+    end
+
   end
 
 

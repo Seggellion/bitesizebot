@@ -22,8 +22,11 @@
     
     <div class="lg:col-span-2">
       <div class="bg-gray-800 p-4 rounded-xl shadow-2xl">
-        <% columns = ["B", "I", "N", "G", "O"].first(@game.size) %>
-<%= turbo_stream_from @bingo_card %>
+        <% sorted_cells = @bingo_card.cells_for_grid %>
+        <% grid_size = @game.size %>
+        <% columns = ["B", "I", "N", "G", "O"].first(grid_size) %>
+
+        <%= turbo_stream_from @bingo_card %>
 
         <div class="grid grid-cols-5 gap-2">
           <%# Header Letters %>
@@ -39,14 +42,12 @@
             </div>
           <% end %>
 
-   
-          <%# Grid Cells %>
-          <% (0...@game.size).each do |row_index| %>
-            <% columns.each do |letter| %>
-              <% cell = @grouped_cells[letter]&.at(row_index) %>
+          <% (0...grid_size).each do |row_index| %>
+            <% (0...grid_size).each do |col_index| %>
+              
+              <% cell = sorted_cells[(col_index * grid_size) + row_index] %>
 
               <%= render partial: "admin/bingo_cards/cell", locals: { cell: cell } %>
-
 
             <% end %>
           <% end %>
