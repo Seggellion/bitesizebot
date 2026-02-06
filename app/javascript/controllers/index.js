@@ -55,6 +55,8 @@ application.register("gallery", GalleryController)
 import TabsController from "./tabs_controller"
 application.register("tabs", TabsController)
 
+import FaviconController from "./favicon_controller"
+application.register("favicon", FaviconController)
 
 import TrixController from "./trix_controller"
 application.register("trix", TrixController)

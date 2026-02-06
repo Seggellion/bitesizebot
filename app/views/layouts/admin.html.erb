@@ -5,7 +5,10 @@
   <%= stylesheet_link_tag 'application.tailwind', media: 'all', 'data-turbo-track': 'reload' %>
   <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
 
-      <%= favicon_link_tag 'railpress.png', rel: 'shortcut icon', type: 'image/x-icon' %>
+      <%= favicon_link_tag 'railpress.png', id: 'favicon-link', rel: 'shortcut icon', type: 'image/x-icon' %>
+
+
+
       <%= stylesheet_link_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css", media: "all" %>
 
 <%= javascript_importmap_tags %>
@@ -17,6 +20,12 @@
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
+<div id="favicon_manager" 
+     data-controller="favicon" 
+     data-favicon-alert-src-value="<%= image_path('favicon_caution.png') %>"
+     data-favicon-pending-value="<%= PendingAction.pending.any? %>"
+     data-action="favicon:alert@window->favicon#alert favicon:clear@window->favicon#clear">
+</div>
 
 <%= render 'admin/shared/top_bar' %>
 

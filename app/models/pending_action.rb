@@ -84,6 +84,10 @@ def handle_new_action
                        partial: "admin/pending_actions/pending_action",
                        locals: { action: self }
 
+broadcast_append_to "pending_actions",
+                        target: "favicon_manager",
+                        partial: "admin/pending_actions/trigger_alert"
+
   refresh_target_cell
 end
 
@@ -108,6 +112,12 @@ end
   def handle_action_update
     # 1. Remove from Admin Dashboard
     broadcast_remove_to "pending_actions"
+
+if PendingAction.pending.count == 0
+      broadcast_append_to "pending_actions",
+                          target: "favicon_manager",
+                          partial: "admin/pending_actions/trigger_clear"
+    end
 
     # 2. Update the Player's Card (clears the spinner)
     refresh_target_cell
