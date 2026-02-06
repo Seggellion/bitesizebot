@@ -162,7 +162,23 @@ tickers = [
     liquidity: 600,
     momentum: 0.16,
     description: "Extremely rare artifacts and long-term mythic assets."
-  }
+  },
+  {
+  name: "Southfarthing Pipe-weed Collective",
+  symbol: "PIPE",
+  price: 64.20,
+  liquidity: 1600,
+  momentum: 0.06,
+  description: "The largest producer and exporter of pipe-weed in Middle-earth, supplying Bree, Gondor, and the Rangers of the North."
+},
+{
+  name: "Longbottom Leaf Estates",
+  symbol: "LEAF",
+  price: 118.75,
+  liquidity: 900,
+  momentum: 0.11,
+  description: "Premium aged pipe-weed grown in the Southfarthing, favored by connoisseurs and wizards."
+}
 ]
 
 tickers.each do |data|

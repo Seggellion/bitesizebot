@@ -52,5 +52,9 @@ application.register("lightbox", LightboxController)
 import GalleryController from "./gallery_controller"
 application.register("gallery", GalleryController)
 
+import TabsController from "./tabs_controller"
+application.register("tabs", TabsController)
+
+
 import TrixController from "./trix_controller"
 application.register("trix", TrixController)
