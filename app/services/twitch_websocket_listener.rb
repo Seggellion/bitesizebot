@@ -77,9 +77,10 @@ end
     when "session_keepalive"
       # Just resets our local timer to ensure connection hasn't ghosted
       puts "[Twitch WS] Keepalive received"
-
+      sync_external_data
     when "notification"
       handle_notification(payload["event"])
+      sync_external_data
     end
   end
 
@@ -163,6 +164,37 @@ def self.subscribe_to_chat(session_id)
 end
 
 
+def self.sync_external_data
+    broadcaster = User.broadcaster
+    return unless broadcaster
+
+    count = fetch_viewer_count(broadcaster.uid)
+    ActivityEngine.sync_viewer_pressure(count) if count
+  end
+
+
+def self.fetch_viewer_count(broadcaster_id)
+    bot = User.bot_user
+    token = TwitchService.valid_user_token_for(bot)
+    client_id = Rails.application.credentials.dig(:twitch, :client_id)
+
+    url = "https://api.twitch.tv/helix/streams?user_id=#{broadcaster_id}"
+    res = HTTParty.get(url, headers: {
+      "Authorization" => "Bearer #{token}",
+      "Client-Id"     => client_id
+    })
+
+
+    if res.code == 200
+      # data is empty if stream is offline
+      stream_data = res.parsed_response.dig("data", 0)
+      return stream_data["viewer_count"] if stream_data
+    end
+    0
+  rescue => e
+    puts "[Twitch WS] Error fetching viewers: #{e.message}"
+    nil
+  end
 
  def self.get_user_id(login = nil)
   user = User.bot.first
@@ -210,6 +242,7 @@ def self.handle_notification(event)
     u.fame = 0 
   end
 
+  ActivityEngine.process_chat(username)
   viewer.increment!(:fame, 1)
   viewer.touch
 

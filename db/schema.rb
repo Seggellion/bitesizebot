@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_30_235045) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_06_221357) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -417,6 +417,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_30_235045) do
     t.integer "singleton_guard", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "last_enabled_at"
     t.index ["singleton_guard"], name: "index_system_settings_on_singleton_guard", unique: true
   end
 
