@@ -5,6 +5,7 @@ class Ticker < ApplicationRecord
 
 before_validation :generate_symbol, on: :create
 has_many :investments, dependent: :destroy
+after_update_commit :broadcast_live_data
   # Helper to get price or seed a default if a new stock is created
 
 def chart_data
@@ -46,6 +47,22 @@ end
   end
 
   private
+
+  def broadcast_live_data
+    # 1. Update the generic price in the sidebar for ALL users
+    # We target the specific DOM ID 'ticker_X_sidebar_data'
+    broadcast_replace_to "market_global",
+                         target: "ticker_#{id}_sidebar_data",
+                         partial: "shared/sidebar_price",
+                         locals: { ticker: self }
+
+    # 2. Update the Deep Dive Dashboard ONLY for users viewing this specific ticker
+    # We replace the entire 'active_market_dashboard' container
+    broadcast_replace_to self,
+                         target: "active_market_dashboard",
+                         partial: "shared/active_dashboard",
+                         locals: { ticker: self }
+  end
 
 def generate_symbol
   return if symbol.present? || name.blank?
