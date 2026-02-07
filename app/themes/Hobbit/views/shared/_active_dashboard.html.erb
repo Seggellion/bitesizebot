@@ -1,3 +1,5 @@
+
+<% recent_ledger_entries = LedgerEntry.where(entry_type: LedgerEntry::TRADING_TYPES).order(created_at: :desc).limit(15) %>
 <div id="active_market_dashboard" class="grid grid-cols-1 xl:grid-cols-3 gap-6">
   
   <div class="xl:col-span-2 space-y-6">
@@ -43,7 +45,7 @@
        </div>
        <div class="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-[11px]" id="ledger_entries">
          <%= turbo_stream_from "global_ledger" %>
-         <%= render partial: "shared/entry", collection: @recent_ledger.last(15), as: :entry %>
+         <%= render partial: "shared/entry", collection: recent_ledger_entries, as: :entry %>
        </div>
     </div>
   </div>
