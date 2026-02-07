@@ -105,7 +105,7 @@ def self.process_pending_orders
 
         # 2. Mark investment as fully sold
         investment.update!(
-          status: :sold,
+          status: :redeemed,
           updated_at: Time.current
         )
       end
