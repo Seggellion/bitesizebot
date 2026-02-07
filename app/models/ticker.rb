@@ -53,14 +53,14 @@ end
     # We target the specific DOM ID 'ticker_X_sidebar_data'
     broadcast_replace_to "market_global",
                          target: "ticker_#{id}_sidebar_data",
-                         partial: "shared/sidebar_price",
+                         partial: "Hobbit/views/shared/sidebar_price",
                          locals: { ticker: self }
 
     # 2. Update the Deep Dive Dashboard ONLY for users viewing this specific ticker
     # We replace the entire 'active_market_dashboard' container
     broadcast_replace_to self,
                          target: "active_market_dashboard",
-                         partial: "shared/active_dashboard",
+                         partial: "Hobbit/views/shared/active_dashboard",
                          locals: { ticker: self }
   end
 
