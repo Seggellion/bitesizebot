@@ -14,11 +14,12 @@ has_many :investments, dependent: :destroy
 has_many :won_games, class_name: 'BingoGame', foreign_key: 'winner_id'
 has_many :ledger_entries, dependent: :destroy
 has_many :giveaway_entries, dependent: :destroy
-
+has_many :achievements
   # Define roles
 enum :user_type, { admin: 0, regular: 1, bot: 5 }
   attr_accessor :twitch_scopes
-
+has_many :pending_actions, dependent: :destroy
+  has_many :raffle_entries, dependent: :destroy
 
   def can_afford?(cost)
     wallet >= cost

@@ -16,7 +16,7 @@ end
 
 def candlestick_data
   price_histories
-    .where("created_at >= ?", 24.hours.ago)
+    .where("created_at >= ?", 60.hours.ago)
     .where.not(open: nil, high: nil, low: nil, close: nil)
     .order(:created_at)
     .map do |h|

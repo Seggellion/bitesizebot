@@ -37,7 +37,7 @@
                         <% end %>
                       </div>
                       <div class="ml-4">
-                        <div class="font-medium text-gray-900"><%= user.username %></div>
+                        <div class="font-medium text-gray-900"><%= link_to user.username, admin_user_path(user) %></div>
                         <div class="text-gray-500 text-xs font-mono"><%= user.uid %></div>
                       </div>
                     </div>

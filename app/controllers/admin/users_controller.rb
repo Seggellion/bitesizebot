@@ -11,6 +11,10 @@ module Admin
       def edit
         # The @user instance variable is set by the set_user method
       end
+
+      def show
+@user = User.includes(:ledger_entries, :investments, :achievements, :posts, :media).find(params[:id])
+      end
   
       def update        
         if @user.update(user_params)

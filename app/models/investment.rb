@@ -3,7 +3,7 @@ class Investment < ApplicationRecord
   belongs_to :user
   belongs_to :ticker
   # Change this line:
-  enum :status, { active: 0, redeemed: 1 }
+  enum :status, { active: 0, redeemed: 1,pending_sale: 2 }
 
 def current_value
     return amount if redeemed?

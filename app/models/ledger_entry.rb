@@ -3,9 +3,20 @@ class LedgerEntry < ApplicationRecord
 
   validates :amount, presence: true, numericality: { other_than: 0 }
   validates :entry_type, presence: true
-TRADING_TYPES = ["stock_purchase_add", "stock_purchase_sell"].freeze
+TRADING_TYPES = ["stock_purchase_add", "stock_purchase_sell","stock_sell","stock_buy"].freeze
   # Custom validation to prevent negative balance
   validate :user_has_sufficient_funds, on: :create
+
+def display_type
+  case entry_type
+  when 'stock_buy', 'stock_purchase_add'
+    'buy'
+  when 'stock_sell', 'stock_purchase_sell'
+    'sell'
+  else
+    entry_type.gsub('stock_', '').gsub('_', ' ')
+  end
+end
 
   # Only broadcast if it's a trade
   after_create_commit -> { 

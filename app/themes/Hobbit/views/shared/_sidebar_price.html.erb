@@ -1,0 +1,16 @@
+<% 
+  current_price = ticker.current_price.to_f
+  previous_price = ticker.previous_price.to_f
+  diff = current_price - previous_price
+  percent_change = (diff / (previous_price > 0 ? previous_price : 1) * 100)
+%>
+
+<div id="ticker_<%= ticker.id %>_sidebar_data" class="text-right">
+  <div class="text-xs font-mono <%= diff >= 0 ? 'text-green-400' : 'text-red-400' %> mb-1">
+    <%= diff >= 0 ? '+' : '' %><%= number_to_percentage(percent_change, precision: 2) %>
+  </div>
+  
+  <div class="text-lg font-mono text-slate-200">
+    ƒ<%= number_with_precision(current_price, precision: 2) %>
+  </div>
+</div>

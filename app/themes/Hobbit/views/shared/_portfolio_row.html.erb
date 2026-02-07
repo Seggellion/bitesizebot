@@ -41,8 +41,16 @@
 </td>
 
   <td class="px-4 py-4 text-right">
-    <%= button_to "SELL ALL", "#", 
+  <% if inv&.pending_sale? %>
+    <button disabled class="text-[10px] font-black tracking-widest bg-slate-900 border border-yellow-600 text-yellow-500 px-3 py-2 rounded-md cursor-not-allowed opacity-75">
+      QUEUED (<%= inv.amount %>)
+    </button>
+    <div class="text-[8px] text-slate-500 mt-1">Pending Next Tick</div>
+
+  <% elsif inv&.active? %>
+    <%= button_to "SELL ALL", sell_all_investments_path(ticker_id: inv.ticker.id), 
         method: :post,
         class: "text-[10px] font-black tracking-widest bg-slate-800 hover:bg-red-600 border border-slate-700 hover:border-red-500 text-slate-400 hover:text-white px-3 py-2 rounded-md transition-all duration-200 active:scale-95" %>
-  </td>
+  <% end %>
+</td>
 </tr>

@@ -4,7 +4,7 @@
   
   <div class="flex flex-col flex-1 px-3 truncate">
     <span class="text-slate-200 font-bold uppercase tracking-tighter">
-      <%= entry.entry_type.gsub('stock_', '').gsub('_', ' ') %>
+      <%= entry.display_type %>
     </span>
     <span class="text-[9px] text-slate-500 italic">User #<%= entry.user_id %></span>
   </div>

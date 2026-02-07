@@ -13,8 +13,9 @@ import "@rails/actiontext"
 import { Chart, registerables } from "chart.js"
 import { CandlestickController, CandlestickElement } from "chartjs-chart-financial" // Add this
 import "chartjs-adapter-date-fns"
-    
-Chart.register(...registerables, CandlestickController, CandlestickElement)
+import zoomPlugin from "chartjs-plugin-zoom"
+
+Chart.register(...registerables, CandlestickController, CandlestickElement, zoomPlugin)
 
 // 2. Register the components (Lines, Bars, etc.)
 

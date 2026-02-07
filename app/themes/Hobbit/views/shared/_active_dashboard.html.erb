@@ -1,0 +1,50 @@
+<div id="active_market_dashboard" class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  
+  <div class="xl:col-span-2 space-y-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl font-bold flex items-center gap-2 uppercase">
+          <%= ticker.name %> 
+          <span class="text-[10px] font-normal text-slate-500 bg-slate-800 px-2 py-0.5 rounded border border-slate-700 uppercase tracking-widest">Live Data</span>
+        </h1>
+        <span class="text-xs font-mono text-slate-500">LIQUIDITY: ƒ<%= number_with_delimiter(ticker.liquidity.round) %></span>
+      </div>
+      <div class="h-[400px] w-full">
+        <canvas data-controller="candlestick" data-candlestick-data-value="<%= ticker.candlestick_data.to_json %>"></canvas>
+      </div>
+    </div>
+    
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+      <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Volume Activity</h3>
+      <%= column_chart ticker.volume_data, height: "120px", library: { backgroundColor: "transparent", scales: { x: { display: false }, y: { grid: { color: "#1e293b" }, ticks: { display: false } } } } %>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+      <h3 class="text-xs font-bold text-slate-500 uppercase mb-4">Market Sentiment</h3>
+      <div class="flex justify-between mb-2 text-xs font-mono">
+        <span class="text-green-400 font-bold">BUY <%= ticker.buy_pressure %>%</span>
+        <span class="text-red-400 font-bold">SELL <%= ticker.sell_pressure %>%</span>
+      </div>
+      <div class="flex h-2.5 w-full rounded-full overflow-hidden bg-slate-800 border border-slate-700">
+        <div class="bg-green-500 shadow-[0_0_10px_#22c55e]" style="width: <%= ticker.buy_pressure %>%"></div>
+        <div class="bg-red-500 shadow-[0_0_10px_#ef4444]" style="width: <%= ticker.sell_pressure %>%"></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[450px]">
+       <div class="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+         <h3 class="text-[10px] font-bold text-slate-500 uppercase">Global Order Book</h3>
+         <div class="flex items-center gap-1">
+           <span class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
+           <span class="text-[10px] text-purple-400 font-bold">LIVE FEED</span>
+         </div>
+       </div>
+       <div class="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-[11px]" id="ledger_entries">
+         <%= turbo_stream_from "global_ledger" %>
+         <%= render partial: "shared/entry", collection: @recent_ledger.last(15), as: :entry %>
+       </div>
+    </div>
+  </div>
+</div>

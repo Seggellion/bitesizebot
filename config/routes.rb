@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   post "/discord_login", to: redirect("/auth/discord"), as: :discord_login
   get "/microsoft_login", to: redirect("/auth/microsoft_graph"), as: :microsoft_login
 
+resource :profile, only: [:show], controller: 'profiles'
+  
 namespace :auth do
   get :twitch_login, to: "twitch#login"
   get :twitch_bot, to: "twitch#bot_setup"
@@ -33,6 +35,12 @@ end
   resources :comments,   only: [:create]
 
   resources :contact_messages, only: [:new, :create]
+
+resources :investments do
+  collection do
+    post :sell_all
+  end
+end
 
   resources :giveaways, only: [:show] do
     resources :entries, only: [:create]

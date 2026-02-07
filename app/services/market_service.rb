@@ -81,4 +81,35 @@ class MarketService
       )
     end
   end
+
+def self.process_pending_orders
+    Investment.pending_sale.includes(:ticker, :user).find_each do |investment|
+      ticker = investment.ticker
+      
+      # Calculate payout based on the NEW current_price established in fluctuate_prices
+      current_price = ticker.current_price
+      payout_amount = (investment.amount * current_price).to_i
+
+      ActiveRecord::Base.transaction do
+        # 1. Create the ledger entry for the user
+        LedgerEntry.create!(
+          user: investment.user,
+          amount: payout_amount,
+          entry_type: "stock_sale",
+          metadata: { 
+            ticker: ticker.symbol, 
+            shares: investment.amount, 
+            price_at_sale: current_price 
+          }
+        )
+
+        # 2. Mark investment as fully sold
+        investment.update!(
+          status: :sold,
+          updated_at: Time.current
+        )
+      end
+    end
+  end
+
 end

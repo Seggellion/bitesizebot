@@ -36,6 +36,7 @@ def index
   @active_ticker = params[:symbol] ? Ticker.find_by(symbol: params[:symbol]) : @tickers.first
 
   # 3. Portfolio Header Stats (Active Only)
+  
   @total_invested = @active_holdings.sum { |inv| inv.amount } # Total farthings spent
   @current_value  = @active_holdings.sum(&:market_value)
   @portfolio_roi  = @total_invested > 0 ? ((@current_value - @total_invested) / @total_invested) * 100 : 0

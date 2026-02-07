@@ -1,30 +1,23 @@
-
-<header>
-  <!-- First Row -->
-  <div class="w-full">
-  <div class="container mx-auto flex justify-between items-center px-4 lg:px-8 h-24">
-  <div class="h-full w-auto flex items-center justify-center">
-    <% if (logo = Setting.get('logo')) %>
-      <%= link_to root_path do %>
-        <%= image_tag url_for(logo), alt: 'Corporate Logo', class: 'h-24 max-h-[100px] w-auto object-contain' %>
-      <% end %>
-    <% end %>
-  </div>
-
-  <h2 class="text-2xl font-bold mx-auto hidden sm:block">Railpress - Hobbit theme</h2>
-
-  <% if (announcement = Setting.find_by(key: 'announcement-bar')) && announcement.parsed_value.present? %>
-    <div class="announcement-bar text-black text-center py-2">
-      <a href="<%= catch_all_page_path(announcement.parsed_value[1]) %>" class="text-black">
-        <%= announcement.parsed_value[0] %>
-      </a>
+  <nav class="border-b border-slate-800 bg-slate-900 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+      <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+        SHIRE-TRADE
+      </span>
+      <div class="hidden md:flex items-center bg-slate-800 rounded-full px-3 py-1 border border-slate-700">
+        <span class="text-xs text-slate-400 mr-2 uppercase tracking-tighter">Wallet:</span>
+        <span class="text-sm font-mono text-green-400">ƒ <%= number_with_delimiter(current_user.wallet) %></span>
+      </div>
     </div>
-  <% end %>
 
-  <%= render 'menus/header_menu_mobile' %>
-</div>
-
-  </div>
-  <%= render 'menus/header_menu_desktop' %>
-</header>
-
+    <div class="flex items-center gap-6 text-sm font-medium">
+      <%= link_to "Home", root_path, class: "hover:text-purple-400 transition" %>
+      <%= link_to "Trading", "/", class: "hover:text-purple-400 transition" %>
+      <%= link_to "Bingo", "/bingo-card", class: "hover:text-purple-400 transition" %>
+      <%= link_to "Giveaways", "/giveaways", class: "hover:text-purple-400 transition" %>
+      <div class="w-8 h-8 rounded-full border border-purple-500 overflow-hidden">
+      <%= link_to profile_path do %>
+        <img src="<%= current_user.avatar %>" alt="Avatar">
+        <% end %>
+      </div>
+    </div>
+  </nav>

@@ -21,6 +21,8 @@ class MarketUpdateJob
     
     # Run the market logic
     MarketService.fluctuate_prices
+
+    MarketService.process_pending_orders
     
     # Schedule the next tick
     self.class.perform_in(5.minutes)
