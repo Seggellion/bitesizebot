@@ -7,6 +7,8 @@ TRADING_TYPES = ["stock_purchase_add", "stock_purchase_sell","stock_sell","stock
   # Custom validation to prevent negative balance
   validate :user_has_sufficient_funds, on: :create
 
+after_commit :broadcast_if_trade, on: [:create, :update]
+
 def display_type
   case entry_type
   when 'stock_buy', 'stock_purchase_add'
@@ -29,6 +31,15 @@ end
   }
 
   private
+
+def broadcast_if_trade
+  if TRADING_TYPES.include?(entry_type) && (saved_change_to_entry_type? || transaction_include_any_action?([:create]))
+    broadcast_prepend_to "global_ledger", 
+                        target: "ledger_entries", 
+                        partial: "Hobbit/views/shared/entry", 
+                        locals: { entry: self }
+  end
+end
 
   def user_has_sufficient_funds
     if amount.negative? && (user.wallet + amount) < 0

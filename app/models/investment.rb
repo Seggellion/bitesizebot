@@ -5,8 +5,6 @@ class Investment < ApplicationRecord
   # Change this line:
 enum :status, { active: 0, redeemed: 1, pending_sale: 2, pending_purchase: 3 }
 
-after_commit :broadcast_user_wallet_update
-
 def current_value
     return amount if redeemed?
     return 0 if purchase_price.to_f <= 0 # Guard for pending_purchase
@@ -38,14 +36,6 @@ def exit_value
   end
   
 
-  private
-  def broadcast_user_wallet_update
-    # We broadcast to the specific user's stream
-    # using the wallet data currently stored in their record.
-    broadcast_replace_to user,
-                         target: "user_wallet_balance",
-                         html: "<span class='animate-wallet-update text-sm font-mono text-green-400'>ƒ #{ActionController::Base.helpers.number_with_delimiter(user.reload.wallet)}</span>"
-  end
 
 
   

@@ -64,17 +64,21 @@ class MarketService
     end
   end
 
-  def self.process_pending_orders
-    # --- 1. PROCESS PENDING SALES (User getting paid) ---
-    Investment.pending_sale.includes(:ticker, :user).find_each do |inv|
-      execute_sale(inv)
-    end
+def self.process_pending_orders
+  affected_users = Set.new
 
-    # --- 2. PROCESS PENDING PURCHASES (User getting stock) ---
-    Investment.pending_purchase.includes(:ticker, :user).find_each do |inv|
-      execute_purchase(inv)
-    end
+  Investment.where(status: [:pending_sale, :pending_purchase]).find_each do |inv|
+    affected_users << inv.user
+    inv.status == "pending_sale" ? execute_sale(inv) : execute_purchase(inv)
   end
+
+  # Now that the whole market has moved, pulse every user's wallet ONCE
+  affected_users.each do |user|
+    user.broadcast_replace_to user,
+      target: "user_wallet_balance",
+      html: "<span class='animate-wallet-update text-sm font-mono text-green-400'>ƒ #{ActionController::Base.helpers.number_with_delimiter(user.reload.wallet)}</span>"
+  end
+end
 
   private
 
@@ -101,34 +105,70 @@ class MarketService
     end
   end
 
-  def self.execute_purchase(investment)
-    ticker = investment.ticker
-    execution_price = ticker.current_price
+def self.execute_purchase(investment)
+  ticker = investment.ticker
+  user = investment.user
+  execution_price = ticker.current_price
+  final_ledger = nil # Initialize variable to use after transaction
 
-    ActiveRecord::Base.transaction do
-      existing = investment.user.investments.active.find_by(ticker: ticker)
+  ActiveRecord::Base.transaction do
+    # 1. Finalize the Investment
+    existing = user.investments.active.find_by(ticker: ticker)
 
-      if existing
-        # Merge into existing position (Weighted Average)
-        old_shares = existing.amount.to_f / existing.purchase_price
-        new_shares = investment.amount.to_f / execution_price
-        total_cost = existing.amount + investment.amount
-        
-        existing.update!(
-          amount: total_cost,
-          purchase_price: (total_cost / (old_shares + new_shares))
-        )
-        investment.destroy! # Clean up the pending record
-      else
-        # Activate the pending record
-        investment.update!(
-          status: :active,
-          purchase_price: execution_price,
-          updated_at: Time.current
-        )
-      end
+    if existing
+      old_shares = existing.amount.to_f / existing.purchase_price
+      new_shares = investment.amount.to_f / execution_price
+      total_cost = existing.amount + investment.amount
+      
+      existing.update!(
+        amount: total_cost,
+        purchase_price: (total_cost / (old_shares + new_shares))
+      )
+      investment.destroy!
+      final_type = 'stock_purchase_add'
+    else
+      investment.update!(
+        status: :active,
+        purchase_price: execution_price,
+        updated_at: Time.current
+      )
+      final_type = 'stock_buy'
+    end
+
+
+    # 2. Finalize the Ledger Entry (More robust lookup)
+    # We look for the most recent queued entry for this user.
+    # We check both metadata formats to be safe.
+    final_ledger = user.ledger_entries
+                       .where(entry_type: 'stock_purchase_queued')
+                       .order(created_at: :desc)
+                       .find { |l| l.metadata["ticker"] == ticker.symbol }
+
+    if final_ledger
+      final_ledger.update!(
+        entry_type: final_type,
+        metadata: final_ledger.metadata.merge({
+          execution_price: execution_price,
+          finalized_at: Time.current
+        })
+      )
     end
   end
+
+  # 3. THE BROADCASTS (Moved OUTSIDE the transaction for safety)
+  if final_ledger
+    # Update Global Feed
+    final_ledger.broadcast_prepend_to "global_ledger",
+      target: "ledger_entries",
+      partial: "Hobbit/views/shared/entry", 
+      locals: { entry: final_ledger }
+
+    # Pulse User Wallet
+    user.broadcast_replace_to user,
+      target: "user_wallet_balance",
+      html: "<span class='animate-wallet-update text-sm font-mono text-green-400'>ƒ #{ActionController::Base.helpers.number_with_delimiter(user.reload.wallet)}</span>"
+  end
+end
 
   def self.calculate_fee_rate(ticker)
     base_fee_rate = 0.015

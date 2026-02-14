@@ -19,12 +19,18 @@ class HomeController < ApplicationController
     # Eager load for performance
     all_investments = @user.investments.includes(:ticker)
 
+@recent_ledger_entries = LedgerEntry
+  .where(entry_type: LedgerEntry::TRADING_TYPES)
+  .where("metadata->>'ticker' = ?", @active_ticker.symbol)
+  .order(created_at: :desc)
+  .limit(15)
 
+  
 
 
   # 2. ACTIVE HOLDINGS
   @active_holdings = all_investments.select(&:active?)
-    @active_ticker_ids = @active_holdings.map(&:ticker_id).to_set
+  @active_ticker_ids = @active_holdings.map(&:ticker_id).to_set
 
   # 3. PENDING ORDERS (Separate logic for Buy vs Sell)
   @pending_orders = all_investments.select { |inv| inv.pending_purchase? || inv.pending_sale? }

@@ -1,15 +1,16 @@
 <div id="<%= dom_id(entry) %>" 
-     class="flex justify-between p-1.5 rounded transition-all duration-500 <%= entry.amount.negative? ? 'bg-red-500/5 border-l-2 border-red-500' : 'bg-green-500/5 border-l-2 border-green-500' %>">
-  <span class="text-slate-400"><%= entry.created_at.strftime("%H:%M:%S") %></span>
+     class="flex items-center justify-between p-2 rounded transition-all duration-500 <%= entry.amount.negative? ? 'bg-red-500/5 border-l-2 border-red-500' : 'bg-green-500/5 border-l-2 border-green-500' %>">
   
-  <div class="flex flex-col flex-1 px-3 truncate">
+  <span class="text-slate-400 w-16 shrink-0"><%= entry.created_at.strftime("%H:%M:%S") %></span>
+  
+  <div class="flex flex-col flex-1 px-4 truncate">
     <span class="text-slate-200 font-bold uppercase tracking-tighter">
       <%= entry.display_type %>
     </span>
     <span class="text-[9px] text-slate-500 italic">User #<%= entry.user_id %></span>
   </div>
 
-  <span class="<%= entry.amount.negative? ? 'text-red-400' : 'text-green-400' %> font-bold">
+  <span class="<%= entry.amount.negative? ? 'text-red-400' : 'text-green-400' %> font-bold text-right">
     <%= entry.amount.negative? ? '-' : '+' %>ƒ<%= number_with_delimiter(entry.amount.abs) %>
   </span>
 </div>
