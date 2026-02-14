@@ -3,9 +3,10 @@
       <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
         SHIRE-TRADE
       </span>
+      <%= turbo_stream_from current_user %>
       <div class="hidden md:flex items-center bg-slate-800 rounded-full px-3 py-1 border border-slate-700">
         <span class="text-xs text-slate-400 mr-2 uppercase tracking-tighter">Wallet:</span>
-        <span class="text-sm font-mono text-green-400">ƒ <%= number_with_delimiter(current_user.wallet) %></span>
+        <span  id="user_wallet_balance" class="text-sm font-mono text-green-400">ƒ <%= number_with_delimiter(current_user.wallet) %></span>
       </div>
     </div>
 

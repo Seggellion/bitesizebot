@@ -36,7 +36,7 @@ end
 
   resources :contact_messages, only: [:new, :create]
 
-resources :investments do
+resources :investments, only: [:create] do
   collection do
     post :sell_all
   end

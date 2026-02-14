@@ -18,6 +18,7 @@ class MarketUpdateJob
     # nx: true means "Only set if it doesn't exist" (Atomic Locking)
     # We allow the set if it's already "true" to refresh the heartbeat
     Sidekiq.redis { |r| r.set(lock_key, "true", ex: 600) }
+
     
     # Run the market logic
     MarketService.fluctuate_prices

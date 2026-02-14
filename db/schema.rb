@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_06_221357) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_12_234839) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -256,7 +256,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_221357) do
 
   create_table "ledger_entries", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.integer "amount", null: false
+    t.bigint "amount", null: false
     t.string "entry_type", null: false
     t.jsonb "metadata", default: {}
     t.datetime "created_at", null: false

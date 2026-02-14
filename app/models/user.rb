@@ -21,6 +21,7 @@ enum :user_type, { admin: 0, regular: 1, bot: 5 }
 has_many :pending_actions, dependent: :destroy
   has_many :raffle_entries, dependent: :destroy
 
+
   def can_afford?(cost)
     wallet >= cost
   end
@@ -81,6 +82,9 @@ end
   def self.broadcaster
     User.find_by_uid(SystemSetting.broadcaster_uid)
   end
+
+
+ 
   
 
   end

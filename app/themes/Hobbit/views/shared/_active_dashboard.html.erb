@@ -1,7 +1,6 @@
 
-<% recent_ledger_entries = LedgerEntry.where(entry_type: LedgerEntry::TRADING_TYPES).order(created_at: :desc).limit(15) %>
 <div id="active_market_dashboard" class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-  
+  <% if @current_user %>
   <div class="xl:col-span-2 space-y-6">
     <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-2xl">
       <div class="flex justify-between items-center mb-4">
@@ -35,18 +34,40 @@
       </div>
     </div>
 
-    <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[450px]">
-       <div class="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-         <h3 class="text-[10px] font-bold text-slate-500 uppercase">Global Order Book</h3>
-         <div class="flex items-center gap-1">
-           <span class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
-           <span class="text-[10px] text-purple-400 font-bold">LIVE FEED</span>
-         </div>
-       </div>
-       <div class="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-[11px]" id="ledger_entries">
-         <%= turbo_stream_from "global_ledger" %>
-         <%= render partial: "Hobbit/views/shared/entry", collection: recent_ledger_entries, as: :entry %>
-       </div>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xs font-bold text-slate-500 uppercase">Buy <%= ticker.symbol %></h3>
+        <span class="text-[10px] font-mono text-green-500 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
+          WALLET: ƒ<%= number_with_delimiter(current_user.wallet) %>
+        </span>
+      </div>
+
+      <%= form_with url: investments_path, method: :post, class: "space-y-4" do |f| %>
+        <%= f.hidden_field :ticker_id, value: ticker.id %>
+        
+        <div>
+          <label class="text-[10px] text-slate-500 uppercase font-bold mb-1.5 block">Investment Amount (ƒ)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">ƒ</span>
+            <%= f.number_field :amount, 
+                value: 200, 
+                min: 200, 
+                max: @current_user.wallet,
+                step: 10,
+                class: "w-full bg-slate-950 border border-slate-800 rounded-lg py-3 pl-8 pr-4 text-white font-mono focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all",
+                placeholder: "Min. 200" %>
+          </div>
+          <p class="text-[9px] text-slate-600 mt-2 italic">Max affordable: ƒ<%= number_with_delimiter(@current_user.wallet) %></p>
+        </div>
+
+        <%= f.submit "EXECUTE PURCHASE", 
+            class: "w-full bg-purple-600 hover:bg-purple-500 text-white font-black text-[11px] tracking-widest py-4 rounded-lg shadow-lg shadow-purple-900/20 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+            disabled: @current_user.wallet < 200 %>
+      <% end %>
     </div>
   </div>
+
+
+  </div>
+  <% end %>
 </div>

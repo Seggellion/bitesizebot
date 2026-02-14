@@ -1,22 +1,26 @@
-<div class="min-h-screen bg-slate-950 text-slate-200 font-sans">
+<% recent_ledger_entries = LedgerEntry.where(entry_type: LedgerEntry::TRADING_TYPES).order(created_at: :desc).limit(15) %>
+
+<div class=" w-full bg-slate-950 text-slate-200 font-sans flex flex-col overflow-y-auto">
   <%= render '/shared/header' %>
 
   <%= turbo_stream_from "market_global" %>
 
-  <div class="flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden">
+  <div class="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-y-auto relative">
     
-    <aside class="w-full lg:w-80 border-r border-slate-800 bg-slate-900/50 flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+    <aside class="w-full lg:w-80 border-r border-slate-800 bg-slate-900/50 flex flex-col h-[75vh] z-20 shrink-0">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center flex-none">
         <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Market Overview</h2>
         <span class="text-[10px] text-purple-400 font-bold bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Sorted by Gainers</span>
       </div>
       
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
         <% @tickers.each do |ticker| %>
           <% is_holding = @active_ticker_ids.include?(ticker.id) %>
           
           <%= link_to root_path(symbol: ticker.symbol), 
-              data: { turbo_frame: "active_market" }, 
+              data: { turbo_frame: "active_market",
+              turbo_action: "advance"
+             }, 
               class: "block p-4 border-b border-slate-800/50 hover:bg-slate-800/40 transition group relative #{'bg-purple-500/5' if is_holding}" do %>
             
             <% if is_holding %>
@@ -32,10 +36,9 @@
                   <% end %>
                 </div>
                 
-                <%# User specific value - NOT live streamed %>
                 <% if is_holding %>
                   <% holding = @active_holdings.find { |h| h.ticker_id == ticker.id } %>
-                  <div class="text-[10px] font-mono text-purple-400">Val: ƒ<%= number_with_delimiter(holding.market_value.round(1)) %></div>
+                  <div class="text-[10px] font-mono text-purple-400">Val: ƒ<%= number_with_delimiter(holding.current_value.round(1)) %></div>
                 <% end %>
               </div>
 
@@ -46,9 +49,9 @@
       </div>
     </aside>
 
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col h-full min-w-0 overflow-y-auto bg-slate-950 scroll-smooth">
       
-      <div class="p-4 bg-slate-900/80 border-b border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="flex-none p-4 bg-slate-900/80 border-b border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4 sticky top-0 z-30 backdrop-blur-md">
         <div class="flex flex-col">
           <span class="text-[10px] text-slate-500 uppercase font-bold text-slate-400">Total Invested</span>
           <span class="text-sm font-mono font-bold">ƒ <%= number_with_delimiter(@total_invested.round(2)) %></span>
@@ -73,104 +76,125 @@
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 lg:p-6">
-        <%= turbo_frame_tag "active_market" do %>
-          
+      <%= turbo_frame_tag "active_market", class: "contents" do %>
+        
+        <div class="w-full h-[75vh] border-b border-slate-800 bg-slate-950 p-4 lg:p-6 shadow-xl z-0 flex flex-col relative">
           <%= turbo_stream_from @active_ticker %>
+          
+          <div class="w-full h-full">
+            <%= render "shared/active_dashboard", ticker: @active_ticker %>
+          </div>
+        </div>
 
-          <%= render "shared/active_dashboard", ticker: @active_ticker %>
-
-          <div class="mt-8"
-               data-controller="tabs" 
+        <div class="p-4 lg:p-6 space-y-8 bg-slate-900/20 min-h-[500px]">
+          
+          <div data-controller="tabs" 
                data-tabs-active-class="border-purple-500 text-purple-400 border-b-2"
                data-tabs-inactive-class="text-slate-500 hover:text-slate-300">
       
-              <div class="flex border-b border-slate-800 bg-slate-950/50">
-                <button data-tabs-target="tab" data-tab-id="holdings" data-action="click->tabs#switch" 
-                        class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-purple-500 text-purple-400 border-b-2">
-                  Your Holdings (<%= @active_holdings.count %>)
-                </button>
-                <button data-tabs-target="tab" data-tab-id="history" data-action="click->tabs#switch" 
-                        class="px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition">
-                  Trade History
-                </button>
-              </div>
+             <div class="flex border-b border-slate-800 bg-slate-950/50">
+               <button data-tabs-target="tab" data-tab-id="holdings" data-action="click->tabs#switch" 
+                       class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-purple-500 text-purple-400 border-b-2">
+                 Your Holdings (<%= @active_holdings.count %>)
+               </button>
+               <button data-tabs-target="tab" data-tab-id="history" data-action="click->tabs#switch" 
+                       class="px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition">
+                 Trade History
+               </button>
+             </div>
 
-              <div class="overflow-x-auto bg-slate-900/20 border-x border-b border-slate-800">
-                <div data-tabs-target="panel" id="holdings">
-                  <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold">
-                      <tr>
-                        <th class="px-4 py-3">Asset</th>
-                        <th class="px-4 py-3 text-right">Invested</th>
-                        <th class="px-4 py-3 text-right">Current Value</th>
-                        <th class="px-4 py-3 text-right">P/L</th>
-                        <th class="px-4 py-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                      <% if @active_holdings.any? %>
-                        <%= render partial: "shared/portfolio_row", collection: @active_holdings, as: :inv %>
-                      <% else %>
-                        <tr>
-                          <td colspan="5" class="px-4 py-8 text-center text-slate-500 text-xs uppercase tracking-widest">
-                            No active holdings for <%= @active_ticker.symbol %>
-                          </td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
+             <div class="bg-slate-900/20 border-x border-b border-slate-800 rounded-b-lg overflow-hidden">
+               <div data-tabs-target="panel" id="holdings">
+                 <table class="w-full text-left text-sm">
+                   <thead class="bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold">
+                     <tr>
+                       <th class="px-4 py-3">Asset</th>
+                       <th class="px-4 py-3 text-right">Invested</th>
+                       <th class="px-4 py-3 text-right">Current Value</th>
+                       <th class="px-4 py-3 text-right">P/L</th>
+                       <th class="px-4 py-3"></th>
+                     </tr>
+                   </thead>
+                   <tbody class="divide-y divide-slate-800">
+                     <% if @active_holdings.any? || @pending_orders.any? %>
+                         <%= render partial: "shared/portfolio_row", collection: @pending_orders, as: :inv %>
+                       <%= render partial: "shared/portfolio_row", collection: @active_holdings, as: :inv %>
+                     <% else %>
+                       <tr>
+                         <td colspan="5" class="px-4 py-8 text-center text-slate-500 text-xs uppercase tracking-widest">
+                           No active holdings for <%= @active_ticker.symbol %>
+                         </td>
+                       </tr>
+                     <% end %>
+                   </tbody>
+                 </table>
+               </div>
 
-                <div data-tabs-target="panel" id="history" class="hidden">
-                  <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold">
-                      <tr>
-                        <th class="px-4 py-3">Asset</th>
-                        <th class="px-4 py-3">Closed Date</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Cost Basis</th>
-                        <th class="px-4 py-3 text-right">Final Payout</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                      <% if @trade_history.any? %>
-                        <% @trade_history.each do |trade| %>
-                          <tr class="hover:bg-slate-800/20 transition border-b border-slate-800/50">
-                            <td class="px-4 py-3 font-bold text-slate-400"><%= trade.ticker.symbol %></td>
-                            <td class="px-4 py-3 text-slate-500 text-xs"><%= trade.updated_at.strftime("%b %d, %H:%M") %></td>
-                            <td class="px-4 py-3">
-                              <span class="text-[9px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800 text-slate-500 uppercase">
-                                <%= trade.status %>
-                              </span>
-                            </td>
-                            <td class="px-4 py-3 text-right font-mono text-slate-500">
-                              ƒ<%= number_with_delimiter(trade.amount.round(2)) %>
-                            </td>
-                            <td class="px-4 py-3 text-right font-mono">
-                              <div class="flex flex-col items-end">
-                                <span class="text-slate-200 font-bold">ƒ<%= number_with_delimiter(trade.exit_value.round(2)) %></span>
-                                <span class="text-[10px] <%= trade.total_profit >= 0 ? 'text-green-500' : 'text-red-500' %>">
-                                  <%= trade.total_profit >= 0 ? '+' : '' %><%= number_with_delimiter(trade.total_profit.round(2)) %>
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
-                        <% end %>
-                      <% else %>
-                        <tr>
-                          <td colspan="5" class="px-4 py-8 text-center text-slate-500 text-xs uppercase tracking-widest">
-                            No trade history yet.
-                          </td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+               <div data-tabs-target="panel" id="history" class="hidden">
+                 <table class="w-full text-left text-sm">
+                   <thead class="bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold">
+                     <tr>
+                       <th class="px-4 py-3">Asset</th>
+                       <th class="px-4 py-3">Closed Date</th>
+                       <th class="px-4 py-3">Status</th>
+                       <th class="px-4 py-3 text-right">Cost Basis</th>
+                       <th class="px-4 py-3 text-right">Final Payout</th>
+                     </tr>
+                   </thead>
+                   <tbody class="divide-y divide-slate-800">
+                     <% if @trade_history.any? %>
+                       <% @trade_history.each do |trade| %>
+                         <tr class="hover:bg-slate-800/20 transition border-b border-slate-800/50">
+                           <td class="px-4 py-3 font-bold text-slate-400"><%= trade.ticker.symbol %></td>
+                           <td class="px-4 py-3 text-slate-500 text-xs"><%= trade.updated_at.strftime("%b %d, %H:%M") %></td>
+                           <td class="px-4 py-3">
+                             <span class="text-[9px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800 text-slate-500 uppercase">
+                               <%= trade.status %>
+                             </span>
+                           </td>
+                           <td class="px-4 py-3 text-right font-mono text-slate-500">
+                             ƒ<%= number_with_delimiter(trade.amount.round(2)) %>
+                           </td>
+                           <td class="px-4 py-3 text-right font-mono">
+                             <div class="flex flex-col items-end">
+                               <span class="text-slate-200 font-bold">ƒ<%= number_with_delimiter(trade.exit_value.round(2)) %></span>
+                               <span class="text-[10px] <%= trade.total_profit >= 0 ? 'text-green-500' : 'text-red-500' %>">
+                                 <%= trade.total_profit >= 0 ? '+' : '' %><%= number_with_delimiter(trade.total_profit.round(2)) %>
+                               </span>
+                             </div>
+                           </td>
+                         </tr>
+                       <% end %>
+                     <% else %>
+                       <tr>
+                         <td colspan="5" class="px-4 py-8 text-center text-slate-500 text-xs uppercase tracking-widest">
+                           No trade history yet.
+                         </td>
+                       </tr>
+                     <% end %>
+                   </tbody>
+                 </table>
+               </div>
+             </div>
+          </div>
+          
+          <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-[400px]">
+             <div class="p-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center sticky top-0">
+                 <h3 class="text-[10px] font-bold text-slate-500 uppercase">Global Order Book</h3>
+                 <div class="flex items-center gap-1">
+                   <span class="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></span>
+                   <span class="text-[10px] text-purple-400 font-bold">LIVE FEED</span>
+                 </div>
+             </div>
+             <div class="flex-1 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1 font-mono text-[11px]" id="ledger_entries">
+                 <%= turbo_stream_from "global_ledger" %>
+                 <% if local_assigns[:recent_ledger_entries] || defined?(recent_ledger_entries) %>
+                    <%= render partial: "Hobbit/views/shared/entry", collection: recent_ledger_entries, as: :entry %>
+                 <% end %>
+             </div>
+          </div>
 
-          </div><% end %>
-      </div>
-    </main>
+        </div> 
+      <% end %> </main>
   </div>
 </div>

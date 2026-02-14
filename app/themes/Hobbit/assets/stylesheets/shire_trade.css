@@ -1,0 +1,10 @@
+#user_wallet_balance {
+  transition: all 0.3s ease;
+}
+
+
+.animate-wallet-update {
+  animation: wallet-pulse 0.6s ease-out;
+  display: inline-block; /* Required for transform scale to work */
+  color:red;
+}
