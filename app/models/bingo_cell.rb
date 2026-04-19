@@ -2,11 +2,13 @@
 class BingoCell < ApplicationRecord
   belongs_to :bingo_card
   belongs_to :bingo_item
+  has_many :pending_actions, as: :target, dependent: :destroy
   after_update_commit :broadcast_potential_win, if: :saved_change_to_is_marked?
   has_one :bingo_game, through: :bingo_card
+  
 after_update_commit :broadcast_mini_card_update
-# This handles the "Approved" state update
-  after_update_commit :broadcast_refresh
+
+after_update_commit :broadcast_refresh
 after_update_commit :broadcast_cell_change
 
   def broadcast_refresh

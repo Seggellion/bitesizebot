@@ -7,7 +7,7 @@ class RaffleService
     case text
     # Capture the flag (-s or -m) and the amount (\d+)
     when /^!raffle\s+(-[sm])\s+(\d+)/i
-
+byebug
     unless is_mod
         return "Be off with you! You haven't the authority of a Mayor or a Bounder to start a raffle in this Shire."
     end

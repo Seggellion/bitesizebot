@@ -4,6 +4,9 @@ class BingoCard < ApplicationRecord
   belongs_to :user
   has_many :bingo_cells, dependent: :destroy
 has_many :bingo_items, through: :bingo_cells
+
+has_many :targeted_pending_actions, class_name: 'PendingAction', as: :target, dependent: :destroy
+
 after_create_commit :broadcast_new_participant
 after_create_commit :broadcast_total_stats
 after_create_commit :refresh_game_overlay
@@ -22,7 +25,6 @@ def pending_actions
  def replace_card!(cost = 2000)
     transaction do
       # 1. Create the Ledger Entry
-      # This will trigger the 'user_has_sufficient_funds' validation in LedgerEntry
       user.ledger_entries.create!(
         amount: -cost,
         entry_type: "bingo_card_replacement",
@@ -30,17 +32,16 @@ def pending_actions
       )
 
       # 2. Update the user's wallet column
-      # We use lock! to prevent race conditions during the balance update
       user.lock!
       user.decrement!(:wallet, cost)
 
-      # 3. Regenerate the card
+      # 3. Clean up orphans and regenerate the card
+      PendingAction.where(target: bingo_cells).destroy_all # ADD THIS LINE
       bingo_cells.destroy_all
       generate_cells
       increment!(:replacement_count)
 
       # 4. Broadcast the update to the UI
-      # This replaces the 'bingo_card_container' with the new layout
       broadcast_replace_to(
         self,
         target: "bingo_card_container",
@@ -49,7 +50,6 @@ def pending_actions
       )
     end
   rescue ActiveRecord::RecordInvalid => e
-    # If the ledger validation fails, the transaction rolls back
     errors.add(:base, "Transaction failed: #{e.record.errors.full_messages.join(', ')}")
     false
   end

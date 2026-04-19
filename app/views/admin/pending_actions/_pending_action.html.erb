@@ -17,23 +17,31 @@
     <% end %>
   </td>
 
-  <td class="py-4 px-2 text-sm text-gray-600">
+<td class="py-4 px-2 text-sm text-gray-600">
     <% if action.action_type == 'mark_cell' %>
-      <span class="font-semibold text-gray-800"><%= action.target.coordinate %></span>: 
-      <span class="italic text-gray-500">"<%= action.target.bingo_item.content %>"</span>
-<% 
-   # USE THE HELPER HERE
-   target_coord = action.request_coordinate
-   
-   # Calculate similar count safely
-   similar_count = 0
-   if target_coord.present?
-     similar_count = PendingAction.pending
-                                  .where(action_type: 'mark_cell')
-                                  .select { |pa| pa.request_coordinate == target_coord }
-                                  .count
-   end
-%>
+      <%# DEFENSIVE CHECK: Make sure the target hasn't been deleted %>
+      <% if action.target.present? %>
+        <span class="font-semibold text-gray-800"><%= action.target.coordinate %></span>: 
+        <span class="italic text-gray-500">"<%= action.target.bingo_item.content %>"</span>
+      <% else %>
+        <span class="font-semibold text-gray-800"><%= action.request_coordinate %></span>: 
+        <span class="italic text-red-500">Orphaned action (Cell was replaced/deleted)</span>
+      <% end %>
+
+      <% 
+         # USE THE HELPER HERE
+         target_coord = action.request_coordinate
+         
+         # Calculate similar count safely
+         similar_count = 0
+         if target_coord.present?
+           similar_count = PendingAction.pending
+                                        .where(action_type: 'mark_cell')
+                                        .select { |pa| pa.request_coordinate == target_coord }
+                                        .count
+         end
+      %>
+      
 
 <% if similar_count > 1 %>
   <div class="mt-2">
