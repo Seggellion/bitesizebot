@@ -65,6 +65,14 @@ end
   # ------------------------------------------------------------
   post "set_theme", to: "themes#set_theme", as: :set_theme
 
+  # -- API:
+namespace :api do
+    # Other API routes...
+    
+    # We use a POST request here because a tick modifies the database state.
+    post 'utility/trigger_tick', to: 'utility#trigger_tick'
+  end
+
   # ------------------------------------------------------------
   # Admin
   # ------------------------------------------------------------
@@ -122,7 +130,12 @@ namespace :admin do
     end
 
     resources :bingo_items
-    resources :bingo_cards
+    resources :bingo_cards, only: [:show, :index] do
+      member do
+        post :declare_winner
+      end
+    end
+
     resources :bingo_cells, only: [] do
         patch :toggle, on: :member
       end

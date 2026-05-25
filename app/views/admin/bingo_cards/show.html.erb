@@ -12,6 +12,13 @@
         <span class="text-green-600 font-bold text-xl uppercase italic">Confirmed Winner! 🏆</span>
       <% elsif @bingo_card.verify_win %>
         <span class="text-amber-600 font-bold text-xl animate-pulse uppercase">Potential Win Detected!</span>
+        
+        <% if !@bingo_card.won? && @bingo_card.verify_win %>
+            <%= button_to "Declare Winner!", declare_winner_admin_bingo_card_path(@bingo_card), 
+                  method: :post, 
+                  class: "block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition-colors mb-4 shadow-sm" %>
+          <% end %>
+
       <% else %>
         <span class="text-blue-600 font-bold text-xl uppercase">In Progress</span>
       <% end %>

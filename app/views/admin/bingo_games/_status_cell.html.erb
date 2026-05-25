@@ -1,0 +1,24 @@
+<td class="py-2 px-4 border" id="bingo_game_<%= bingo_game.id %>_status">
+  <% 
+    # Determine the color based on status
+    status_classes = case bingo_game.status
+      when 'active' then 'bg-green-100 text-green-800'
+      when 'ended'  then 'bg-red-100 text-red-800'
+      else 'bg-gray-100 text-gray-800'
+    end 
+  %>
+
+  <% if bingo_game.created_at > 6.hours.ago %>
+    <%= form_with model: [:admin, bingo_game], class: "inline" do |f| %>
+      <%= f.select :status,
+            [ ['Pending (Hidden)', 'pending'], ['Invite', 'invite'], ['Active', 'active'], ['Ended', 'ended']],
+            {},
+            class: "px-2 py-1 rounded text-xs font-bold border-0 outline-none cursor-pointer focus:ring-0 #{status_classes}",
+            onchange: "this.form.requestSubmit();" %>
+    <% end %>
+  <% else %>
+    <span class="px-2 py-1 rounded text-xs <%= status_classes %>">
+      <%= bingo_game.status.capitalize %>
+    </span>
+  <% end %>
+</td>

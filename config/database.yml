@@ -9,7 +9,7 @@ default: &default
 
 development:
   <<: *default
-  database: railpress_development
+  database: bitesizebot_development
   username: ultimacraft
 
 test:

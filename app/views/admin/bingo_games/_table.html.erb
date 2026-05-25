@@ -13,11 +13,7 @@
   <tbody>
     <% games.each do |bingo_game| %>
       <tr>
-        <td class="py-2 px-4 border">
-          <span class="px-2 py-1 rounded text-xs <%= bingo_game.status == 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100' %>">
-            <%= bingo_game.status.capitalize %>
-          </span>
-        </td>
+        <%= render partial: "admin/bingo_games/status_cell", locals: { bingo_game: bingo_game } %>
         <td class="py-2 px-4 border"><%= bingo_game.bingo_cards.count %></td>
         <td class="py-2 px-4 border font-medium"><%= bingo_game.title %></td>
         <td class="py-2 px-4 border"><%= bingo_game.host&.first_name || 'N/A' %></td>

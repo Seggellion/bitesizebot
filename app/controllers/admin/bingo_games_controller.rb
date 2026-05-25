@@ -81,19 +81,31 @@ end
       # set_bingo_game handles finding the record
     end
 
-    def update
+def update
       # Check if status is changing to 'active' to set the started_at timestamp
       if bingo_game_params[:status] == 'active' && @bingo_game.status != 'active'
         @bingo_game.started_at = Time.current
       end
 
       if @bingo_game.update(bingo_game_params)
-        # The model callbacks (broadcast_status_change, etc.) handle the Turbo Stream pushes
-        redirect_to admin_bingo_games_path, notice: "Game updated successfully."
+        respond_to do |format|
+          # 1. Handle the non-refresh dropdown update
+          format.turbo_stream do
+            render turbo_stream: turbo_stream.replace(
+              "bingo_game_#{@bingo_game.id}_status",
+              partial: "admin/bingo_games/status_cell",
+              locals: { bingo_game: @bingo_game }
+            )
+          end
+          
+          # 2. Handle standard form submissions (e.g., from the Edit page)
+          format.html { redirect_to admin_bingo_games_path, notice: "Game updated successfully." }
+        end
       else
         render :edit, status: :unprocessable_entity
       end
     end
+    
 
     def start
       if @bingo_game.update(status: "active", started_at: Time.current)
