@@ -3,11 +3,10 @@ class RaffleService
   @active_raffle_id = nil
   MAX_PRIZE = 500 # Internal maximum as requested
 
-  def self.process_command(uid, username, bid, text, is_mod)
+  def self.process_command(uid, username, bid, text, is_mod)    
     case text
     # Capture the flag (-s or -m) and the amount (\d+)
     when /^!raffle\s+(-[sm])\s+(\d+)/i
-byebug
     unless is_mod
         return "Be off with you! You haven't the authority of a Mayor or a Bounder to start a raffle in this Shire."
     end
@@ -41,6 +40,15 @@ byebug
 
         target_username = $1.downcase
         return give_points(target_username, 10)
+
+    when /^!raffle help/i
+      # SECURITY: Only the Broadcaster (uid == bid) can request the help menu
+      unless uid.to_s == bid.to_s
+        return "These ancient texts are for the High Mayor's eyes only!"
+      end
+
+      # The help text returned exclusively to the Broadcaster
+      return "📜 Mayor's Cheat Sheet: '!raffle -s [amt]' (single win), '!raffle -m [amt]' (split pot), '!raffle give @[user] [amt]' (grant farthings). Max raffle: #{MAX_PRIZE}. Viewers type '!gimme'."
 
     when "!gimme"
         return join_raffle(uid, username)

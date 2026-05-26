@@ -287,7 +287,6 @@ def self.handle_notification(event)
   # 1. HARDCODED COMMANDS (Static Logic)
   case text
   when "!ping"
-    
     TwitchService.send_chat_message(bid, sid, "Pong! @#{username}")
     return
 

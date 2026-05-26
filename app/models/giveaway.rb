@@ -91,8 +91,20 @@ def announce_winner_to_twitch
 
   # Call your existing TwitchService
   TwitchService.send_chat_message(broadcaster.uid, bot.uid, message)
+  broadcast_overlay_win
 rescue => e
   Rails.logger.error "Failed to announce winner: #{e.message}"
 end
+
+def broadcast_overlay_win
+    return unless winner
+
+    broadcast_prepend_to(
+      "active_game_overlay",
+      target: "overlay_notifications",
+      partial: "admin/giveaways/win_notification",
+      locals: { user: winner, giveaway: self }
+    )
+  end
 
 end
