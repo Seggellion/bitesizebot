@@ -92,6 +92,62 @@ end
     end
   end
 
+  def item_claimed?(bingo_item_id)
+    mark_memories.exists?(bingo_item_id: bingo_item_id)
+  end
+
+  def claim_item!(bingo_item, approved_by: nil, coordinate: nil)
+    attempts = 0
+    memory = nil
+
+    begin
+      transaction do
+        memory_coordinate = coordinate || "#{bingo_item.column_letter}#{bingo_item.row_number}"
+        memory = mark_memories.find_by(bingo_item_id: bingo_item.id) ||
+                 mark_memories.find_by(coordinate: memory_coordinate, bingo_item_id: nil)
+
+        unless memory
+          stored_coordinate = if mark_memories.exists?(coordinate: memory_coordinate)
+                                "#{memory_coordinate}:item-#{bingo_item.id}"
+                              else
+                                memory_coordinate
+                              end
+          memory = mark_memories.build(coordinate: stored_coordinate)
+        end
+
+        memory.bingo_item ||= bingo_item
+        memory.approved_by ||= approved_by
+        memory.save!
+
+        matching_cells = bingo_cells.where(bingo_item_id: bingo_item.id)
+        matching_cell_ids = matching_cells.select(:id)
+
+        matching_cells.where(is_marked: false).find_each do |cell|
+          cell.update!(is_marked: true)
+        end
+
+        PendingAction.pending
+                     .where(action_type: "mark_cell", target_type: "BingoCell", target_id: matching_cell_ids)
+                     .find_each { |action| action.update!(status: "approved") }
+
+        memory
+      end
+    rescue ActiveRecord::RecordNotUnique
+      attempts += 1
+      retry if attempts < 2
+
+      raise
+    rescue ActiveRecord::RecordInvalid => error
+      retryable_memory_conflict = error.record == memory &&
+                                  (memory.errors.of_kind?(:bingo_item_id, :taken) ||
+                                   memory.errors.of_kind?(:coordinate, :taken))
+      attempts += 1
+      retry if retryable_memory_conflict && attempts < 2
+
+      raise
+    end
+  end
+
   def pending_actions
     PendingAction.where(target: self).or(PendingAction.where(target: bingo_cells))
   end

@@ -28,18 +28,13 @@ def game_must_be_active
 end
 
   def approve!
-    update!(status: 'approved')
-
     transaction do
+      update!(status: 'approved')
+
       case action_type
       when 'mark_cell'
-        target.update!(is_marked: true)
-
-        coord = request_coordinate
-        game  = target.bingo_game
-        if coord.present? && game.present?
-          game.remember_coordinate!(coord, approved_by: user)
-        end
+        game = bingo_game
+        game.claim_item!(target.bingo_item, approved_by: user, coordinate: target.coordinate)
 
         broadcast_overlay_notification
 
@@ -70,10 +65,9 @@ end
 
 def handle_new_action
   if action_type == 'mark_cell'
-    coord = request_coordinate
     game  = bingo_game
 
-    if coord.present? && game&.coordinate_auto_approved?(coord)
+    if target.is_a?(BingoCell) && game&.item_claimed?(target.bingo_item_id)
       approve!
       return
     end
