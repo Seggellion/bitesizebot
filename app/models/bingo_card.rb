@@ -196,6 +196,7 @@ def generate_cells
   grid_size = bingo_game.size
   center_index = grid_size / 2
   column_map = ["B", "I", "N", "G", "O"].first(grid_size)
+  claimed_item_ids = bingo_game.mark_memories.where.not(bingo_item_id: nil).pluck(:bingo_item_id)
   
   # Find our special item
   free_item = BingoItem.find_by(content: "HOBBIT NOT PAYING ATTENTION")
@@ -219,7 +220,7 @@ def generate_cells
       else
         item = column_pool.pop
         coord = "#{letter}#{item.row_number}"
-        marked = false
+        marked = claimed_item_ids.include?(item.id)
       end
 
       cell_attributes << {

@@ -8,45 +8,52 @@ def index
 # app/controllers/admin/pending_actions_controller.rb
 def bulk_approve
   # Only grab 'mark_cell' actions to avoid accidentally approving a win
-  @actions = PendingAction.where(status: 'pending', action_type: 'mark_cell')
-  
+  actions = PendingAction.where(status: 'pending', action_type: 'mark_cell').to_a
+  approved_count = 0
+
   ActiveRecord::Base.transaction do
-    @actions.each do |action|
-      # Update the cell
-      action.target.update!(is_marked: true)
-      # Update the action status
-      action.update!(status: 'approved')
+    actions.each do |action|
+      next unless action.reload.status == 'pending'
+
+      action.approve!
+      approved_count += 1
     end
   end
 
-  redirect_to admin_bingo_games_path, notice: "Approved #{@actions.count} mark requests."
+  redirect_to admin_bingo_games_path, notice: "Approved #{approved_count} mark requests."
 end
 
 def approve_similar
   @action = PendingAction.find(params[:id])
-  target_coord = @action.request_coordinate
-
-  if target_coord.blank?
-    redirect_back fallback_location: admin_dashboard_path, alert: "Could not determine coordinate."
+  unless @action.target.is_a?(BingoCell)
+    redirect_back fallback_location: admin_dashboard_path, alert: "Action does not target a bingo cell."
     return
   end
 
   game = @action.bingo_game
-  game&.remember_coordinate!(target_coord, approved_by: @action.user)
+  bingo_item = @action.target.bingo_item
+
+  if game.blank? || bingo_item.blank?
+    redirect_back fallback_location: admin_dashboard_path, alert: "Could not determine bingo item."
+    return
+  end
 
   similar_requests = PendingAction.pending
-                                  .where(action_type: 'mark_cell')
-                                  .select { |pa| pa.request_coordinate == target_coord }
+                                  .where(
+                                    action_type: 'mark_cell',
+                                    target_type: 'BingoCell',
+                                    target_id: game.bingo_cells.where(bingo_item_id: bingo_item.id).select(:id)
+                                  )
 
   count = similar_requests.count
 
   ActiveRecord::Base.transaction do
-    similar_requests.each(&:approve!)
+    @action.approve!
   end
 
   respond_to do |format|
-    format.html { redirect_back fallback_location: admin_dashboard_path, notice: "Approved #{count} requests for #{target_coord}!" }
-    format.turbo_stream { flash.now[:notice] = "Approved #{count} requests for #{target_coord}!" }
+    format.html { redirect_back fallback_location: admin_dashboard_path, notice: "Approved #{count} requests for #{bingo_item.content}!" }
+    format.turbo_stream { flash.now[:notice] = "Approved #{count} requests for #{bingo_item.content}!" }
   end
 end
 

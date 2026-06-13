@@ -46,7 +46,7 @@
         <h2 class="text-2xl font-bold text-white mb-2">Initiate Monthly Protocol</h2>
         <p class="text-slate-400 mb-6 max-w-xl">
           Warning: This action will audit all Bingo wins from <span class="text-cyan-400 font-mono"><%= 30.days.ago.to_date %></span> to present. 
-          Eligibility filters (Ban Tags, 6-Month Cooldown) will be applied strictly.
+          Eligibility filters (Ban Tags, 3-Month Cooldown) will be applied strictly.
         </p>
 
         <%= button_to draw_admin_bingo_games_path, 
@@ -106,7 +106,7 @@
           CANDIDATE POOL MATRIX
         </h3>
         <div class="flex gap-2">
-           <span class="text-xs font-mono text-slate-500 bg-slate-900 px-2 py-1 rounded border border-slate-700">FILTER: WINNERS (30D)</span>
+           <span class="text-xs font-mono text-slate-500 bg-slate-900 px-2 py-1 rounded border border-slate-700">FILTER: WINNERS (3 MONTHS)</span>
         </div>
       </div>
 

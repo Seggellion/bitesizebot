@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_12_234839) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_13_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -105,9 +105,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_234839) do
     t.bigint "approved_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "bingo_item_id"
     t.index ["approved_by_id"], name: "index_bingo_game_mark_memories_on_approved_by_id"
     t.index ["bingo_game_id", "coordinate"], name: "index_bingo_game_mark_memories_on_bingo_game_id_and_coordinate", unique: true
+    t.index ["bingo_game_id", "bingo_item_id"], name: "index_bingo_game_mark_memories_on_game_and_item", unique: true
     t.index ["bingo_game_id"], name: "index_bingo_game_mark_memories_on_bingo_game_id"
+    t.index ["bingo_item_id"], name: "index_bingo_game_mark_memories_on_bingo_item_id"
   end
 
   create_table "bingo_games", force: :cascade do |t|
@@ -491,6 +494,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_234839) do
   add_foreign_key "bingo_game_items", "bingo_games"
   add_foreign_key "bingo_game_items", "bingo_items"
   add_foreign_key "bingo_game_mark_memories", "bingo_games"
+  add_foreign_key "bingo_game_mark_memories", "bingo_items"
   add_foreign_key "bingo_game_mark_memories", "users", column: "approved_by_id"
   add_foreign_key "bingo_games", "users", column: "host_id"
   add_foreign_key "bingo_games", "users", column: "winner_id"

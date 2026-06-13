@@ -3,13 +3,15 @@ module Admin
   class BingoCellsController < Admin::ApplicationController # Ensure this matches your parent controller class
     def toggle
       @cell = BingoCell.find(params[:id])
-      
-      # Toggle the state
-      @cell.update!(is_marked: !@cell.is_marked)
 
-      # Handle side effects
       if @cell.is_marked?
-        PendingAction.where(target: @cell, status: 'pending').update_all(status: 'approved')
+        @cell.update!(is_marked: false)
+      else
+        @cell.bingo_game.claim_item!(
+          @cell.bingo_item,
+          approved_by: current_user,
+          coordinate: @cell.coordinate
+        )
       end
 
       # Since we are moving to Model Broadcasts, we just redirect or head :ok
