@@ -74,10 +74,20 @@ attribute :ticket_cost, :integer, default: 1
     self.drawn_at = Time.current
     save!
     announce_winner_to_twitch
+    broadcast_overlay_winner if ticket?
     winner
   end
 
 private
+
+def broadcast_overlay_winner
+  broadcast_prepend_to(
+    "active_game_overlay",
+    target: "overlay_notifications",
+    partial: "admin/giveaways/overlay_winner_notification",
+    locals: { winner: winner }
+  )
+end
 
 def announce_winner_to_twitch
   # We need the Broadcaster (channel) and the Bot (sender)

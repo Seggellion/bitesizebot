@@ -1,0 +1,20 @@
+<div data-controller="overlay-notification"
+     data-overlay-notification-confetti-value="true"
+     data-overlay-notification-duration-value="15000"
+     class="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+
+  <div class="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-600 p-2 rounded-[3rem] shadow-[0_0_100px_rgba(234,179,8,0.6)] animate-bounce">
+
+    <div class="bg-black/95 text-white p-20 rounded-[2.5rem] text-center border-8 border-yellow-300">
+
+      <h1 class="text-7xl font-black mb-6 uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-yellow-500 drop-shadow-2xl">
+        THE SHIRE'S CHOSEN ONE:
+      </h1>
+
+      <div class="text-6xl font-extrabold mb-4 text-white">
+        <%= winner.username %>
+      </div>
+
+    </div>
+  </div>
+</div>
