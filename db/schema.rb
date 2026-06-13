@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_13_000000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_25_002547) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -245,7 +245,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_13_000000) do
 
   create_table "investments", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.integer "amount", null: false
+    t.bigint "amount", null: false
     t.decimal "interest_rate", precision: 5, scale: 4, default: "0.01"
     t.integer "status", default: 0
     t.string "investment_name"

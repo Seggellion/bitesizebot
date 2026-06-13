@@ -31,17 +31,31 @@ module Admin
         end
       end
 
-      # app/controllers/bingo_cards_controller.rb
-def show
-  @bingo_card = BingoCard.find(params[:id])
-  @game = @bingo_card.bingo_game
-  
-  # Grouping cells for the grid display
-  @grouped_cells = @bingo_card.bingo_cells
-                              .includes(:bingo_item)
-                              .order(:id)
-                              .group_by { |c| c.bingo_item.column_letter }
-end
+      def declare_winner
+            @bingo_card = BingoCard.find(params[:id])
+            
+            if @bingo_card.bingo_game.status == 'ended'
+              redirect_to admin_bingo_card_path(@bingo_card), alert: "This game has already ended."
+              return
+            end
+
+            @bingo_card.force_win!
+            
+            redirect_to admin_bingo_card_path(@bingo_card), notice: "Winner successfully declared! Game ended."
+          end
+        
+
+            # app/controllers/bingo_cards_controller.rb
+      def show
+        @bingo_card = BingoCard.find(params[:id])
+        @game = @bingo_card.bingo_game
+        
+        # Grouping cells for the grid display
+        @grouped_cells = @bingo_card.bingo_cells
+                                    .includes(:bingo_item)
+                                    .order(:id)
+                                    .group_by { |c| c.bingo_item.column_letter }
+      end
 
        
       def destroy

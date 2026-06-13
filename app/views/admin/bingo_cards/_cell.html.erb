@@ -1,6 +1,5 @@
-<%# app/views/bingo_cards/_cell.html.erb %>
-<%# We set the ID here so Turbo knows exactly what to replace %>
-<div id="<%= dom_id(cell) %>" class="relative w-full h-full">
+<%# Added "admin_" prefix to isolate this from player broadcasts %>
+<div id="admin_<%= dom_id(cell) %>" class="relative w-full h-full">
   <% if cell %>
     <% 
        base_classes = "w-full aspect-square relative flex items-center justify-center p-1 rounded-md border-2 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"

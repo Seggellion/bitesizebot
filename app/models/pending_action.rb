@@ -12,34 +12,54 @@ class PendingAction < ApplicationRecord
   validate :game_must_be_active, on: :create
 
 
-def request_coordinate
-    # This regex pulls the value "N39" out of "{:coordinate=>\"N39\"}"
-    metadata.to_s[/coordinate=>"([^"]+)"/, 1]
-  end
-
-def bingo_game
-    return target.bingo_game if target.respond_to?(:bingo_game)
-    nil
-  end
-
 def game_must_be_active
   game = bingo_game
   errors.add(:base, "Game has already ended") if game&.status == "ended"
 end
+# 1. Update this to safely navigate from a Cell -> Card -> Game
+  def bingo_game
+    if target.is_a?(BingoCell)
+      target.bingo_card.bingo_game
+    elsif target.is_a?(BingoCard)
+      target.bingo_game
+    elsif target.respond_to?(:bingo_game)
+      target.bingo_game
+    end
+  end
 
+  # 2. Update this to handle both true Hashes and stringified database text
+  def request_coordinate
+    if metadata.is_a?(Hash) || metadata.is_a?(ActionController::Parameters)
+      metadata['coordinate'] || metadata[:coordinate]
+    else
+      # Safely fallback to regex if the database is storing this as a raw string
+      metadata.to_s[/coordinate(?:\"|')?\s*=>\s*[\"']([^\"']+)[\"']/, 1]
+    end
+  end
+
+  # 3. Update approve! to use the smart helper we just fixed
   def approve!
-    transaction do
-      update!(status: 'approved')
+    update!(status: 'approved')
 
+    transaction do
       case action_type
       when 'mark_cell'
-        game = bingo_game
-        game.claim_item!(target.bingo_item, approved_by: user, coordinate: target.coordinate)
+        target.update!(is_marked: true)
+
+        coord = request_coordinate
+        # CHANGED: Use the method `bingo_game` instead of `target.bingo_game`
+        game  = bingo_game 
+        
+        if coord.present? && game.present?
+          game.remember_coordinate!(coord, approved_by: user)
+        end
 
         broadcast_overlay_notification
 
       when 'claim_win'
-        game = target.bingo_game
+        # CHANGED: Use the method `bingo_game` instead of `target.bingo_game`
+        game = bingo_game 
+        
         game.update!(status: 'ended', winner: user, ended_at: Time.current)
         user.increment!(:karma, 100)
         user.increment!(:fame, 100)
@@ -63,6 +83,7 @@ end
 
   private
 
+<<<<<<< HEAD
 def handle_new_action
   if action_type == 'mark_cell'
     game  = bingo_game
@@ -72,18 +93,23 @@ def handle_new_action
       return
     end
   end
+=======
+def handle_new_action
+    # Bail out immediately if we created this action as already approved
+    return if status == 'approved'
 
-  broadcast_prepend_to "pending_actions",
-                       target: "pending_actions_table_body",
-                       partial: "admin/pending_actions/pending_action",
-                       locals: { action: self }
+    broadcast_prepend_to "pending_actions",
+                         target: "pending_actions_table_body",
+                         partial: "admin/pending_actions/pending_action",
+                         locals: { action: self }
+>>>>>>> production
 
-broadcast_append_to "pending_actions",
+    broadcast_append_to "pending_actions",
                         target: "favicon_manager",
                         partial: "admin/pending_actions/trigger_alert"
 
-  refresh_target_cell
-end
+    refresh_target_cell
+  end
 
 
   def add_to_monthly_giveaway

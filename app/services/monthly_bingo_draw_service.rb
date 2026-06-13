@@ -16,8 +16,8 @@ class MonthlyBingoDrawService
     banned_tag = Tag.find_by(name: 'giveaway_banned')
     banned_ids = banned_tag ? Tagging.where(tag: banned_tag, taggable_type: 'User').pluck(:taggable_id) : []
     
-    # "Recent winners" (Users still within the giveaway winner cooldown)
-    recent_winner_ids = User.recent_winners.pluck(:id)
+    # "Recent winners" (Users who won any giveaway in the last 6 months)
+    recent_winner_ids = User.recent_winners(3.months).pluck(:id)
 
     # 4. Filter to get the final eligible pool
     eligible_pool = raw_winners.reject do |user|

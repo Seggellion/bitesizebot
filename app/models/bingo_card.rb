@@ -16,6 +16,28 @@ accepts_nested_attributes_for :bingo_cells, allow_destroy: false
   # the 5x5 (or 3x3) grid is populated with items.
   after_create :generate_cells
 
+  def force_win!
+    # 1. Create the paper trail (bypassing the pending queue)
+    action = PendingAction.create!(
+      user: user,
+      target: self,
+      action_type: 'claim_win',
+      status: 'approved'
+    )
+    
+    # 2. Execute your exact win logic
+    bingo_game.update!(status: 'ended', winner: user, ended_at: Time.current)
+    user.increment!(:karma, 100)
+    user.increment!(:fame, 100)
+
+    # 3. Fire your external services (using send since these are private methods in PendingAction)
+    action.send(:add_to_monthly_giveaway)
+    action.send(:announce_win_to_twitch, bingo_game)
+    action.send(:broadcast_overlay_win)
+
+    true
+  end
+
 def pending_actions
     # This combines the claim on the card itself and any marks on its cells
     PendingAction.where(target: self)
@@ -55,30 +77,48 @@ def pending_actions
   end
 
 
-  def self.request_mark(viewer, game, col_letter, row_num)
+def self.request_mark(viewer, game, col_letter, row_num)
     card = game.bingo_cards.find_by(user_id: viewer.id)
-  coord = "#{col_letter.upcase}#{row_num}"
+    coord = "#{col_letter.upcase}#{row_num}"
   
-  # Find the cell directly by the human-readable coordinate
-  cell = card.bingo_cells.find_by(coordinate: coord)
+    cell = card.bingo_cells.find_by(coordinate: coord)
     return "That's the free space!" if cell&.bingo_item&.content == "FREE"
-    
-    
     return "Invalid cell coordinate!" unless cell
     return "That cell is already marked!" if cell.is_marked
-    # Check if a request is already pending for this specific cell
+    
     if PendingAction.exists?(target: cell, status: 'pending')
-      return "A request for #{col_letter}#{row_num} is already awaiting approval!"
+      return "A request for #{coord} is already awaiting approval!"
     end
 
+    # --- 1. CHECK THE MEMORY TABLE FIRST ---
+    if game.coordinate_auto_approved?(coord)
+      # Mark the cell immediately
+      cell.update!(is_marked: true)
+      
+      # Create an already-approved action for your ledger to skip the pending queue
+      action = PendingAction.create!(
+        user: viewer,
+        target: cell,
+        action_type: 'mark_cell',
+        status: 'approved',
+        metadata: { coordinate: coord }
+      )
+      
+      # Fire the Twitch/Admin overlays manually
+      action.send(:broadcast_overlay_notification)
+
+      return "Auto-approved! #{coord} has been marked."
+    end
+
+    # --- 2. NORMAL PENDING FLOW ---
     PendingAction.create!(
       user: viewer,
       target: cell,
       action_type: 'mark_cell',
-      metadata: { coordinate: "#{col_letter}#{row_num}" }
+      metadata: { coordinate: coord }
     )
 
-    "Request sent! An admin will review your mark for #{col_letter}#{row_num}."
+    "Request sent! An admin will review your mark for #{coord}."
   end
 
   def won?
