@@ -54,9 +54,8 @@ def monthly_giveaway
                            .where(taggable_type: 'User', tags: { name: 'giveaway_banned' })
                            .pluck(:taggable_id)
 
-  # "Who has not won in the past 6 months"
-  # (Assuming User.recent_winners returns an ActiveRecord Relation)
-  recent_winner_ids = User.recent_winners(6.months).pluck(:id)
+  # "Who has not won within the giveaway winner cooldown"
+  recent_winner_ids = User.recent_winners.pluck(:id)
   
   # Combine exclusions for the dashboard check
   @banned_ids = banned_user_ids

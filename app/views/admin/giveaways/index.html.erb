@@ -112,7 +112,7 @@
             <ul class="text-sm space-y-3">
               <li class="flex justify-between"><span>Min Karma:</span> <span class="text-white"><%= @giveaway.min_karma %></span></li>
               <li class="flex justify-between"><span>Min Fame:</span> <span class="text-white"><%= @giveaway.min_fame %></span></li>
-              <li class="flex justify-between"><span>6-Month Lock:</span> <span class="text-green-500">Active</span></li>
+              <li class="flex justify-between"><span>3-Month Lock:</span> <span class="text-green-500">Active</span></li>
             </ul>
           </div>
 
@@ -153,7 +153,7 @@
                   <td class="px-6 py-4 font-medium text-white">
                     <%= link_to g.title, admin_giveaway_path(g), class: "hover:underline hover:text-indigo-400" %>
                   </td>
-                  <td class="px-6 py-4 text-gray-400"><%= g.created_at.strftime("%b %d, %Y") %></td>
+                  <td class="px-6 py-4 text-gray-400"><%= (g.drawn_at || g.created_at).strftime("%b %d, %Y") %></td>
                   <td class="px-6 py-4">
                      <span class="px-2 py-1 rounded-full text-xs font-semibold 
                       <%= g.open? ? 'bg-green-900 text-green-300' : 'text-gray-400 bg-gray-900' %>">
