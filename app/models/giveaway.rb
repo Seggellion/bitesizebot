@@ -50,7 +50,7 @@ attribute :ticket_cost, :integer, default: 1
                            .where(taggable_type: 'User', tags: { name: 'giveaway_banned' })
                            .select(:taggable_id)
                            
-    recent_winner_ids = User.recent_winners(6.months)
+    recent_winner_ids = User.recent_winners
                            .where.not(giveaways: { id: self.id })
                            .select(:id)
 

@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  GIVEAWAY_WINNER_COOLDOWN = 3.months
+
     has_many :pages, dependent: :destroy
     has_many :posts, dependent: :destroy
     has_many :media, dependent: :destroy
@@ -51,9 +53,9 @@ has_many :won_giveaways, class_name: 'Giveaway', foreign_key: 'winner_id', depen
     where.not(id: Tagging.where(taggable_type: 'User', tag: Tag.where(name: 'giveaway_banned')).select(:taggable_id))
   }
 
-  def self.recent_winners(time_frame)
-  joins(:won_giveaways).where("giveaways.drawn_at >= ?", time_frame.ago)
-end
+  def self.recent_winners(time_frame = GIVEAWAY_WINNER_COOLDOWN)
+    joins(:won_giveaways).where("giveaways.drawn_at >= ?", time_frame.ago)
+  end
 
 # app/models/user.rb
 def following_broadcaster?
@@ -61,7 +63,7 @@ def following_broadcaster?
   TwitchWebsocketListener.is_follower?(broadcaster_id, self.uid)
 end
 
-def won_recently?(time_frame)
+def won_recently?(time_frame = GIVEAWAY_WINNER_COOLDOWN)
   won_giveaways.where("drawn_at >= ?", time_frame.ago).exists?
 end
 
