@@ -323,7 +323,7 @@ def self.handle_notification(event)
       return
     end
 
-    response_message = BingoService.process_command(uid, username, bid, text)
+    response_message = BingoService.process_command(uid, username, bid, text, is_mod: is_mod)
     TwitchService.send_chat_message(bid, sid, "@#{username}: #{response_message}") if response_message
     return
   end

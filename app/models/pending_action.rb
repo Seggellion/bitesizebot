@@ -1,6 +1,7 @@
 class PendingAction < ApplicationRecord
   belongs_to :user
   belongs_to :target, polymorphic: true
+  has_many :pending_action_votes, dependent: :destroy
 
   scope :pending, -> { where(status: 'pending') }
   # Use one consolidated hook for creation
@@ -37,29 +38,24 @@ end
     end
   end
 
-  # 3. Update approve! to use the smart helper we just fixed
-  def approve!
-    update!(status: 'approved')
-
+  def approve!(approved_by: user)
     transaction do
+      lock!
+      return true if status == 'approved'
+
       case action_type
       when 'mark_cell'
-        target.update!(is_marked: true)
-
         coord = request_coordinate
-        # CHANGED: Use the method `bingo_game` instead of `target.bingo_game`
-        game  = bingo_game 
-        
-        if coord.present? && game.present?
-          game.remember_coordinate!(coord, approved_by: user)
-        end
+        game = bingo_game
 
+        raise ActiveRecord::RecordInvalid, self unless target.is_a?(BingoCell) && game.present?
+
+        game.claim_item!(target.bingo_item, approved_by: approved_by, coordinate: coord)
         broadcast_overlay_notification
-
       when 'claim_win'
-        # CHANGED: Use the method `bingo_game` instead of `target.bingo_game`
-        game = bingo_game 
-        
+        update!(status: 'approved')
+        game = bingo_game
+
         game.update!(status: 'ended', winner: user, ended_at: Time.current)
         user.increment!(:karma, 100)
         user.increment!(:fame, 100)
@@ -67,6 +63,8 @@ end
         add_to_monthly_giveaway
         announce_win_to_twitch(game)
         broadcast_overlay_win
+      else
+        update!(status: 'approved')
       end
     end
   end
@@ -83,26 +81,22 @@ end
 
   private
 
-<<<<<<< HEAD
 def handle_new_action
+  return if status == 'approved'
+
   if action_type == 'mark_cell'
-    game  = bingo_game
+    game = bingo_game
 
     if target.is_a?(BingoCell) && game&.item_claimed?(target.bingo_item_id)
       approve!
       return
     end
   end
-=======
-def handle_new_action
-    # Bail out immediately if we created this action as already approved
-    return if status == 'approved'
 
-    broadcast_prepend_to "pending_actions",
-                         target: "pending_actions_table_body",
-                         partial: "admin/pending_actions/pending_action",
-                         locals: { action: self }
->>>>>>> production
+  broadcast_prepend_to "pending_actions",
+                       target: "pending_actions_table_body",
+                       partial: "admin/pending_actions/pending_action",
+                       locals: { action: self }
 
     broadcast_append_to "pending_actions",
                         target: "favicon_manager",

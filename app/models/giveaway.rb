@@ -106,9 +106,6 @@ rescue => e
   Rails.logger.error "Failed to announce winner: #{e.message}"
 end
 
-<<<<<<< HEAD
-end
-=======
 def broadcast_overlay_win
     return unless winner
 
@@ -121,4 +118,3 @@ def broadcast_overlay_win
   end
 
 end
->>>>>>> production

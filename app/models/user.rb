@@ -21,6 +21,7 @@ has_many :achievements
 enum :user_type, { admin: 0, regular: 1, bot: 5 }
   attr_accessor :twitch_scopes
 has_many :pending_actions, dependent: :destroy
+  has_many :pending_action_votes, foreign_key: :moderator_id, dependent: :destroy
   has_many :raffle_entries, dependent: :destroy
 
 
