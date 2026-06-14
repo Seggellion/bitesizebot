@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_25_002547) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_13_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -107,8 +107,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_25_002547) do
     t.datetime "updated_at", null: false
     t.bigint "bingo_item_id"
     t.index ["approved_by_id"], name: "index_bingo_game_mark_memories_on_approved_by_id"
-    t.index ["bingo_game_id", "coordinate"], name: "index_bingo_game_mark_memories_on_bingo_game_id_and_coordinate", unique: true
     t.index ["bingo_game_id", "bingo_item_id"], name: "index_bingo_game_mark_memories_on_game_and_item", unique: true
+    t.index ["bingo_game_id", "coordinate"], name: "index_bingo_game_mark_memories_on_bingo_game_id_and_coordinate", unique: true
     t.index ["bingo_game_id"], name: "index_bingo_game_mark_memories_on_bingo_game_id"
     t.index ["bingo_item_id"], name: "index_bingo_game_mark_memories_on_bingo_item_id"
   end
@@ -317,6 +317,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_25_002547) do
     t.index ["user_id"], name: "index_pages_on_user_id"
   end
 
+  create_table "pending_action_votes", force: :cascade do |t|
+    t.bigint "pending_action_id", null: false
+    t.bigint "moderator_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["moderator_id"], name: "index_pending_action_votes_on_moderator_id"
+    t.index ["pending_action_id", "moderator_id"], name: "index_pending_action_votes_on_action_and_moderator", unique: true
+    t.index ["pending_action_id"], name: "index_pending_action_votes_on_pending_action_id"
+  end
+
   create_table "pending_actions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "target_type", null: false
@@ -513,6 +523,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_25_002547) do
   add_foreign_key "menu_items", "menus"
   add_foreign_key "pages", "categories"
   add_foreign_key "pages", "users"
+  add_foreign_key "pending_action_votes", "pending_actions"
+  add_foreign_key "pending_action_votes", "users", column: "moderator_id"
   add_foreign_key "pending_actions", "users"
   add_foreign_key "posts", "categories"
   add_foreign_key "posts", "users"
