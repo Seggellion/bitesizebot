@@ -2,8 +2,9 @@
 class BingoService
   REPLACEMENT_COST = 2000
   MAX_REPLACEMENTS = 2
+  REQUIRED_MOD_APPROVALS = 2
 
-  def self.process_command(uid, username, broadcaster_uid, text)
+  def self.process_command(uid, username, broadcaster_uid, text, is_mod: false)
     host = User.find_by(uid: broadcaster_uid)
     return "Host not found." unless host
 
@@ -50,6 +51,9 @@ class BingoService
 
     when "!bingo win", "!bingo bingo"
         return request_win(viewer, game)
+
+    when /^!bingo approve\s+([bingo])(\d+)$/i
+      return approve_mark(viewer, game, $1, $2, is_mod: is_mod)
 
     when /^!bingo mark\s+([a-z])(\d+)/i
       return handle_mark(viewer, game, $1, $2)
@@ -109,8 +113,57 @@ class BingoService
       metadata: { coordinate: coord }
     )
 
-    "Request sent! An admin will review your mark for #{coord}."
+    "#{viewer.username} requested #{coord}: #{cell.bingo_item.content}. Mods: type !bingo approve #{coord}. #{REQUIRED_MOD_APPROVALS} approvals required."
   end
+
+  def self.approve_mark(moderator, game, col_letter, row_num, is_mod:)
+    return "Only Twitch moderators can approve bingo marks." unless is_mod
+
+    coord = "#{col_letter.upcase}#{row_num.to_i}"
+    candidate_actions = pending_mark_actions_for(game, coord)
+    return "No pending request found for #{coord} in the active game." if candidate_actions.empty?
+
+    actions_by_item = candidate_actions.group_by { |action| action.target.bingo_item_id }
+    if actions_by_item.size > 1
+      return "#{coord} is ambiguous across pending cards. An admin must resolve this request."
+    end
+
+    action = actions_by_item.values.first.min_by(&:id)
+    record_moderator_vote(action, moderator, coord)
+  end
+
+  def self.pending_mark_actions_for(game, coord)
+    cell_ids = game.bingo_cells.where(coordinate: coord).select(:id)
+
+    PendingAction.pending
+                 .where(action_type: 'mark_cell', target_type: 'BingoCell', target_id: cell_ids)
+                 .to_a
+  end
+  private_class_method :pending_mark_actions_for
+
+  def self.record_moderator_vote(action, moderator, coord)
+    action.with_lock do
+      return "#{coord} was already resolved." unless action.status == 'pending'
+
+      vote = action.pending_action_votes.create(moderator: moderator)
+      unless vote.persisted?
+        count = action.pending_action_votes.count
+        return "#{coord} already has an approval from #{moderator.username}. #{count}/#{REQUIRED_MOD_APPROVALS} approvals."
+      end
+
+      count = action.pending_action_votes.count
+      if count >= REQUIRED_MOD_APPROVALS
+        action.approve!(approved_by: moderator)
+        "#{coord} approved after #{count}/#{REQUIRED_MOD_APPROVALS} moderator approvals."
+      else
+        "#{coord} approval received from #{moderator.username}. #{count}/#{REQUIRED_MOD_APPROVALS} approvals."
+      end
+    end
+  rescue ActiveRecord::RecordNotUnique
+    count = action.pending_action_votes.count
+    "#{coord} already has an approval from #{moderator.username}. #{count}/#{REQUIRED_MOD_APPROVALS} approvals."
+  end
+  private_class_method :record_moderator_vote
 
   def self.explain_cell(viewer, game, col_letter, row_num)
     card = game.bingo_cards.find_by(user: viewer)
