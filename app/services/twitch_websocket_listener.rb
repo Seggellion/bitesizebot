@@ -235,12 +235,7 @@ def self.handle_notification(event)
 
 
 
-  viewer = User.find_or_create_by(uid: uid, provider: 'twitch') do |u|
-    u.first_name = display_name
-    u.username = display_name
-    u.user_type = 1
-    u.fame = 0 
-  end
+  viewer = find_or_create_twitch_viewer(uid, display_name)
 
   ActivityEngine.process_chat(username)
   viewer.increment!(:fame, 1)
@@ -346,5 +341,16 @@ def self.handle_notification(event)
     end
   end
 end 
+
+def self.find_or_create_twitch_viewer(uid, display_name)
+  viewer = User.find_or_initialize_by(uid: uid)
+  viewer.provider = 'twitch' if viewer.provider.blank?
+  viewer.first_name = display_name if viewer.first_name.blank?
+  viewer.username = display_name if viewer.username.blank?
+  viewer.user_type ||= :regular
+  viewer.fame ||= 0
+  viewer.save! if viewer.new_record? || viewer.changed?
+  viewer
+end
 
 end
