@@ -76,6 +76,19 @@ class BingoGameItemClaimTest < ActiveSupport::TestCase
     assert_equal 1, @game.mark_memories.where(bingo_item: @item).count
   end
 
+  test "mark memories can belong to bingo items while preserving coordinate-only memories" do
+    item_memory = @game.mark_memories.create!(
+      bingo_item: @item,
+      coordinate: "B1",
+      approved_by: @admin
+    )
+    coordinate_memory = @game.mark_memories.create!(coordinate: "I2")
+
+    assert_equal @item, item_memory.reload.bingo_item
+    assert_includes @item.bingo_game_mark_memories, item_memory
+    assert_nil coordinate_memory.reload.bingo_item
+  end
+
   private
 
   def create_user(uid, type = :regular)

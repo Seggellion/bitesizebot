@@ -113,6 +113,22 @@ class BingoServiceModeratorApprovalTest < ActiveSupport::TestCase
     assert_equal 25, card.bingo_cells.count
   end
 
+  test "bingo join command applies existing item mark memories to generated cells" do
+    create_full_bingo_item_pool
+    @game.update!(status: "ended")
+    invite_game = create_game(@host, "Remembered Joinable Game", status: "invite")
+    remembered_item = BingoItem.find_by!(column_letter: "B", row_number: 1)
+    invite_game.claim_item!(remembered_item, approved_by: @mod_two, coordinate: "B1")
+
+    response = BingoService.process_command("remembered-join-viewer", "RememberedJoin", @host.uid, "!bingo join")
+
+    viewer = User.find_by!(uid: "remembered-join-viewer")
+    card = invite_game.bingo_cards.find_by!(user: viewer)
+    assert_equal "Welcome to Bitesize Bingo! Your card is ready.", response
+    assert card.bingo_cells.find_by!(bingo_item: remembered_item).is_marked?
+    assert_equal 1, invite_game.mark_memories.where(bingo_item: remembered_item).count
+  end
+
   test "bingo approve command routes to moderator approval" do
     action = create_request(@player, @cell)
 
